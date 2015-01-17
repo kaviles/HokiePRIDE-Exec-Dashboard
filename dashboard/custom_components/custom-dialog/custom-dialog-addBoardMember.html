@@ -1,0 +1,77 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+
+<polymer-element name="custom-dialog-addBoardMember" layout vertical center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}
+			#form {
+				margin: 10px 0px 10px 0px;
+			}
+			.subform {
+				margin: 10px;
+			}
+		</style>
+
+		<div id='header'>Add Exec Board Member</div>
+		<section id='form' layout vertical>
+			<paper-input-decorator label="First Name" floatinglabel error="First Name is required!" layout="" vertical="">
+				<input is="core-input" required="" placeholder="required" aria-label="required">
+	    	</paper-input-decorator>
+			<paper-input-decorator label="Last Name" floatinglabel error="Last Name is required!" layout="" vertical="">
+				<input is="core-input" required="" placeholder="required" aria-label="required">
+	    	</paper-input-decorator>
+			<paper-input-decorator label="Position" floatinglabel error="Position is required!" layout="" vertical="">
+				<input is="core-input" required="" placeholder="required" aria-label="required">
+	    	</paper-input-decorator>
+			<paper-input-decorator label="VT PID" floatinglabel error="VT PID is required!" layout="" vertical="">
+				<input is="core-input" required="" placeholder="required" aria-label="required">
+	    	</paper-input-decorator>
+    	</section>
+	    <paper-button raised role='button' on-tap='{{tapHandler}}'>Add Board Member</paper-button>
+
+	    <core-ajax id='ajax' auto url='www.hokiepride.org.vt.edu/library/phpcommands/test.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-addBoardMember', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+
+	},
+
+	tapHandler: function() {
+		console.log('Event: tap in custom-dialog-addBoardMember');
+		console.log(this.$.ajax);
+		console.log('ajax URL: ' + this.$.ajax.url);
+	},
+
+	ajaxResponse: function() {
+		console.log('Event: core-response in custom-dialog-addBoardMember');
+		console.log('Response: ' + this.response);
+	}
+
+    });
+  </script>
+
+</polymer-element>

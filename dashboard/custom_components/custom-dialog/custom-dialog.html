@@ -1,0 +1,59 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../../../bower_components/core-overlay/core-overlay.html">
+<link rel="import" href="../../../bower_components/core-transition/core-transition.html">
+
+<polymer-element name="custom-dialog" attributes="label" layout horizontal center center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 25px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#overlayContainer {
+				padding: 0px 40px 40px 40px;
+			}
+			h1 {
+				margin: 0px 0px 0px 0px;
+			}
+		</style>
+
+		<core-overlay id='overlay' layered backdrop autoCloseDisabled>
+			<core-icon-button icon='close' on-tap='{{toggle}}'></core-icon-button>
+			<div id='overlayContainer'>
+				<content></content>
+			</div>
+		</core-overlay>
+	</template>
+
+  <script>
+    Polymer( 'custom-dialog', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+		this.$.overlay.target = this;
+	},
+
+	toggle: function(e) {
+		console.log('custom-dialog.toggle() called');
+		// console.log(e.target);
+		// var obj = e.target;
+		// console.log('z is ' + obj.z);
+		console.log('Calling #overlay.toggle()');
+		this.$.overlay.toggle();
+	},
+
+    });
+  </script>

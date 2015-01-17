@@ -1,0 +1,90 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+
+<polymer-element name="custom-dialog-addBook" layout vertical center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}
+			#form {
+				margin: 10px 0px 10px 0px;
+			}
+			.subform {
+				margin: 10px;
+			}
+		</style>
+
+		<div id='header'>Add Book</div>
+		<section id='form' layout horizontal>
+			<div class='subform' id='form1'>
+				<paper-input-decorator label="Title" floatinglabel error="Title is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Author" floatinglabel error="Author is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Genre" floatinglabel error="Genre is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Year" floatinglabel error="Year is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Publisher" floatinglabel error="Publisher is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+			</div>
+			<div class='subform' id='form2'>
+				<paper-input-decorator label="ISBN" floatinglabel error="ISBN is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Library of Congress" floatinglabel error="LOC is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Dewey Decimal" floatinglabel error="DCC is required!" layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Tags" floatinglabel layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+				<paper-input-decorator label="Comments" floatinglabel layout="" vertical="">
+					<input is="core-input" required="" placeholder="required" aria-label="required">
+		    	</paper-input-decorator>
+			</div>
+    	</section>
+	    <paper-button raised role='button' on-tap='{{tapHandler}}'>Add Book</paper-button>
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-addBook', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+
+	},
+
+	tapHandler: function() {
+		console.log('Event: tap in custom-dialog-addbook');
+	}
+
+    });
+  </script>
+
+</polymer-element>

@@ -1,0 +1,17 @@
+### libraries ###
+
+**/bower_components
+**/bower.json
+**/CAS-1.3.3
+
+### config files ###
+
+**/dbconfig.php
+
+### pem files ###
+
+**/vt-global-ca-chain.pem
+
+### pem files ###
+**/log
+**/logs

@@ -1,0 +1,83 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../custom-dialog/custom-dialog.html">
+
+<polymer-element name="custom-tile" attributes="label" layout horizontal center center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 25px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: red;*/
+			}
+			.card {
+				display: inline-block;
+				text-align: center;
+				color: gray;
+				background: white;
+				box-sizing: border-box;
+				padding: 2.5px;
+				margin: 5px;
+				width: 150px;
+				height: 150px;
+				border-radius: 2px;
+			}		
+		</style>
+		<paper-shadow tile class='card' z='1' animated layout horizontal center center-justified 
+		on-mouseover='{{mouseOver}}' on-mouseout='{{mouseOut}}' on-tap='{{tapHandler}}'>{{label}}</paper-shadow>
+
+		<!-- <core-overlay id='overlay' layered backdrop>
+			<div id='overlayContent'><content></content></div>
+		</core-overlay> -->
+
+		<custom-dialog id='dialog'><content></content></custom-dialog>
+
+	</template>
+
+  <script>
+    Polymer( 'custom-tile', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+
+	},
+
+	mouseOver: function(e) {
+		// console.log('Event: mouseOver on paper-shadow');
+		// console.log(e.target);
+		var obj = e.target;
+		// console.log('z is ' + obj.z);
+		obj.setZ(5);
+	},
+
+	mouseOut: function(e) {
+		// console.log('Event: mouseOut on paper-shadow');
+		// console.log(e.target);
+		var obj = e.target;
+		// console.log('z is ' + obj.z);
+		obj.setZ(1);
+	},
+
+	tapHandler: function(e) {
+		console.log('Event: tap on paper-shadow');
+		//console.log(e.target);
+		// var obj = e.target;
+		// console.log('z is ' + obj.z);
+		console.log('Calling #dialog.toggle()');
+		this.$.dialog.toggle();
+	},
+
+    });
+  </script>

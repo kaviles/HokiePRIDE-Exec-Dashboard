@@ -1,0 +1,48 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<polymer-element name="custom-tile-layout" attributes="label" layout vertical center center-justified wrap>
+
+  <template>
+    <style>    
+		:host {
+			background-color: white;
+			padding: 5px;
+			height: 500px;
+
+			/*border: 1px;
+			border-color: green;
+			border-style: solid;*/
+		}
+		.tile-container {
+			margin: 5px;
+			border: 1px;
+
+			/*border: 1px;
+			border-color: blue;
+			border-style: solid;*/
+		}
+		polyfill-next-selector { content: '.tile-container [tile]'; }
+		.tile-container ::content [tile] {
+		}
+    </style>
+    <div class='tile-container' layout horizontal center center-justified wrap>
+    	<!-- <content select="[tile]"></content> -->
+    	<shadow></shadow>
+    </div>
+  </template>
+
+  <script>
+
+    Polymer({
+    /**
+     * Specifies the label for the set of tiles.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+    });
+
+  </script>
+
+</polymer-element>

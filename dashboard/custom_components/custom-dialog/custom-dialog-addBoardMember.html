@@ -1,6 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="custom-dialog-addBoardMember" layout vertical center-justified>
@@ -42,7 +43,9 @@
 				<input is="core-input" required="" placeholder="required" aria-label="required">
 	    	</paper-input-decorator>
     	</section>
-	    <paper-button raised role='button' on-tap='{{validateForm}}'>Add Board Member</paper-button>
+    	<core-tooltip id='tooltip' label='' position='bottom'>
+	    	<paper-button raised role='button' on-tap='{{validateForm}}'>Add Board Member</paper-button>
+		</core-tooltip>
 
 	    <core-ajax id='ajax' url='../../phpcommands/addEBMem.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
 	</template>
@@ -104,7 +107,6 @@
 	},
 
 	ajaxRequest: function(request) {
-
 		// console.log('ajaxRequest() called in custom-dialog-addBoardMember');
 		// console.log(request);
 		var aj = this.$.ajax;
@@ -114,8 +116,22 @@
 	},
 
 	ajaxResponse: function(e) {
-		console.log('Event: core-response in custom-dialog-addBoardMember');
-		console.log('Response: ' + e.detail.response);
+		// console.log('Event: core-response in custom-dialog-addBoardMember');
+		// console.log('Response: ' + e.detail.response);
+		var resp = JSON.parse(e.detail.response);
+		//console.log('Message: ' + resp.message);
+		var tip = this.$.tooltip;
+		var button = tip.querySelector('paper-button');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+		}
+		else {
+			button.style.backgroundColor = "red";
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
 	},
 
     });

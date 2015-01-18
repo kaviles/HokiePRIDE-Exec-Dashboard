@@ -1,6 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="custom-dialog-addBoardMember" layout vertical center-justified>
 
@@ -27,23 +28,23 @@
 		</style>
 
 		<div id='header'>Add Exec Board Member</div>
-		<section id='form' layout vertical>
-			<paper-input-decorator label="First Name" floatinglabel error="First Name is required!" layout="" vertical="">
+		<section id='form0' layout vertical>
+			<paper-input-decorator id='firstname' label="First Name" floatinglabel error="First Name is required!" layout="" vertical="">
 				<input is="core-input" required="" placeholder="required" aria-label="required">
 	    	</paper-input-decorator>
-			<paper-input-decorator label="Last Name" floatinglabel error="Last Name is required!" layout="" vertical="">
+			<paper-input-decorator id='lastname' label="Last Name" floatinglabel error="Last Name is required!" layout="" vertical="">
 				<input is="core-input" required="" placeholder="required" aria-label="required">
 	    	</paper-input-decorator>
-			<paper-input-decorator label="Position" floatinglabel error="Position is required!" layout="" vertical="">
+			<paper-input-decorator id='position' label="Position" floatinglabel error="Position is required!" layout="" vertical="">
 				<input is="core-input" required="" placeholder="required" aria-label="required">
 	    	</paper-input-decorator>
-			<paper-input-decorator label="VT PID" floatinglabel error="VT PID is required!" layout="" vertical="">
+			<paper-input-decorator id='pid' label="VT PID" floatinglabel error="VT PID is required!" layout="" vertical="">
 				<input is="core-input" required="" placeholder="required" aria-label="required">
 	    	</paper-input-decorator>
     	</section>
-	    <paper-button raised role='button' on-tap='{{tapHandler}}'>Add Board Member</paper-button>
+	    <paper-button raised role='button' on-tap='{{validateForm}}'>Add Board Member</paper-button>
 
-	    <core-ajax id='ajax' auto url='www.hokiepride.org.vt.edu/library/phpcommands/test.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
+	    <core-ajax id='ajax' url='../../phpcommands/addEBMem.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
 	</template>
 
 	<script>
@@ -60,16 +61,62 @@
 
 	},
 
-	tapHandler: function() {
-		console.log('Event: tap in custom-dialog-addBoardMember');
-		console.log(this.$.ajax);
-		console.log('ajax URL: ' + this.$.ajax.url);
+	validateForm: function() {
+
+		var fnField = this.$.form0.querySelector('#firstname');
+		var lnField = this.$.form0.querySelector('#lastname');
+		var posField = this.$.form0.querySelector('#position');
+		var pidField = this.$.form0.querySelector('#pid');
+
+		var fname = fnField.querySelector('input').value;
+		var lname = lnField.querySelector('input').value;
+		var pos = posField.querySelector('input').value;
+		var pid = pidField.querySelector('input').value;
+
+		var req = true;
+		if (fname == null || fname == '') {
+			fnField.isInvalid = true;
+			req = false;
+		}
+		else {
+			fnField.isInvalid = false;
+		}
+		if (lname == null || lname == '') {
+			lnField.isInvalid = true;
+			req = false;
+		}
+		else {
+			lnField.isInvalid = false;
+		}
+		if (pid == null || pid == '') {
+			pidField.isInvalid = true;
+			req = false;
+		}
+		else {
+			pidField.isInvalid = false;
+		}
+
+		if (req)
+		{
+			req = '{"firstname":"' + fname + '","lastname":"' + lname + '","position":"' + pos + '","pid":"' + pid + '"}';
+			this.ajaxRequest(req);
+		}
 	},
 
-	ajaxResponse: function() {
+	ajaxRequest: function(request) {
+
+		// console.log('ajaxRequest() called in custom-dialog-addBoardMember');
+		// console.log(request);
+		var aj = this.$.ajax;
+		aj.params = request;
+		// // Find a way to add the auto attribute without it making requests on startup calling the go method.
+		aj.go();
+	},
+
+	ajaxResponse: function(e) {
 		console.log('Event: core-response in custom-dialog-addBoardMember');
-		console.log('Response: ' + this.response);
-	}
+		console.log('Response: ' + e.detail.response);
+	},
 
     });
   </script>

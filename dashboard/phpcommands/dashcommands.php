@@ -12,7 +12,7 @@ include_once('dbconnect.php');
 *
 * @return A JSON formatted response string.
 */
-function addEBMem($fn, $ln, $pos, $pid)
+function addBoardMember($fn, $ln, $pos, $pid)
 {
 	$response = '';
 	$mysqli = connectToDB();
@@ -26,16 +26,16 @@ function addEBMem($fn, $ln, $pos, $pid)
 
 		if ($result == true)
 		{
-			$response = '{"responseCode":"1","message":"New Exec Board member added!","pid":"'.$pid.'"}';
+			$response = '{"responseCode":"1","message":"New board member added!","pid":"'.$pid.'"}';
 		}
 		else
 		{
-			$response = '{"responseCode":"0","message":"Error! Exec Board member not added!","pid":"'.$pid.'"}';
+			$response = '{"responseCode":"0","message":"Error! New board member not added!","pid":"'.$pid.'"}';
 		}
 	}
 	else // pid already exists
 	{
-		$response = '{"responseCode":"0","message":"Exec Board member with that pid already exists!","pid":"'.$pid.'"}';
+		$response = '{"responseCode":"0","message":"Board member already exists!","pid":"'.$pid.'"}';
 	}
 
 	disconnectFromDB($mysqli);

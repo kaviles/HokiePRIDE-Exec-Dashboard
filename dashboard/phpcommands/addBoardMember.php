@@ -8,7 +8,7 @@ $lastname = $_REQUEST['lastname'];
 $position = $_REQUEST['position'];
 $pid = $_REQUEST['pid'];
 
-$response = addEBMem($firstname, $lastname, $position, $pid);
+$response = addBoardMember($firstname, $lastname, $position, $pid);
 echo json_encode($response);
 ?>
 

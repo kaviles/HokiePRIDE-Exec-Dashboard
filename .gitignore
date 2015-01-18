@@ -10,5 +10,4 @@
 **/vt-global-ca-chain.pem
 
 ### log files ###
-*/logs/
-*/log/
+**/logs

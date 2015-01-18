@@ -1,8 +1,8 @@
 <?php
-  // include database credentials for successful connection.
-  include_once('dbconfig.php');
 
   // NOTE: As of Jan 4th 2015, Virginia Tech Web Hosting uses PHP Version: 5.2.16
+  
+  date_default_timezone_set('America/New_York');
 
   /**
    * Connects to HokiePRIDE's database.
@@ -10,10 +10,11 @@
    * @return The connection to the database if successful. Null otherwise.
    */
   function connectToDB()
-  {
+  {  
+    // include database credentials for successful connection.
+    include_once('dbconfig.php');
 
     // create connection
-    // mysql://site1288:VCPVJHHE@database.hosting.vt.edu/database1288
     $mysqli = new mysqli($dbhost, $dbuser, $dbpassword, $dbname);
 
     // PHP Website says OO version of connect_error is broken until PHP Version 5.3.0. 

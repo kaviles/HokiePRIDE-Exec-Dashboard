@@ -55,27 +55,16 @@
 	},
 
 	mouseOver: function(e) {
-		// console.log('Event: mouseOver on paper-shadow');
-		// console.log(e.target);
 		var obj = e.target;
-		// console.log('z is ' + obj.z);
 		obj.setZ(5);
 	},
 
 	mouseOut: function(e) {
-		// console.log('Event: mouseOut on paper-shadow');
-		// console.log(e.target);
 		var obj = e.target;
-		// console.log('z is ' + obj.z);
 		obj.setZ(1);
 	},
 
 	tapHandler: function(e) {
-		console.log('Event: tap on paper-shadow');
-		//console.log(e.target);
-		// var obj = e.target;
-		// console.log('z is ' + obj.z);
-		console.log('Calling #dialog.toggle()');
 		this.$.dialog.toggle();
 	},
 

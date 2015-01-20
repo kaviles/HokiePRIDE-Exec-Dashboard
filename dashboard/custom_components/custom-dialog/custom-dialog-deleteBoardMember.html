@@ -1,0 +1,130 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../../bower_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="custom-dialog-deleteBoardMember" on-mouseover='{{mouseOverEvent}}' layout vertical center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}    
+			paper-radio-button::shadow #ink[checked] {
+		      color: #800000; /* maroon */
+		    }
+		    paper-radio-button::shadow #onRadio {
+		      background-color: #800000; /* maroon */
+		    }
+		</style>
+
+		<div id='header'>Delete Exec Board Member</div>
+		<section id='form0' layout vertical>
+			<paper-radio-group id='radiogroup' layout vertical>
+				<template repeat='{{member in members}}'>
+					<paper-radio-button name='{{member.pid}}' label='{{member.firstname}}  {{member.lastname}} ({{member.pid}})'></paper-radio-button>
+				</template>
+			</paper-radio-group>
+    	</section>
+    	<core-tooltip id='tooltip' label='' position='bottom'>
+	    	<paper-button raised role='button' on-tap='{{ajaxDeleteRequest}}'>Delete Board Member</paper-button>
+		</core-tooltip>
+
+	    <core-ajax id='ajaxGet' url='../../phpcommands/getBoardMember.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxGetResponse}}'></core-ajax>
+
+	    <core-ajax id='ajaxDelete' url='../../phpcommands/deleteBoardMember.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxDeleteResponse}}'></core-ajax>
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-deleteBoardMember', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+
+	},
+
+	mouseOverEvent: function() {
+    	// is this where it should go?
+    	// This is kind of a trashy way to update the radio group.
+    	// Is there a better, more automated way?
+    	this.ajaxGetRequest();
+    	console.log("Mouseover event fired.");
+	},
+
+	ajaxGetRequest: function() {
+		// console.log('ajaxGetRequest() called in custom-dialog-addBoardMember');
+		// console.log(request);
+		var request = '{"pid":"all"}';
+		var aj = this.$.ajaxGet;
+		aj.params = request;
+		// Find a way to add the auto attribute without it making requests on startup calling the go method.
+		aj.go();
+	},
+
+	ajaxGetResponse: function(e) {
+		// console.log('Event: core-response in custom-dialog-addBoardMember');
+		// console.log('Response: ' + e.detail.response);
+		var resp = JSON.parse(e.detail.response);
+		//console.log('Message: ' + resp.message);
+		if (resp.responseCode == 1) {
+			// var radiogroup = this.$.form0.querySelector('#radiogroup');
+			this.members = new Array(resp.memberCount);
+			for (i = 0; i < resp.memberCount; i++) {
+				member = resp.members[i];
+				this.members[i] = {firstname: member.firstname, lastname: member.lastname, pid: member.pid};
+			}
+		}
+		else { // There are no board members
+			this.members = 0;
+		}
+	},
+
+	ajaxDeleteRequest: function() {
+		var selectedMember = this.$.form0.querySelector('#radiogroup').selected;
+		// console.log("Member " + selectedMember + " will be deleted.");
+		var request = '{"pid":"' + selectedMember + '"}';
+		var aj = this.$.ajaxDelete;
+		aj.params = request;
+		aj.go();
+
+	},
+
+	ajaxDeleteResponse: function(e) {
+		//console.log('Response: ' + e.detail.response);
+		var resp = JSON.parse(e.detail.response);
+		var tip = this.$.tooltip;
+		var button = tip.querySelector('paper-button');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+			this.ajaxGetRequest(); // Is there a more efficient way to update the radio group?
+		}
+		else {
+			button.style.backgroundColor = "red";
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
+	},
+
+    });
+  </script>
+
+</polymer-element>

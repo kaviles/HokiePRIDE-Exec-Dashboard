@@ -24,7 +24,10 @@
 		<link rel="import" href="custom_components/custom-tile/custom-tile-layout.html">
 		<link rel="import" href="custom_components/custom-tile/custom-tile.html">
 
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBook.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addLibPatron.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBoardMember.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteBoardMember.html">
 
@@ -65,12 +68,18 @@
 						</custom-tile>
 					</custom-tile-layout>
 					<custom-tile-layout>
-						<custom-tile tile label='Check Book In'></custom-tile>
-						<custom-tile tile label='Check Book Out'></custom-tile>
-						<custom-tile tile label='Add Book'>
-							<custom-dialog-addbook></custom-dialog-add-book>
+						<custom-tile tile label='Check In Book'>
+							<custom-dialog-checkInBook></custom-dialog-checkInBook>
 						</custom-tile>
-						<custom-tile tile label='Delete Book'></custom-tile>
+						<custom-tile tile label='Check Out Book'>
+							<custom-dialog-checkOutBook></custom-dialog-checkOutBook>
+						</custom-tile>
+						<custom-tile tile label='Add Book'>
+							<custom-dialog-addBook></custom-dialog-addBook>
+						</custom-tile>
+						<custom-tile tile label='Add Library Patron'>
+							<custom-dialog-addLibPatron></custom-dialog-addLibPatron>
+						</custom-tile>
 					</custom-tile-layout>
 					<custom-tile-layout>
 						<custom-tile tile label='Add Exec Board Member'>

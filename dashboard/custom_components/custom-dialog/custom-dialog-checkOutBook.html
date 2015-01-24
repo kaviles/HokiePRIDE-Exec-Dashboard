@@ -1,0 +1,120 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="custom-dialog-checkOutBook" layout vertical center center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}
+			#mainForm {
+				/*max-width: 400px;*/
+			}
+			#mainInput {
+				margin: 5px 5px 5px 5px;
+				padding: 0px 0px 0px 0px;
+			}
+			paper-button {
+				margin: 10px 0px 0px 0px;
+			}
+		</style>
+
+		<div id='header'>Check Book Out Of Library</div>
+		<section id='mainForm' layout vertical wrap>
+	    	<template repeat='{{input in inputs}}'>
+	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
+					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}'>
+	    		</paper-input-decorator>
+	    	</template>
+    	</section>
+    	<core-tooltip id='tooltip' label='' position='bottom'>
+	    	<paper-button raised role='button' on-tap='{{validateForm}}'>Check Out Book</paper-button>
+		</core-tooltip>
+
+	    <core-ajax id='ajaxAdd' url='../../phpcommands/checkOutBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-checkOutBook', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+    	this.inputs = [
+    	{id:'libid', label:'Book ID', error:'', pattern:'[0-9]*'},
+    	{id:'patronid', label:'Patron ID', error:'', pattern:'\.*'}];
+	},
+
+	validateForm: function() {
+		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		var papDecCount = papDec.length;
+
+		papDec[0].firstElementChild.setAttribute('required', ''); // set book id required
+		papDec[1].firstElementChild.setAttribute('required', ''); // set patron id required
+
+		var validCount = 0;
+		var valueArray = new Array(papDecCount);
+		for (var i = 0; i < papDecCount; i++)
+		{
+			var inp = papDec[i].firstElementChild;
+			valueArray[i] = inp.value;
+			papDec[i].isInvalid = !inp.validity.valid;
+
+			if (!papDec[i].isInvalid) {
+				validCount++;
+			}
+		}
+
+		if (validCount == papDecCount)
+		{
+			req = '{"libid":"' + valueArray[0] + '","patronid":"' + valueArray[1] + '"}';
+			this.ajaxRequest(req);
+		}
+	},
+
+	ajaxRequest: function(request) {
+		var aj = this.$.ajaxAdd;
+		aj.params = request;
+		// // Find a way to use auto attribute without it making requests on startup calling the go method.
+		aj.go();
+	},
+
+	ajaxResponse: function(e) {
+		var resp = JSON.parse(e.detail.response);
+		// console.log('Message: ' + resp.message);
+		var tip = this.$.tooltip;
+		var button = tip.querySelector('paper-button');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+		}
+		else {
+			button.style.backgroundColor = "red";
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
+	},
+
+    });
+  </script>
+
+</polymer-element>

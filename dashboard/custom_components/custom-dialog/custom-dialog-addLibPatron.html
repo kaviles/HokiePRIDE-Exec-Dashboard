@@ -72,8 +72,7 @@
 
 		var validCount = 0;
 		var valueArray = new Array(papDecCount);
-		for (var i = 0; i < papDecCount; i++)
-		{
+		for (var i = 0; i < papDecCount; i++) {
 			var inp = papDec[i].firstElementChild;
 			valueArray[i] = inp.value;
 			papDec[i].isInvalid = !inp.validity.valid;
@@ -86,6 +85,14 @@
 		if (validCount == papDecCount) {
 			req = '{"firstname":"' + valueArray[0] + '","lastname":"' + valueArray[1] + '","phone":"' + valueArray[2] + '","email":"' + valueArray[3] + '","patronid":"' + valueArray[4] + '"}';
 			this.ajaxRequest(req);
+		}
+	},
+
+	clearForm: function() {
+		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		var papDecCount = papDec.length;
+		for (var i = 0; i < papDecCount; i++) {
+			papDec[i].firstElementChild.value = '';
 		}
 	},
 
@@ -104,6 +111,7 @@
 
 		if (resp.responseCode == 1) {
 			button.style.backgroundColor = "green";
+			this.clearForm();
 		}
 		else {
 			button.style.backgroundColor = "red";

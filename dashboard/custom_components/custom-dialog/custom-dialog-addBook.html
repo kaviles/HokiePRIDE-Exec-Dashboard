@@ -41,7 +41,7 @@
 	    	</template>
     	</section>
     	<core-tooltip id='tooltip' label='' position='bottom'>
-	    	<paper-button style:'width:100%' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
+	    	<paper-button raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
 		</core-tooltip>
 
 	    <core-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
@@ -82,9 +82,11 @@
 		papDec[5].firstElementChild.setAttribute('required', ''); // set isbn required
 
 		var validCount = 0;
+		var valueArray = new Array(papDecCount);
 		for (var i = 0; i < papDecCount; i++)
 		{
 			var inp = papDec[i].firstElementChild;
+			valueArray[i] = inp.value;
 			papDec[i].isInvalid = !inp.validity.valid;
 
 			if (!papDec[i].isInvalid) {
@@ -92,9 +94,8 @@
 			}
 		}
 
-		if (validCount == papDecCount)
-		{
-			req = '{"title":"' + papDec[0] + '","author":"' + papDec[1] + '","genre":"' + papDec[2] + '","year":"' + papDec[3] + '","publisher":"' + papDec[4] + '","isbn":"' + papDec[5] + '","loc":"' + papDec[6] + '","dcc":"' + papDec[7] + '","tags":"' + papDec[8] + '","comms":"' + papDec[9] + '"}';
+		if (validCount == papDecCount) {
+			req = '{"title":"' + valueArray[0] + '","author":"' + valueArray[1] + '","genre":"' + valueArray[2] + '","year":"' + valueArray[3] + '","publisher":"' + valueArray[4] + '","isbn":"' + valueArray[5] + '","loc":"' + valueArray[6] + '","dcc":"' + valueArray[7] + '","tags":"' + valueArray[8] + '","comms":"' + valueArray[9] + '"}';
 			this.ajaxRequest(req);
 		}
 	},

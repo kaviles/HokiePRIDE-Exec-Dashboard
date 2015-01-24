@@ -1,8 +1,10 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
-<polymer-element name="custom-dialog-addBook" layout vertical center-justified>
+<polymer-element name="custom-dialog-addBook" layout vertical center center-justified>
 
 	<template>
 		<style>    
@@ -18,52 +20,31 @@
 			#header {
 				margin: 0px 0px 0px 0px;
 			}
-			#form {
-				margin: 10px 0px 10px 0px;
+			#mainForm {
+				max-width: 400px;
 			}
-			.subform {
-				margin: 10px;
+			#mainInput {
+				margin: 5px 5px 5px 5px;
+				padding: 0px 0px 0px 0px;
+			}
+			paper-button {
+				margin: 10px 0px 0px 0px;
 			}
 		</style>
 
-		<div id='header'>Add Book</div>
-		<section id='form' layout horizontal>
-			<div class='subform' id='form1'>
-				<paper-input-decorator label="Title" floatinglabel error="Title is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Author" floatinglabel error="Author is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Genre" floatinglabel error="Genre is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Year" floatinglabel error="Year is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Publisher" floatinglabel error="Publisher is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-			</div>
-			<div class='subform' id='form2'>
-				<paper-input-decorator label="ISBN" floatinglabel error="ISBN is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Library of Congress" floatinglabel error="LOC is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Dewey Decimal" floatinglabel error="DCC is required!" layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Tags" floatinglabel layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-				<paper-input-decorator label="Comments" floatinglabel layout="" vertical="">
-					<input is="core-input" required="" placeholder="required" aria-label="required">
-		    	</paper-input-decorator>
-			</div>
+		<div id='header'>Add Book to Library</div>
+		<section id='mainForm' layout horizontal wrap>
+	    	<template repeat='{{input in inputs}}'>
+	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
+					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' min='{{input.min}}' max='{{input.max}}'>
+	    		</paper-input-decorator>
+	    	</template>
     	</section>
-	    <paper-button raised role='button' on-tap='{{tapHandler}}'>Add Book</paper-button>
+    	<core-tooltip id='tooltip' label='' position='bottom'>
+	    	<paper-button style:'width:100%' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
+		</core-tooltip>
+
+	    <core-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
 	</template>
 
 	<script>
@@ -77,12 +58,73 @@
      */
 
     ready: function() {
-
+    	this.inputs = [
+    	{id:'tit', label:'Title', error:'', pattern:'.*', min:'1', max:'32'},
+    	{id:'auth', label:'Author', error:'', pattern:'.*', min:'1', max:'32'},
+    	{id:'gen', label:'Genre (comma sep)', error:'', pattern:'.*', min:'1', max:'32'},
+    	{id:'year', label:'Year', error:'4 digits', pattern:'[0-9]\\d{3}', min:'4', max:'4'},
+    	{id:'pub', label:'Publisher', error:'', pattern:'.*', min:'0', max:'32'},
+    	{id:'isbn', label:'ISBN', error:'13 digits', pattern:'[0-9]\\d{12}', min:'13', max:'13'},
+    	{id:'loc', label:'Library of Congress #', error:'', pattern:'.*', min:'0', max:'32'},
+    	{id:'dcc', label:'Dewey Decimal #', error:'', pattern:'.*', min:'0', max:'32'},
+    	{id:'tags', label:'Tags (comma sep)', error:'', pattern:'.*', min:'0', max:'32'},
+    	{id:'comms', label:'Comments', error:'', pattern:'.*', min:'0', max:'32'}];
 	},
 
-	tapHandler: function() {
-		console.log('Event: tap in custom-dialog-addbook');
-	}
+	validateForm: function() {
+		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		console.log(papDec);
+		var papDecCount = papDec.length;
+
+		papDec[0].firstElementChild.setAttribute('required', ''); // set title required
+		papDec[1].firstElementChild.setAttribute('required', ''); // set author required
+		papDec[2].firstElementChild.setAttribute('required', ''); // set genre required
+		papDec[3].firstElementChild.setAttribute('required', ''); // set year required
+		papDec[5].firstElementChild.setAttribute('required', ''); // set isbn required
+
+		var validCount = 0;
+		for (var i = 0; i < papDecCount; i++)
+		{
+			var inp = papDec[i].firstElementChild;
+			console.log(inp);
+			papDec[i].isInvalid = !inp.validity.valid;
+			console.log(!inp.validity.valid);
+
+			if (!papDec[i].isInvalid) {
+				validCount++;
+			}
+		}
+
+		if (validCount == papDecCount)
+		{
+			req = '{"title":"' + papDec[0] + '","author":"' + papDec[1] + '","genre":"' + papDec[2] + '","year":"' + papDec[3] + '","publisher":"' + papDec[4] + '","isbn":"' + papDec[5] + '","loc":"' + papDec[6] + '","dcc":"' + papDec[7] + '","tags":"' + papDec[8] + '","comms":"' + papDec[9] + '"}';
+			this.ajaxRequest(req);
+		}
+	},
+
+	ajaxRequest: function(request) {
+		var aj = this.$.ajaxAdd;
+		aj.params = request;
+		// // Find a way to use auto attribute without it making requests on startup calling the go method.
+		aj.go();
+	},
+
+	ajaxResponse: function(e) {
+		var resp = JSON.parse(e.detail.response);
+		// console.log('Message: ' + resp.message);
+		var tip = this.$.tooltip;
+		var button = tip.querySelector('paper-button');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+		}
+		else {
+			button.style.backgroundColor = "red";
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
+	},
 
     });
   </script>

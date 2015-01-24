@@ -73,7 +73,6 @@
 
 	validateForm: function() {
 		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		console.log(papDec);
 		var papDecCount = papDec.length;
 
 		papDec[0].firstElementChild.setAttribute('required', ''); // set title required
@@ -86,9 +85,7 @@
 		for (var i = 0; i < papDecCount; i++)
 		{
 			var inp = papDec[i].firstElementChild;
-			console.log(inp);
 			papDec[i].isInvalid = !inp.validity.valid;
-			console.log(!inp.validity.valid);
 
 			if (!papDec[i].isInvalid) {
 				validCount++;

@@ -36,7 +36,7 @@
 		<section id='mainForm' layout horizontal wrap>
 	    	<template repeat='{{input in inputs}}'>
 	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' min='{{input.min}}' max='{{input.max}}'>
+					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
 	    		</paper-input-decorator>
 	    	</template>
     	</section>
@@ -59,16 +59,16 @@
 
     ready: function() {
     	this.inputs = [
-    	{id:'tit', label:'Title', error:'', pattern:'.*', min:'1', max:'32'},
-    	{id:'auth', label:'Author', error:'', pattern:'.*', min:'1', max:'32'},
-    	{id:'gen', label:'Genre (comma sep)', error:'', pattern:'.*', min:'1', max:'32'},
-    	{id:'year', label:'Year', error:'4 digits', pattern:'[0-9]\\d{3}', min:'4', max:'4'},
-    	{id:'pub', label:'Publisher', error:'', pattern:'.*', min:'0', max:'32'},
-    	{id:'isbn', label:'ISBN', error:'13 digits', pattern:'[0-9]\\d{12}', min:'13', max:'13'},
-    	{id:'loc', label:'Library of Congress #', error:'', pattern:'.*', min:'0', max:'32'},
-    	{id:'dcc', label:'Dewey Decimal #', error:'', pattern:'.*', min:'0', max:'32'},
-    	{id:'tags', label:'Tags (comma sep)', error:'', pattern:'.*', min:'0', max:'32'},
-    	{id:'comms', label:'Comments', error:'', pattern:'.*', min:'0', max:'32'}];
+    	{id:'tit', label:'Title', error:'', type:'text', pattern:'.*'},
+    	{id:'auth', label:'Author', error:'', type:'text', pattern:'.*'},
+    	{id:'gen', label:'Genre (comma sep)', type:'text', error:'genre1, genre2, genre3...', pattern:'([a-zA-Z0-9]+, )*[a-zA-Z0-9]+'},
+    	{id:'year', label:'Year', error:'4 digits', type:'text', pattern:'[0-9]{4}'},
+    	{id:'pub', label:'Publisher', error:'', type:'text', pattern:'.*'},
+    	{id:'isbn', label:'ISBN', error:'13 digits', type:'text', pattern:'[0-9]{13}'},
+    	{id:'loc', label:'Library of Congress #', error:'', type:'text', pattern:'.*'},
+    	{id:'dcc', label:'Dewey Decimal #', error:'', type:'text', pattern:'.*'},
+    	{id:'tags', label:'Tags (comma sep)', error:'tag1, tag2, tag3...', type:'text', pattern:'([a-zA-Z0-9]+, )*[a-zA-Z0-9]+'},
+    	{id:'comms', label:'Comments', error:'', type:'text', pattern:'.*'}];
 	},
 
 	validateForm: function() {
@@ -77,8 +77,6 @@
 
 		papDec[0].firstElementChild.setAttribute('required', ''); // set title required
 		papDec[1].firstElementChild.setAttribute('required', ''); // set author required
-		papDec[2].firstElementChild.setAttribute('required', ''); // set genre required
-		papDec[3].firstElementChild.setAttribute('required', ''); // set year required
 		papDec[5].firstElementChild.setAttribute('required', ''); // set isbn required
 
 		var validCount = 0;

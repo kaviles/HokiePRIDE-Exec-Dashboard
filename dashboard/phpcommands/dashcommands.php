@@ -7,6 +7,94 @@ include_once('dbconnect.php');
 ************************************************
 */
 
+/**
+* Checks books back into the library.
+* Checks if book is checked out.
+* If checked out, clears check out information on book.
+* If not checked out, returns error about book not being checked out.
+*
+* @param $libid the library id of the book.
+*
+* @return A JSON formatted response string.
+*/
+function checkInBook($libid)
+{
+	$response = '';
+	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+
+	return $response;
+}
+
+/**
+* Checks books back into the library.
+* Checks if patronid exists.
+* If patronid exists, continue.
+* If patronid does not exist, return error about patron not existing.
+* Checks if book is already checked out.
+* If checked out, returns error about book not being checked in.
+* If not checked out, records date and time, checks book out to patron.
+*
+* @param $libid the library id of the book.
+* @param $patronid the id of the patron checking out the book.
+*
+* @return A JSON formatted response string.
+*/
+function checkOutBook($libid, $patronid)
+{
+	$response = '';
+	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+
+	return $response;
+}
+
+/**
+* Adds a book to the database.
+* Records date and time book was added.
+* TODO: Library Book ID Check?
+*
+* @param $title title of book.
+* @param $author author of book.
+* @param $genre genre of book.
+* @param $publisher publisher of book.
+* @param $isbn isbn of book.
+* @param $loc library of congress call number of book.
+* @param $dcc dewey decimal call number of book.
+* @param $tags tags for the book.
+* @param $comms comments on the book.
+*
+* @return A JSON formatted response string.
+*/
+function addBook($title, $author, $genre, $publisher, $isbn, $loc, $dcc, $tags, $comms)
+{
+	$response = '';
+	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+
+	return $response;
+}
+
+/**
+* Adds a patron to the database.
+* Checks if patron exists.
+* If patron exists, return error about patron existing.
+* If patron does not exist, add patron.
+* Records date and time patron was added.
+*
+* @param $firstname first name of library patron.
+* @param $lastname last name of library patron.
+* @param $phone phone number of library patron.
+* @param $email email address of library patron.
+* @param $patronid the patron id of the library patron.
+*
+* @return A JSON formatted response string.
+*/
+function addLibPatron($firstname, $lastname, $phone, $email, $patronid)
+{
+	$response = '';
+	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+
+	return $response;
+}
+
 /*
 ************************************************
 * SETTING COMMANDS

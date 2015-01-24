@@ -74,9 +74,11 @@
 		papDec[3].firstElementChild.setAttribute('required', ''); // set pid required
 
 		var validCount = 0;
+		var valueArray = new Array(papDecCount);
 		for (var i = 0; i < papDecCount; i++)
 		{
 			var inp = papDec[i].firstElementChild;
+			valueArray[i] = inp.value;
 			papDec[i].isInvalid = !inp.validity.valid;
 
 			if (!papDec[i].isInvalid) {
@@ -85,7 +87,7 @@
 		}
 
 		if (validCount == papDecCount) {
-			req = '{"firstname":"' + papDec[0] + '","lastname":"' + papDec[1] + '","position":"' + papDec[2] + '","pid":"' + papDec[3] + '"}';
+			req = '{"firstname":"' + valueArray[0] + '","lastname":"' + valueArray[1] + '","position":"' + valueArray[2] + '","pid":"' + valueArray[3] + '"}';
 			this.ajaxRequest(req);
 		}
 	},

@@ -5,7 +5,7 @@
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
-<polymer-element name="custom-dialog-deleteBoardMember" on-mouseover='{{mouseOverEvent}}' layout vertical center-justified>
+<polymer-element name="custom-dialog-deleteBoardMember" on-mouseover='{{mouseOverEvent}}' layout vertical center center-justified>
 
 	<template>
 		<style>    
@@ -27,10 +27,13 @@
 		    paper-radio-button::shadow #onRadio {
 		      background-color: #800000; /* maroon */
 		    }
+			paper-button {
+				margin: 10px 0px 0px 0px;
+			}
 		</style>
 
 		<div id='header'>Delete Exec Board Member</div>
-		<section id='form0' layout vertical>
+		<section id='mainForm' layout vertical>
 			<paper-radio-group id='radiogroup' layout vertical>
 				<template repeat='{{member in members}}'>
 					<paper-radio-button name='{{member.pid}}' label='{{member.firstname}}  {{member.lastname}} ({{member.pid}})'></paper-radio-button>
@@ -65,7 +68,6 @@
     	// This is kind of a trashy way to update the radio group.
     	// Is there a better, more automated way?
     	this.ajaxGetRequest();
-    	console.log("Mouseover event fired.");
 	},
 
 	ajaxGetRequest: function() {
@@ -84,7 +86,7 @@
 		var resp = JSON.parse(e.detail.response);
 		//console.log('Message: ' + resp.message);
 		if (resp.responseCode == 1) {
-			// var radiogroup = this.$.form0.querySelector('#radiogroup');
+			// var radiogroup = this.$.mainForm.querySelector('#radiogroup');
 			this.members = new Array(resp.memberCount);
 			for (i = 0; i < resp.memberCount; i++) {
 				member = resp.members[i];
@@ -97,7 +99,7 @@
 	},
 
 	ajaxDeleteRequest: function() {
-		var selectedMember = this.$.form0.querySelector('#radiogroup').selected;
+		var selectedMember = this.$.mainForm.querySelector('#radiogroup').selected;
 		// console.log("Member " + selectedMember + " will be deleted.");
 		var request = '{"pid":"' + selectedMember + '"}';
 		var aj = this.$.ajaxDelete;

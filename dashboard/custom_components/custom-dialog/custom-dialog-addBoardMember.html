@@ -4,7 +4,7 @@
 <link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
-<polymer-element name="custom-dialog-addBoardMember" layout vertical center-justified>
+<polymer-element name="custom-dialog-addBoardMember" layout vertical center center-justified>>
 
 	<template>
 		<style>    
@@ -20,13 +20,23 @@
 			#header {
 				margin: 0px 0px 0px 0px;
 			}
+			#mainForm {
+				max-width: 400px;
+			}
+			#mainInput {
+				margin: 5px 5px 5px 5px;
+				padding: 0px 0px 0px 0px;
+			}
+			paper-button {
+				margin: 10px 0px 0px 0px;
+			}
 		</style>
 
-		<div id='header'>Add Exec Board Member</div>
-		<section id='form0' layout vertical>
+		<div id='header'>Add Board Member</div>
+		<section id='mainForm' layout vertical>
 	    	<template repeat='{{input in inputs}}'>
-	    		<paper-input-decorator id='{{input.id}}' label='{{input.label}}' floatinglabel error='{{input.label}} is required!' layout="" vertical="">
-				<input is="core-input" required="" placeholder="required" aria-label="required">
+	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}' layout="" vertical="">
+				<input is="core-input" id='{{input.id}}'>
 	    	</paper-input-decorator>
 	    	</template>
     	</section>
@@ -48,50 +58,34 @@
      */
 
     ready: function() {
-    	this.inputs = [{id:'firstname', label:'First Name'},
-    	{id:'lastname', label:'Last Name'},
-    	{id:'position', label:'Position'},
-    	{id:'pid', label:'VT PID'}];
+    	this.inputs = [
+    	{id:'firstname', label:'First Name', error:''},
+    	{id:'lastname', label:'Last Name', error:''},
+    	{id:'position', label:'Position', error:''},
+    	{id:'pid', label:'VT PID', error:''}];
 	},
 
 	validateForm: function() {
+		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		var papDecCount = papDec.length;
 
-		var fnField = this.$.form0.querySelector('#firstname');
-		var lnField = this.$.form0.querySelector('#lastname');
-		var posField = this.$.form0.querySelector('#position');
-		var pidField = this.$.form0.querySelector('#pid');
+		papDec[0].firstElementChild.setAttribute('required', ''); // set first name required
+		papDec[1].firstElementChild.setAttribute('required', ''); // set last name required
+		papDec[3].firstElementChild.setAttribute('required', ''); // set pid required
 
-		var fname = fnField.querySelector('input').value;
-		var lname = lnField.querySelector('input').value;
-		var pos = posField.querySelector('input').value;
-		var pid = pidField.querySelector('input').value;
-
-		var req = true;
-		if (fname == null || fname == '') {
-			fnField.isInvalid = true;
-			req = false;
-		}
-		else {
-			fnField.isInvalid = false;
-		}
-		if (lname == null || lname == '') {
-			lnField.isInvalid = true;
-			req = false;
-		}
-		else {
-			lnField.isInvalid = false;
-		}
-		if (pid == null || pid == '') {
-			pidField.isInvalid = true;
-			req = false;
-		}
-		else {
-			pidField.isInvalid = false;
-		}
-
-		if (req)
+		var validCount = 0;
+		for (var i = 0; i < papDecCount; i++)
 		{
-			req = '{"firstname":"' + fname + '","lastname":"' + lname + '","position":"' + pos + '","pid":"' + pid + '"}';
+			var inp = papDec[i].firstElementChild;
+			papDec[i].isInvalid = !inp.validity.valid;
+
+			if (!papDec[i].isInvalid) {
+				validCount++;
+			}
+		}
+
+		if (validCount == papDecCount) {
+			req = '{"firstname":"' + papDec[0] + '","lastname":"' + papDec[1] + '","position":"' + papDec[2] + '","pid":"' + papDec[3] + '"}';
 			this.ajaxRequest(req);
 		}
 	},
@@ -99,7 +93,7 @@
 	ajaxRequest: function(request) {
 		var aj = this.$.ajaxAdd;
 		aj.params = request;
-		// // Find a way to add the auto attribute without it making requests on startup calling the go method.
+		// // Find a way to use auto attribute without it making requests on startup calling the go method.
 		aj.go();
 	},
 

@@ -52,19 +52,19 @@ function checkOutBook($libid, $patronid)
 * Records date and time book was added.
 * TODO: Library Book ID Check?
 *
-* @param $title title of book.
-* @param $author author of book.
-* @param $genre genre of book.
-* @param $publisher publisher of book.
-* @param $isbn isbn of book.
-* @param $loc library of congress call number of book.
-* @param $dcc dewey decimal call number of book.
-* @param $tags tags for the book.
-* @param $comms comments on the book.
+* @param $bookData An associative array with all the data of the book to be added.
+* This array contains the following:
+* title, author, pub, year, isbn, loc, dcc, tags, covurl, comms, libid.
+* Most of them should be self explanatory. 
+* loc = library of congres call number
+* dcc = dewey decimal call number
+* covurl = cover url
+* comm = comments
+* libid = the library specific id to assign to this book
 *
 * @return A JSON formatted response string.
 */
-function addBook($title, $author, $genre, $publisher, $isbn, $loc, $dcc, $tags, $comms)
+function addBook($bookData)
 {
 	$response = '';
 	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';

@@ -3,18 +3,13 @@ include_once('dashcommands.php');
 
 header('Content-Type: application/json');
 
-$title = $_REQUEST['title'];
-$author = $_REQUEST['author'];
-$genre = $_REQUEST['genre'];
-$publisher = $_REQUEST['publisher'];
-$isbn = $_REQUEST['isbn'];
-$loc = $_REQUEST['loc'];
-$dcc = $_REQUEST['dcc'];
-$tags = $_REQUEST['tags'];
-$comms = $_REQUEST['comments'];
+$bookData = array("title"=>$_REQUEST['title'], "author"=>$_REQUEST['author'],
+	"pub"=>$_REQUEST['pub'], "year"=>$_REQUEST['year'], "isbn"=>$_REQUEST['isbn'],
+	"loc"=>$_REQUEST[''], "dcc"=>$_REQUEST['dcc'], "tags"=>$_REQUEST['tags'],
+	"covurl"=>$_REQUEST['covurl'], "comms"=>$_REQUEST['comms'], "libid"=>$_REQUEST['libid']);
 
 
-$response = addBook($title, $author, $genre, $publisher, $isbn, $loc, $dcc, $tags, $comms);
+$response = addBook($bookData);
 echo json_encode($response);
 ?>
 

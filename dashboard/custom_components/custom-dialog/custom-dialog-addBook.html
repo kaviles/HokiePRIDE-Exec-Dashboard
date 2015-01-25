@@ -33,7 +33,7 @@
 		</style>
 
 		<div id='header'>Add Book to Library</div>
-		<section id='mainForm' layout horizontal wrap>
+		<section id='mainForm' layout horizontal wrap center center-justified>
 	    	<template repeat='{{input in inputs}}'>
 	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
 					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
@@ -41,7 +41,7 @@
 	    	</template>
     	</section>
     	<core-tooltip id='tooltipAutoFillButt' label='' position='bottom'>
-	    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN}}'>Auto Fill Form</paper-button>
+	    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN13}}'>Auto Fill Form</paper-button>
 		</core-tooltip>
     	<core-tooltip id='tooltipAddBookButt' label='' position='bottom'>
 	    	<paper-button id='addBookButt' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
@@ -63,136 +63,169 @@
 
     ready: function() {
     	this.inputs = [
-    	{id:'tit', label:'Title', error:'', type:'text', pattern:'.*'},
-    	{id:'auth', label:'Author(s)', error:'fname1 lname1, fname2 lname2...', type:'text', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'gen', label:'Genre (comma sep)', type:'text', error:'genre1, genre2, genre3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'year', label:'Year', error:'4 digits', type:'text', pattern:'[0-9]{4}'},
-    	{id:'pub', label:'Publisher', error:'', type:'text', pattern:'.*'},
-    	{id:'isbn', label:'ISBN', error:'13 digits', type:'text', pattern:'[0-9]{13}'},
-    	{id:'loc', label:'Library of Congress #', error:'', type:'text', pattern:'.*'},
-    	{id:'dcc', label:'Dewey Decimal #', error:'', type:'text', pattern:'.*'},
-    	{id:'tags', label:'Tags (comma sep)', error:'tag1, tag2, tag3...', type:'text', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'comms', label:'Comments', error:'', type:'text', pattern:'.*'}];
+    	{id:'title', label:'Title', type:'text', error:'', pattern:'.*'},
+    	{id:'author', label:'Author(s)', type:'text', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+    	{id:'pub', label:'Publisher', type:'text', error:'', pattern:'.*'},
+    	{id:'year', label:'Year', type:'text', error:'4 digits', pattern:'[0-9]{4}'},
+    	{id:'isbn13', label:'ISBN13', type:'text', error:'13 digits', pattern:'[0-9]{13}'},
+    	{id:'loc', label:'Library of Congress #', type:'text', error:'', pattern:'.*'},
+    	{id:'dcc', label:'Dewey Decimal #', type:'text', error:'', pattern:'.*'},
+    	{id:'tags', label:'Tags (comma sep)', type:'text', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+    	{id:'covurl', label:'Cover URL', type:'url', error:'www.example.com', pattern:'.*'},
+    	{id:'desc', label:'Description', type:'text', error:'', pattern:'.*'},
+    	{id:'libid', label:'Library ID', type:'text', error:'Numeric only', pattern:'[0-9]*'}];
 	},
 
 	validateForm: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
-
-		papDec[5].firstElementChild.setAttribute('required', ''); // set isbn required
+		var mForm = this.$.mainForm;
+		mForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
+		// mForm.querySelector('#libid').setAttribute('required', ''); // set libid required
+		var papDecArr = mForm.querySelectorAll('#mainInput');
+		var papDecCount = papDecArr.length;
 
 		var validCount = 0;
-		var valueArray = new Array(papDecCount);
 		for (var i = 0; i < papDecCount; i++) {
-			var inp = papDec[i].firstElementChild;
-			valueArray[i] = inp.value;
-			papDec[i].isInvalid = !inp.validity.valid;
+			// This should be the input within the paper-decorator
+			var inp = papDecArr[i].firstElementChild;
+			papDecArr[i].isInvalid = !inp.validity.valid; // Validate the input
 
-			if (!papDec[i].isInvalid) {
+			if (!papDecArr[i].isInvalid) {
 				validCount++;
 			}
 		}
 
 		if (validCount == papDecCount) {
-			req = '{"title":"' + valueArray[0] + '","author":"' + valueArray[1] + '","genre":"' + valueArray[2] + '","year":"' + valueArray[3] + '","publisher":"' + valueArray[4] + '","isbn":"' + valueArray[5] + '","loc":"' + valueArray[6] + '","dcc":"' + valueArray[7] + '","tags":"' + valueArray[8] + '","comms":"' + valueArray[9] + '"}';
+			req = '{"title":"' + mForm.querySelector('#title').value + 
+				'","author":"' + mForm.querySelector('#author').value + 
+				'","pub":"' + mForm.querySelector('#pub').value + 
+				'","year":"' + mForm.querySelector('#year').value + 
+				'","isbn13":"' + mForm.querySelector('#isbn13').value + 
+				'","loc":"' + mForm.querySelector('#loc').value + 
+				'","dcc":"' + mForm.querySelector('#dcc').value + 
+				'","tags":"' + mForm.querySelector('#tags').value + 
+				'","covurl":"' + mForm.querySelector('#covurl').value + 
+				'","desc":"' + mForm.querySelector('#desc').value + 
+				'","libid":"' + mForm.querySelector('#libid').value + '"}';
 			this.ajaxAddRequest(req);
 		}
 	},
 
-	validateISBN: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var inp = papDec[5].firstElementChild;
-		inp.setAttribute('required', '');
-		papDec[5].isInvalid = !inp.validity.valid;
+	validateISBN13: function() {
+		var isbn13Inp= this.$.mainForm.querySelector('#isbn13');
+		isbn13Inp.setAttribute('required', '');
+		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
 
-		if (!papDec[5].isInvalid) {
-			var isbn = inp.value;
-			this.ajaxAutoFillRequest(isbn);
+		if (!isbn13Inp.parentElement.isInvalid) {
+			var isbn13 = isbn13Inp.value;
+			this.ajaxAutoFillRequest(isbn13);
 		}
 	},
 
-	autoFillForm: function(resp) {
-		// console.log(resp);
-		// Is it possible for there to be more than one item?
-		this.clearForm();
-		var items = resp.items;
+	autoFillForm: function(googObj) {
+		console.log(googObj);
 
+		var items = googObj.items;
 		var volinfo0 = items[0].volumeInfo; // The volume info of the first item.
-		
-		var responseArray = new Array(10);
+		var respObj = new Object;
 
-		responseArray[0] = (volinfo0.subtitle) ? volinfo0.title + ': ' + volinfo0.subtitle : volinfo0.title;
-		responseArray[1] = volinfo0.authors;
-		responseArray[2] = volinfo0.categories;
-		responseArray[3] = volinfo0.publishedDate.substring(0, 4);
-		responseArray[4] = volinfo0.publisher;
-		responseArray[5] = volinfo0.industryIdentifiers;
-		responseArray[6] = '';
-		responseArray[7] = '';
-		responseArray[8] = '';
-		responseArray[9] = volinfo0.description;
+		respObj.tit = (volinfo0.subtitle) ? volinfo0.title + ': ' + volinfo0.subtitle : volinfo0.title;
+		respObj.author = (volinfo0.authors) ? volinfo0.authors : ''; // This will be an array of authors
+		respObj.pub = (volinfo0.publisher) ? volinfo0.publisher : '';
+		respObj.year = (volinfo0.publishedDate.substring(0, 4)) ? volinfo0.publishedDate.substring(0, 4) : '';
+		// respObj.isbn13 = (volinfo0.industryIdentifiers[0].type == 'ISBN_13') ? volinfo0.industryIdentifiers[0].identifier : volinfo0.industryIdentifiers[1].identifier;
+		respObj.isbn13 = this.$.mainForm.querySelector("#isbn13").value;
+		respObj.loc = '';
+		respObj.dcc = '';
+		respObj.tag = (volinfo0.categories) ? volinfo0.categories : ''; // This will be an array
+		respObj.covurl = (volinfo0.imageLinks.thumbnail) ? volinfo0.imageLinks.thumbnail : '';
+		respObj.desc = (volinfo0.description) ? volinfo0.description : '';
+		// respObj.libid = volinfo0.; // Is this needed here?
 
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		// var papDec = this.$.mainForm.querySelectorAll('#mainInput');
 
-		papDec[0].firstElementChild.value = responseArray[0];
-		var i = 0; 
-		while (i < responseArray[1].length) {
-			papDec[1].firstElementChild.value += responseArray[1][i];
+		this.clearForm();
+		this.clearAddButt();
+
+		var mForm = this.$.mainForm;
+
+		var i = 0;
+		mForm.querySelector('#title').value = respObj.tit;
+
+		var authorInp = mForm.querySelector('#author');
+		while (i < respObj.author.length) {
+			authorInp.value += respObj.author[i];
 			i++;
 
-			if (i < responseArray[1].length) {
-				papDec[1].firstElementChild.value += ', ';
+			if (i < respObj.author.length) {
+				authorInp.value += ', ';
 			}
 		}
 
-		i = 0; 
-		while (i < responseArray[2].length) {
-			papDec[2].firstElementChild.value += responseArray[2][i];
+		mForm.querySelector('#pub').value = respObj.pub;
+		mForm.querySelector('#year').value = respObj.year;
+		mForm.querySelector('#isbn13').value = respObj.isbn13;
+		mForm.querySelector('#loc').value = respObj.loc;
+		mForm.querySelector('#dcc').value = respObj.dcc;
+
+		i = 0;
+		var tagsInp = mForm.querySelector('#tags');
+		while (i < respObj.tag.length) {
+			tagsInp.value += respObj.tag[i];
 			i++;
 			
-			if (i < responseArray[2].length) {
-				papDec[2].firstElementChild.value += ', ';
+			if (i < respObj.tag.length) {
+				tagsInp.value += ', ';
 			}
 		}
-		papDec[3].firstElementChild.value = responseArray[3];
-		papDec[4].firstElementChild.value = responseArray[4];
-		papDec[5].firstElementChild.value = (responseArray[5][0].type == 'ISBN_13') ? responseArray[5][0].identifier : responseArray[5][1].identifier;
-		papDec[6].firstElementChild.value = responseArray[6];
-		papDec[7].firstElementChild.value = responseArray[7];
-		papDec[8].firstElementChild.value = responseArray[8];
-		papDec[9].firstElementChild.value = responseArray[9];
+
+		mForm.querySelector('#covurl').value = respObj.covurl;
+		mForm.querySelector('#desc').value = respObj.desc;
+
 	},
 
 	clearForm: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+		var papDec = this.$.mainForm.querySelectorAll('#mainInput');;
 		var papDecCount = papDec.length;
 		for (var i = 0; i < papDecCount; i++) {
 			papDec[i].firstElementChild.value = '';
 		}
 	},
 
-	ajaxAutoFillRequest: function(isbn) {
+	clearAutoFillButt: function() {
+		var tip1 = this.$.tooltipAutoFillButt;
+		tip1.label = '';
+		tip1.querySelector('paper-button#autoFillButt').style.backgroundColor = "white";
+
+	},
+
+	clearAddButt: function() {
+		var tip2 = this.$.tooltipAddBookButt;
+		tip2.label = '';
+		tip2.querySelector('paper-button#addBookButt').style.backgroundColor = "white";
+	},
+
+	ajaxAutoFillRequest: function(isbn13) {
 		var aj = this.$.ajaxAutoFill;
-		aj.url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn;
+		aj.url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn13;
 		aj.go();
-		console.log('request');
 	},
 
 	ajaxAutoFillResponse: function(e) {
-		var resp = e.detail.response;
+		var googObj = e.detail.response;
 		var tip = this.$.tooltipAutoFillButt;
 		var button = tip.querySelector('paper-button#autoFillButt');
+		var itemCount = googObj.totalItems;
 
-		if (resp.totalItems > 0) {
+		if (itemCount > 0) {
 			button.style.backgroundColor = "green";
-			tip.label = 'Result found.'
-			this.autoFillForm(resp);
+			tip.label = itemCount + ' result(s) found.'
+			this.autoFillForm(googObj);
 		}
 		else {
 			button.style.backgroundColor = "red";
 			tip.label = 'No results.';
+			this.clearForm();
 		}
-
 	},
 
 	ajaxAddRequest: function(request) {
@@ -203,17 +236,19 @@
 	},
 
 	ajaxAddResponse: function(e) {
+		// console.log('Message: ' + e.detail.response);
 		var resp = JSON.parse(e.detail.response);
-		// console.log('Message: ' + resp.message);
 		var tip = this.$.tooltipAddBookButt;
 		var button = tip.querySelector('paper-button#addBookButt');
 
 		if (resp.responseCode == 1) {
 			button.style.backgroundColor = "green";
 			this.clearForm();
+			this.clearAutoFillButt();
 		}
 		else {
 			button.style.backgroundColor = "red";
+			this.clearAutoFillButt();
 		}
 
 		tip.label = resp.message;

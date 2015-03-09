@@ -12,7 +12,7 @@
   function connectToDB()
   {  
     // include database credentials for successful connection.
-    include_once('dbconfig.php');
+    include('dbconfig.php');
 
     // create connection
     $mysqli = new mysqli($dbhost, $dbuser, $dbpassword, $dbname);

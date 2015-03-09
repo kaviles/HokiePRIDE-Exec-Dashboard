@@ -20,6 +20,10 @@
 			#header {
 				margin: 0px 0px 0px 0px;
 			}
+			#mainPage {
+				min-width:400px;
+				min-height: 350px;
+			}
 			#mainForm {
 				max-width: 400px;
 			}
@@ -33,13 +37,17 @@
 		</style>
 
 		<div id='header'>Add Book to Library</div>
-		<section id='mainForm' layout horizontal wrap center center-justified>
-	    	<template repeat='{{input in inputs}}'>
-	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
-	    		</paper-input-decorator>
-	    	</template>
-    	</section>
+		<core-pages id='mainPage' selected='0'>
+			<template repeat='{{page in pages}}'>
+				<section class='mainForm' id='mainForm{{page.num}}' layout horizontal wrap center center-justified>
+			    	<template repeat='{{input in inputs}}'>
+			    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
+							<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
+			    		</paper-input-decorator>
+			    	</template>
+		    	</section>
+		    </template>
+		</core-pages>
     	<core-tooltip id='tooltipAutoFillButt' label='' position='bottom'>
 	    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN13}}'>Auto Fill Form</paper-button>
 		</core-tooltip>
@@ -47,7 +55,7 @@
 	    	<paper-button id='addBookButt' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
 		</core-tooltip>
 
-		<core-ajax id='ajaxAutoFill' url='' params='' handleAs='json' method='GET' on-core-response='{{ajaxAutoFillResponse}}'></core-ajax>
+		<core-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAutoFillResponse}}'></core-ajax>
 	    <core-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAddResponse}}'></core-ajax>
 	</template>
 
@@ -74,13 +82,18 @@
     	{id:'covurl', label:'Cover URL', type:'url', error:'www.example.com', pattern:'.*'},
     	{id:'desc', label:'Description', type:'text', error:'', pattern:'.*'},
     	{id:'libid', label:'Library ID', type:'text', error:'Numeric only', pattern:'[0-9]*'}];
+
+    	// Find a way to add these pages dynamically
+    	this.pages = [{num:'0'},{num:'1'},{num:'2'},{num:'3'}];
 	},
 
 	validateForm: function() {
-		var mForm = this.$.mainForm;
-		mForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
-		// mForm.querySelector('#libid').setAttribute('required', ''); // set libid required
-		var papDecArr = mForm.querySelectorAll('#mainInput');
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		selectedForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
+		// selectedForm.querySelector('#libid').setAttribute('required', ''); // set libid required
+		var papDecArr = selectedForm.querySelectorAll('#mainInput');
 		var papDecCount = papDecArr.length;
 
 		var validCount = 0;
@@ -95,99 +108,105 @@
 		}
 
 		if (validCount == papDecCount) {
-			req = '{"title":"' + mForm.querySelector('#title').value + 
-				'","author":"' + mForm.querySelector('#author').value + 
-				'","pub":"' + mForm.querySelector('#pub').value + 
-				'","year":"' + mForm.querySelector('#year').value + 
-				'","isbn13":"' + mForm.querySelector('#isbn13').value + 
-				'","loc":"' + mForm.querySelector('#loc').value + 
-				'","dcc":"' + mForm.querySelector('#dcc').value + 
-				'","tags":"' + mForm.querySelector('#tags').value + 
-				'","covurl":"' + mForm.querySelector('#covurl').value + 
-				'","desc":"' + mForm.querySelector('#desc').value + 
-				'","libid":"' + mForm.querySelector('#libid').value + '"}';
+			req = '{"title":"' + selectedForm.querySelector('#title').value + 
+				'","author":"' + selectedForm.querySelector('#author').value + 
+				'","pub":"' + selectedForm.querySelector('#pub').value + 
+				'","year":"' + selectedForm.querySelector('#year').value + 
+				'","isbn13":"' + selectedForm.querySelector('#isbn13').value + 
+				'","loc":"' + selectedForm.querySelector('#loc').value + 
+				'","dcc":"' + selectedForm.querySelector('#dcc').value + 
+				'","tags":"' + selectedForm.querySelector('#tags').value + 
+				'","covurl":"' + selectedForm.querySelector('#covurl').value + 
+				'","desc":"' + selectedForm.querySelector('#desc').value + 
+				'","libid":"' + selectedForm.querySelector('#libid').value + '"}';
 			this.ajaxAddRequest(req);
 		}
 	},
 
 	validateISBN13: function() {
-		var isbn13Inp= this.$.mainForm.querySelector('#isbn13');
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+		
+		var isbn13Inp = selectedForm.querySelector('#isbn13');
 		isbn13Inp.setAttribute('required', '');
 		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
 
+		// Clear the form, reset isbn13
+		var isbn13 = isbn13Inp.value;
+		this.clearForm();
+		isbn13Inp.value = isbn13;
+
 		if (!isbn13Inp.parentElement.isInvalid) {
-			var isbn13 = isbn13Inp.value;
-			this.ajaxAutoFillRequest(isbn13);
+			// this.ajaxAutoFillRequest(isbn13);
+			this.ajaxAutoFillRequest('{"isbn13":"' + isbn13 + '"}');
 		}
 	},
 
-	autoFillForm: function(googObj) {
-		console.log(googObj);
+	autoFillForm: function(jsonObject) {
+		console.log(jsonObject);
 
-		var items = googObj.items;
-		var volinfo0 = items[0].volumeInfo; // The volume info of the first item.
-		var respObj = new Object;
+		var bookData = jsonObject.bookData[0];
+		console.log(bookData);
 
-		respObj.tit = (volinfo0.subtitle) ? volinfo0.title + ': ' + volinfo0.subtitle : volinfo0.title;
-		respObj.author = (volinfo0.authors) ? volinfo0.authors : ''; // This will be an array of authors
-		respObj.pub = (volinfo0.publisher) ? volinfo0.publisher : '';
-		respObj.year = (volinfo0.publishedDate.substring(0, 4)) ? volinfo0.publishedDate.substring(0, 4) : '';
-		// respObj.isbn13 = (volinfo0.industryIdentifiers[0].type == 'ISBN_13') ? volinfo0.industryIdentifiers[0].identifier : volinfo0.industryIdentifiers[1].identifier;
-		respObj.isbn13 = this.$.mainForm.querySelector("#isbn13").value;
-		respObj.loc = '';
-		respObj.dcc = '';
-		respObj.tag = (volinfo0.categories) ? volinfo0.categories : ''; // This will be an array
-		respObj.covurl = (volinfo0.imageLinks.thumbnail) ? volinfo0.imageLinks.thumbnail : '';
-		respObj.desc = (volinfo0.description) ? volinfo0.description : '';
-		// respObj.libid = volinfo0.; // Is this needed here?
+		var mainPage = this.$.mainPage;
 
-		// var papDec = this.$.mainForm.querySelectorAll('#mainInput');
+		// You'll need to do more than just the core-selected mainForm
+		// Suggest doing querySelectAll on core-pages mainPage
+		var form = mainPage.querySelector('.mainForm.core-selected');
 
-		this.clearForm();
-		this.clearAddButt();
-
-		var mForm = this.$.mainForm;
-
-		var i = 0;
-		mForm.querySelector('#title').value = respObj.tit;
-
-		var authorInp = mForm.querySelector('#author');
-		while (i < respObj.author.length) {
-			authorInp.value += respObj.author[i];
-			i++;
-
-			if (i < respObj.author.length) {
-				authorInp.value += ', ';
-			}
-		}
-
-		mForm.querySelector('#pub').value = respObj.pub;
-		mForm.querySelector('#year').value = respObj.year;
-		mForm.querySelector('#isbn13').value = respObj.isbn13;
-		mForm.querySelector('#loc').value = respObj.loc;
-		mForm.querySelector('#dcc').value = respObj.dcc;
-
-		i = 0;
-		var tagsInp = mForm.querySelector('#tags');
-		while (i < respObj.tag.length) {
-			tagsInp.value += respObj.tag[i];
-			i++;
-			
-			if (i < respObj.tag.length) {
-				tagsInp.value += ', ';
-			}
-		}
-
-		mForm.querySelector('#covurl').value = respObj.covurl;
-		mForm.querySelector('#desc').value = respObj.desc;
-
+		form.querySelector('#title').value = bookData.title;		
+		form.querySelector('#author').value = bookData.author;
+		form.querySelector('#pub').value = bookData.publisher;
+		form.querySelector('#year').value = bookData.year;
+		form.querySelector('#isbn13').value = bookData.isbn13;
+		form.querySelector('#loc').value = bookData.loc;
+		form.querySelector('#dcc').value = bookData.dcc;
+		form.querySelector('#tags').value = bookData.tag;
+		form.querySelector('#covurl').value = bookData.covurl;
+		form.querySelector('#desc').value = bookData.desc;	
 	},
 
 	clearForm: function() {
-		var papDec = this.$.mainForm.querySelectorAll('#mainInput');;
+		var mainPage = this.$.mainPage;
+		// You'll need to clear out more than just the selected mainForm
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var papDec = selectedForm.querySelectorAll('#mainInput');
 		var papDecCount = papDec.length;
 		for (var i = 0; i < papDecCount; i++) {
 			papDec[i].firstElementChild.value = '';
+		}
+	},
+
+	disableForm: function(val) {
+		var mainPage = this.$.mainPage;
+		// You'll need to disable more than just the selected mainForm
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var papDec = selectedForm.querySelectorAll('#mainInput');
+		var papDecCount = papDec.length;
+
+		// var tip = this.$.tooltipAutoFillButt;
+		var button1 = this.$.tooltipAutoFillButt.querySelector('paper-button#autoFillButt');
+		var button2 = this.$.tooltipAddBookButt.querySelector('paper-button#addBookButt');
+
+		if (val) {
+			for (var i = 0; i < papDecCount; i++) {
+				papDec[i].disabled = val;
+				papDec[i].firstElementChild.setAttribute('disabled', '');
+			}
+
+			button1.setAttribute('disabled', '');
+			button2.setAttribute('disabled', '');
+		}
+		else {
+			for (var i = 0; i < papDecCount; i++) {
+				papDec[i].disabled = val;
+				papDec[i].firstElementChild.removeAttribute('disabled');
+			}
+
+			button1.removeAttribute('disabled');
+			button2.removeAttribute('disabled');
 		}
 	},
 
@@ -195,7 +214,6 @@
 		var tip1 = this.$.tooltipAutoFillButt;
 		tip1.label = '';
 		tip1.querySelector('paper-button#autoFillButt').style.backgroundColor = "white";
-
 	},
 
 	clearAddButt: function() {
@@ -205,38 +223,51 @@
 	},
 
 	ajaxAutoFillRequest: function(isbn13) {
+		this.clearAddButt();
+		this.clearAutoFillButt();
+		this.disableForm(true);
+
 		var aj = this.$.ajaxAutoFill;
-		aj.url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn13;
+		aj.params = isbn13;
+		//aj.url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn13;
 		aj.go();
 	},
 
 	ajaxAutoFillResponse: function(e) {
-		var googObj = e.detail.response;
+		// console.log(e.detail.response);
+		this.disableForm(false);
+		var resp = JSON.parse(e.detail.response);
 		var tip = this.$.tooltipAutoFillButt;
 		var button = tip.querySelector('paper-button#autoFillButt');
-		var itemCount = googObj.totalItems;
 
-		if (itemCount > 0) {
+		if (resp.responseCode == 1) {
 			button.style.backgroundColor = "green";
-			tip.label = itemCount + ' result(s) found.'
-			this.autoFillForm(googObj);
+			this.autoFillForm(resp);
 		}
 		else {
 			button.style.backgroundColor = "red";
-			tip.label = 'No results.';
-			this.clearForm();
+			tip.label = resp.message;
+			this.clearAddButt();
 		}
+
+		tip.label = resp.message;
+		tip.show = true;
 	},
 
 	ajaxAddRequest: function(request) {
+		this.clearAddButt();
+		this.clearAutoFillButt();
+		this.disableForm(true);
+
 		var aj = this.$.ajaxAdd;
 		aj.params = request;
-		// // Find a way to use auto attribute without it making requests on startup calling the go method.
+		// Find a way to use auto attribute without it making requests on startup calling the go method.
 		aj.go();
 	},
 
 	ajaxAddResponse: function(e) {
 		// console.log('Message: ' + e.detail.response);
+		this.disableForm(false);
 		var resp = JSON.parse(e.detail.response);
 		var tip = this.$.tooltipAddBookButt;
 		var button = tip.querySelector('paper-button#addBookButt');
@@ -244,11 +275,9 @@
 		if (resp.responseCode == 1) {
 			button.style.backgroundColor = "green";
 			this.clearForm();
-			this.clearAutoFillButt();
 		}
 		else {
 			button.style.backgroundColor = "red";
-			this.clearAutoFillButt();
 		}
 
 		tip.label = resp.message;

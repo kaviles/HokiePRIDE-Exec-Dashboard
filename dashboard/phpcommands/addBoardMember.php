@@ -3,12 +3,10 @@ include_once('dashcommands.php');
 
 header('Content-Type: application/json');
 
-$firstname = $_REQUEST['firstname'];
-$lastname = $_REQUEST['lastname'];
-$position = $_REQUEST['position'];
-$pid = $_REQUEST['pid'];
+$bMemData = array("firstname"=>$_REQUEST['firstname'], "lastname"=>$_REQUEST['lastname'],
+	"position"=>$_REQUEST['position'], "pid"=>$_REQUEST['pid']);
 
-$response = addBoardMember($firstname, $lastname, $position, $pid);
+$response = addBoardMember($bMemData);
 echo json_encode($response);
 ?>
 

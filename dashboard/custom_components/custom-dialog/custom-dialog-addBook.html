@@ -1,6 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../../bower_components/core-icon-button/core-icon-button.html">
 <link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
 <link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
 
@@ -31,9 +33,6 @@
 				margin: 5px 5px 5px 5px;
 				padding: 0px 0px 0px 0px;
 			}
-			paper-button {
-				margin: 10px 0px 0px 0px;
-			}
 		</style>
 
 		<div id='header'>Add Book to Library</div>
@@ -48,12 +47,18 @@
 		    	</section>
 		    </template>
 		</core-pages>
-    	<core-tooltip id='tooltipAutoFillButt' label='' position='bottom'>
-	    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN13}}'>Auto Fill Form</paper-button>
-		</core-tooltip>
-    	<core-tooltip id='tooltipAddBookButt' label='' position='bottom'>
-	    	<paper-button id='addBookButt' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
-		</core-tooltip>
+		<section id='buttons' layout vertical center center-justified>
+			<section id='autofillButts' layout horizontal wrap center center-justified>
+				<core-icon-button id='autoFillLeft' icon='chevron-left'  on-tap='{{autoFillLeft}}' hidden></core-icon-button>
+		    	<core-tooltip id='tooltipAutoFillButt' label='' position='bottom'>
+			    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN13}}'>Auto Fill Form</paper-button>
+				</core-tooltip>
+				<core-icon-button id='autoFillRight' icon='chevron-right' on-tap='{{autoFillRight}}' hidden></core-icon-button>
+			</section>
+	    	<core-tooltip id='tooltipAddBookButt' label='' position='bottom'>
+		    	<paper-button id='addBookButt' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
+			</core-tooltip>
+		</section>
 
 		<core-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAutoFillResponse}}'></core-ajax>
 	    <core-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAddResponse}}'></core-ajax>
@@ -84,7 +89,7 @@
     	{id:'libid', label:'Library ID', type:'text', error:'Numeric only', pattern:'[0-9]*'}];
 
     	// Find a way to add these pages dynamically
-    	this.pages = [{num:'0'},{num:'1'},{num:'2'},{num:'3'}];
+    	this.pages = [{num:'0'}, {num:'1'}, {num:'2'}, {num:'3'}, {num:'4'}];
 	},
 
 	validateForm: function() {
@@ -126,7 +131,7 @@
 	validateISBN13: function() {
 		var mainPage = this.$.mainPage;
 		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
-		
+
 		var isbn13Inp = selectedForm.querySelector('#isbn13');
 		isbn13Inp.setAttribute('required', '');
 		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
@@ -145,50 +150,100 @@
 	autoFillForm: function(jsonObject) {
 		console.log(jsonObject);
 
-		var bookData = jsonObject.bookData[0];
-		console.log(bookData);
+		var mainPage = this.$.mainPage;
+		var resultsCount = jsonObject.bookData.length;
+		var pageCount = this.pages.length;
 
+		if (resultsCount > pageCount) {
+			resultsCount = pageCount;
+		}
+
+		var button1 = this.$.autoFillRight;
+		var button2 = this.$.autoFillLeft;
+
+		if (resultsCount > 1) {
+			button1.removeAttribute('hidden');
+			button2.removeAttribute('hidden');
+		}
+		else {
+			button1.setAttribute('hidden', '');
+			button2.setAttribute('hidden', '');
+		}
+
+		for (var i = 0; i < resultsCount; i++) {
+			var bookData = jsonObject.bookData[i];
+			// console.log(bookData);
+
+			var form = mainPage.querySelector('#mainForm' + i);
+			form.querySelector('#title').value = bookData.title;		
+			form.querySelector('#author').value = bookData.author;
+			form.querySelector('#pub').value = bookData.publisher;
+			form.querySelector('#year').value = bookData.year;
+			form.querySelector('#isbn13').value = bookData.isbn13;
+			form.querySelector('#loc').value = bookData.loc;
+			form.querySelector('#dcc').value = bookData.dcc;
+			form.querySelector('#tags').value = bookData.tag;
+			form.querySelector('#covurl').value = bookData.covurl;
+			form.querySelector('#desc').value = bookData.desc;	
+		}
+
+		mainPage.selected = 0;
+	},
+
+	autoFillRight: function() {
 		var mainPage = this.$.mainPage;
 
-		// You'll need to do more than just the core-selected mainForm
-		// Suggest doing querySelectAll on core-pages mainPage
-		var form = mainPage.querySelector('.mainForm.core-selected');
+		var sIndex = mainPage.selected + 1;
+		if (sIndex >= this.pages.length) {
+			mainPage.selected = 0;
+		}
+		else {
+			mainPage.selected = sIndex;
+		}
+	},
 
-		form.querySelector('#title').value = bookData.title;		
-		form.querySelector('#author').value = bookData.author;
-		form.querySelector('#pub').value = bookData.publisher;
-		form.querySelector('#year').value = bookData.year;
-		form.querySelector('#isbn13').value = bookData.isbn13;
-		form.querySelector('#loc').value = bookData.loc;
-		form.querySelector('#dcc').value = bookData.dcc;
-		form.querySelector('#tags').value = bookData.tag;
-		form.querySelector('#covurl').value = bookData.covurl;
-		form.querySelector('#desc').value = bookData.desc;	
+	autoFillLeft: function() {
+		var mainPage = this.$.mainPage;
+
+		var sIndex = mainPage.selected - 1;
+		if (sIndex < 0) {
+			mainPage.selected = this.pages.length - 1;
+		}
+		else {
+			mainPage.selected = sIndex;
+		}
 	},
 
 	clearForm: function() {
 		var mainPage = this.$.mainPage;
-		// You'll need to clear out more than just the selected mainForm
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
 
-		var papDec = selectedForm.querySelectorAll('#mainInput');
-		var papDecCount = papDec.length;
-		for (var i = 0; i < papDecCount; i++) {
-			papDec[i].firstElementChild.value = '';
+		var button1 = this.$.autoFillRight;
+		var button2 = this.$.autoFillLeft;
+		button1.setAttribute('hidden', '');
+		button2.setAttribute('hidden', '');
+
+		for (var i = 0; i < this.pages.length; i++) {
+			var selectedForm = mainPage.querySelector('#mainForm' + i);
+			var papDec = selectedForm.querySelectorAll('#mainInput');
+			var papDecCount = papDec.length;
+
+			for (var j = 0; j < papDecCount; j++) {
+				papDec[j].firstElementChild.value = '';
+			}
 		}
 	},
 
 	disableForm: function(val) {
 		var mainPage = this.$.mainPage;
-		// You'll need to disable more than just the selected mainForm
 		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
 
 		var papDec = selectedForm.querySelectorAll('#mainInput');
 		var papDecCount = papDec.length;
 
-		// var tip = this.$.tooltipAutoFillButt;
-		var button1 = this.$.tooltipAutoFillButt.querySelector('paper-button#autoFillButt');
-		var button2 = this.$.tooltipAddBookButt.querySelector('paper-button#addBookButt');
+		var button1 = this.$.autoFillButt;
+		var button2 = this.$.addBookButt;
+		var button3 = this.$.autoFillRight;
+		var button4 = this.$.autoFillLeft;
 
 		if (val) {
 			for (var i = 0; i < papDecCount; i++) {
@@ -198,6 +253,8 @@
 
 			button1.setAttribute('disabled', '');
 			button2.setAttribute('disabled', '');
+			button3.setAttribute('hidden', '');
+			button4.setAttribute('hidden', '');
 		}
 		else {
 			for (var i = 0; i < papDecCount; i++) {
@@ -207,6 +264,8 @@
 
 			button1.removeAttribute('disabled');
 			button2.removeAttribute('disabled');
+			button3.removeAttribute('hidden');
+			button4.removeAttribute('hidden');
 		}
 	},
 

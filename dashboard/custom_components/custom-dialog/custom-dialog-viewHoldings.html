@@ -1,0 +1,164 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-item/core-item.html">
+<link rel="import" href="../../../bower_components/core-label/core-label.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../../../bower_components/core-dropdown/core-dropdown.html">
+<link rel="import" href="../../../bower_components/core-dropdown-menu/core-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="custom-dialog-viewHoldings" layout vertical center center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}
+			#section_menu {
+				max-width: 400px;
+				max-height: 800px;
+			}
+			paper-button {
+				margin: 10px 0px 0px 0px;
+			}
+			core-dropdown-menu {
+				margin: 10px 0px 10px 0px;
+			}
+			core-dropdown {
+				width: 100px;
+			}
+			core-label {
+				width: 75px;
+				vertical-align: center;
+				text-align: center;
+			}
+		</style>
+
+		<div id='header'>View Library Holdings</div>
+		<section id='section_menu' layout vertical wrap>
+			<core-dropdown-menu label='Select Status'>
+				<core-dropdown class='dropdown'>
+					<core-selector>
+						<template repeat='{{status in statuses}}'>
+							<core-item label='{{status.stat}}'></core-item>
+						</template>
+					</core-selector>
+				</core-dropdown>
+		    </core-dropdown-menu>
+    	</section>
+
+    	<section id='section_holdings' layout vertical>
+    		<template id='template_holdings' repeat='{{holdings}}'>
+    			<div id='holdings_view' layout horizontal>
+	    			<core-label>{{libid}}</core-label>
+	    			<core-label>{{title}}</core-label>
+	    			<core-label>{{author}}</core-label>
+	    			<core-label>{{publisher}}</core-label>
+	    			<core-label>{{year}}</core-label>
+	    			<core-label>{{isbn13}}</core-label>
+	    			<core-label>{{loc}}</core-label>
+	    			<core-label>{{dcc}}</core-label>
+	    			<core-label>{{tags}}</core-label>
+	    			<core-label>{{status}}</core-label>
+	    			<core-label>{{patron_firstname}}</core-label>
+	    			<core-label>{{patron_lastname}}</core-label>
+	    			<core-label>{{patron_email}}</core-label>
+	    		</div>
+    		</template>
+    	</section>
+
+	    <!-- <core-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax> -->	
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-viewHoldings', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+    	this.statuses = [
+    	{stat:'IN'}, {stat:'OUT'}, {stat:'REMOVED'}];
+
+    	var template_holdings = this.$.section_holdings.querySelector('#template_holdings');
+    	var model_holdings = {'holdings':[{libid:'Library ID', title:'Title', author:'Author', publisher:'Publisher', year:'Year', isbn13:'ISBN13', loc:'LOC', dcc:'DCC', tags:'Tags', status:'Status', patron_firstname:'First', patron_lastname:'Last', patron_email:'Email'}]};
+
+    	template_holdings.model = model_holdings;
+	},
+
+	// validateForm: function() {
+	// 	var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+	// 	var papDecCount = papDec.length;
+
+	// 	this.$.mainForm.querySelector('#mainInput > #libid').setAttribute('required', '');
+
+	// 	var validCount = 0;
+	// 	var valueArray = new Array(papDecCount);
+	// 	for (var i = 0; i < papDecCount; i++) {
+	// 		var inp = papDec[i].firstElementChild;
+	// 		valueArray[i] = inp.value;
+	// 		papDec[i].isInvalid = !inp.validity.valid;
+
+	// 		if (!papDec[i].isInvalid) {
+	// 			validCount++;
+	// 		}
+	// 	}
+
+	// 	if (validCount == papDecCount) {
+	// 		req = '{"libid":"' + valueArray[0] + '"}';
+	// 		this.ajaxRequest(req);
+	// 	}
+	// },
+
+	// clearForm: function() {
+	// 	var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+	// 	var papDecCount = papDec.length;
+	// 	for (var i = 0; i < papDecCount; i++) {
+	// 		papDec[i].firstElementChild.value = '';
+	// 	}
+	// },
+
+	// ajaxRequest: function(request) {
+	// 	var aj = this.$.ajaxAdd;
+	// 	aj.params = request;
+	// 	// Find a way to use auto attribute without it making requests on startup calling the go method.
+	// 	aj.go();
+	// },
+
+	// ajaxResponse: function(e) {
+	// 	var resp = JSON.parse(e.detail.response);
+	// 	// console.log('Message: ' + resp.message);
+	// 	var tip = this.$.tooltip;
+	// 	var button = tip.querySelector('paper-button');
+
+	// 	if (resp.responseCode == 1) {
+	// 		button.style.backgroundColor = "green";
+	// 		this.clearForm();
+	// 	}
+	// 	else {
+	// 		button.style.backgroundColor = "red";
+	// 	}
+
+	// 	tip.label = resp.message;
+	// 	tip.show = true;
+	// },
+
+    });
+  </script>
+
+</polymer-element>

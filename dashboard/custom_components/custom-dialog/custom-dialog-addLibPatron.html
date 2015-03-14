@@ -36,8 +36,8 @@
 		<section id='mainForm' layout vertical>
 	    	<template repeat='{{input in inputs}}'>
 	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}' layout="" vertical="">
-				<input is="core-input" id='{{input.id}}' type='{{input.type}}' pattern='{{input.pattern}}' required>
-	    	</paper-input-decorator>
+					<input is="core-input" id='{{input.id}}' type='{{input.type}}' pattern='{{input.pattern}}'>
+		    	</paper-input-decorator>
 	    	</template>
     	</section>
     	<core-tooltip id='tooltip' label='' position='bottom'>
@@ -62,13 +62,15 @@
     	{id:'firstname', label:'First Name', type:'text', pattern:'\.*', error:''},
     	{id:'lastname', label:'Last Name', type:'text', pattern:'\.*', error:''},
     	{id:'phone', label:'Phone Number', type:'tel', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}', error:'123-456-7890'},
-    	{id:'email', label:'E-Mail Address', type:'email', pattern:'\.*' , error:'email@example.com'},
-    	{id:'patronid', label:'Patron ID', type:'text', pattern:'\.*' , error:''}];
+    	{id:'email', label:'E-Mail Address', type:'email', pattern:'\.*' , error:'email@example.com'}];//,
+    	// {id:'patronid', label:'Patron ID', type:'text', pattern:'\.*' , error:''}];
 	},
 
 	validateForm: function() {
 		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
 		var papDecCount = papDec.length;
+
+		this.$.mainForm.querySelector('#mainInput > #email').setAttribute('required', '');
 
 		var validCount = 0;
 		var valueArray = new Array(papDecCount);
@@ -83,7 +85,8 @@
 		}
 
 		if (validCount == papDecCount) {
-			req = '{"firstname":"' + valueArray[0] + '","lastname":"' + valueArray[1] + '","phone":"' + valueArray[2] + '","email":"' + valueArray[3] + '","patronid":"' + valueArray[4] + '"}';
+			req = '{"firstname":"' + valueArray[0] + '","lastname":"' + valueArray[1] + 
+			'","phone":"' + valueArray[2] + '","email":"' + valueArray[3] + '"}';
 			this.ajaxRequest(req);
 		}
 	},
@@ -99,7 +102,7 @@
 	ajaxRequest: function(request) {
 		var aj = this.$.ajaxAdd;
 		aj.params = request;
-		// // Find a way to use auto attribute without it making requests on startup calling the go method.
+		// Find a way to use auto attribute without it making requests on startup calling the go method.
 		aj.go();
 	},
 

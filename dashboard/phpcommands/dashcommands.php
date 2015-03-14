@@ -77,8 +77,46 @@ function escapeData($array) {
 * @return A JSON formatted response string.
 */
 function checkInBook($libid) {
-	$response = '';
-	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	$mysqli = connectToDB();
+	
+	if ($mysqli) {
+		$q = "SELECT * FROM library WHERE libid = '$libid'";
+
+		$result_library = $mysqli->query($q);
+
+		if ($result_library->num_rows > 0) {
+			$row_library = $result_library->fetch_assoc();
+
+			if ($row_library['status'] == 'OUT') {
+				$testMember = 'testMember';
+				$timeStamp = getTimeStamp();
+				$l_libid = $row_library['libid'];
+
+				$q = "UPDATE library SET status='IN', status_by='$testMember', status_timestamp='$timeStamp', 
+				patron_firstname='', patron_lastname='', patron_email='' WHERE libid='$l_libid'";
+				$result = $mysqli->query($q);
+
+				if ($result) {
+					$response = '{"responseCode":"1","message":"Book successfully checked IN"}';
+				}
+				else {
+					$response = '{"responseCode":"0","message":"Error! Book not successfully checked IN"}';
+				}
+			}
+			else if ($row_library['status'] == 'REMOVED') {
+				$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Book is not checked OUT"}';
+			}
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+		}
+	}
+
+	disconnectFromDB($mysqli);
 
 	return $response;
 }
@@ -93,13 +131,73 @@ function checkInBook($libid) {
 * If not checked out, records date and time, checks book out to patron.
 *
 * @param $libid the library id of the book.
-* @param $patronid the id of the patron checking out the book.
+* @param $patronEmail the email of the patron checking out the book.
 *
 * @return A JSON formatted response string.
 */
-function checkOutBook($libid, $patronid) {
-	$response = '';
-	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+function checkOutBook($libid, $patronEmail) {
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	$mysqli = connectToDB();
+	if ($mysqli) {
+
+		$patronEmail = $mysqli->real_escape_string($patronEmail);
+		$libid = $mysqli->real_escape_string($libid);
+
+		$q = "SELECT * FROM library WHERE libid = '$libid'";
+
+		$result_library = $mysqli->query($q);
+
+		if ($result_library->num_rows > 0) { // Library ID was found
+			$bookRow = $result_library->fetch_assoc();
+
+			if ($bookRow['status'] == 'IN') { // Book of Library ID was found and is checked IN
+
+				$q = "SELECT * FROM library_patron WHERE email = '$patronEmail'";
+				$result_patron = $mysqli->query($q);
+				
+				$patronRow = $result_patron->fetch_assoc();
+				$timestamp = getTimeStamp();
+				$p_firstname = $patronRow['firstname'];
+				$p_lastname = $patronRow['lastname'];
+				$p_email = $patronRow['email'];
+				$p_phone = $patronRow['phone'];
+				$l_libid = $bookRow['libid'];
+				$testMember = 'testMember';
+
+				if ($result_patron->num_rows > 0) { // Patron email was found
+					$q = "UPDATE library SET status='OUT', status_by='$testMember', status_timestamp='$timestamp', 
+					patron_firstname='$p_firstname', patron_lastname='$p_lastname',
+					patron_email='$p_email' WHERE libid='$l_libid'";
+
+					$result = $mysqli->query($q);
+
+					if ($result) {
+						$response = '{"responseCode":"1",
+						"message":"Book checked out to '.$p_firstname.' '.$p_lastname.'"}';
+					}
+					else {
+						$response = '{"responseCode":"0",
+						"message":"Error! Book not checked out to '.$p_firstname.' '.$p_lastname.'"}';
+					}
+				}
+				else if ($row_library['status'] == 'REMOVED') {
+					$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+				}
+				else {
+					$response = '{"responseCode":"0","message":"Library Patron Email does not exist"}';
+				}
+
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Book is not checked IN"}';
+			}
+		}
+		else { // library patron already exists
+			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+		}
+	}
+	
+	disconnectFromDB($mysqli);
 
 	return $response;
 }
@@ -107,7 +205,6 @@ function checkOutBook($libid, $patronid) {
 /**
 * Adds a book to the database.
 * Records date and time book was added.
-* TODO: Library Book ID Check?
 *
 * @param $bookData An associative array with all the data of the book to be added.
 * This array contains the following:
@@ -161,6 +258,118 @@ function addBook($bookData) {
 }
 
 /**
+* Edits a book within the database.
+*
+* @param $bookData An associative array with all the data of the book to be edited.
+* This array contains the following:
+* title, author, pub, year, isbn, loc, dcc, tags, covurl, comms.
+* Most of them should be self explanatory. 
+* loc = library of congress call number
+* dcc = dewey decimal call number
+* covurl = cover url
+* comms = comments
+*
+* @return A JSON formatted response string.
+*/
+function editBook($bookData) {
+	$response = '';
+
+	$ebmem = 'testMember';
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+
+	$mysqli = connectToDB();
+	if ($mysqli) {
+
+		$bookData = escapeData($bookData);
+		$q = "SELECT * FROM library WHERE libid='".$bookData['libid']."'";
+		$result = $mysqli->query($q);
+		if ($result) {
+
+			$libid = $bookData['libid'];
+			$title = $bookData['title'];
+			$author = $bookData['author'];
+			$publisher = $bookData['pub'];
+			$year = $bookData['year'];
+			$loc = $bookData['loc'];
+			$dcc = $bookData['dcc'];
+			$covurl = $bookData['covurl'];
+			$tags = $bookData['tags'];
+			$comms = $bookData['comms'];
+
+			$q = "UPDATE library SET title='$title', author='$author', publisher='$publisher', 
+			year='$year', loc='$loc', dcc='$dcc', tags='$tags', covurl='$covurl', comms='$comms'
+			WHERE libid='$libid'";
+
+			$result = $mysqli->query($q);
+			if ($result == true) {
+				$response = '{"responseCode":"1","message":"Book edit accepted!"}';
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Error! Book edit not accepted!"}';
+			}
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+		}
+	}
+
+	disconnectFromDB($mysqli);
+	return $response;
+}
+
+/**
+* Removes books from library.
+*
+* @param $libid the library id of the book.
+* @param $reason the reason the book was removed.
+*
+* @return A JSON formatted response string.
+*/
+function removeBook($libid, $reason) {
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	$mysqli = connectToDB();
+	
+	if ($mysqli) {
+		$q = "SELECT * FROM library WHERE libid = '$libid'";
+
+		$result_library = $mysqli->query($q);
+
+		if ($result_library->num_rows > 0) {
+			$row_library = $result_library->fetch_assoc();
+
+			if ($row_library['status'] == 'IN') {
+				$testMember = 'testMember';
+				$timeStamp = getTimeStamp();
+				$l_libid = $row_library['libid'];
+
+				$q = "UPDATE library SET removed_by='$testMember', removed_timestamp='$timeStamp', removed_reason='$reason', 
+				status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
+				$result = $mysqli->query($q);
+
+				if ($result) {
+					$response = '{"responseCode":"1","message":"Book successfully removed"}';
+				}
+				else {
+					$response = '{"responseCode":"0","message":"Error! Book not successfully removed"}';
+				}
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Book is not checked IN"}';
+			}
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+		}
+	}
+
+	disconnectFromDB($mysqli);
+
+	return $response;
+}
+
+/**
 * Retrieves book data from the internet for autofilling 
 * with Google Books API and ISBNDB API.
 *
@@ -171,9 +380,103 @@ function addBook($bookData) {
 function retrieveBookData($isbn13) {
 
 	$response = '{"responseCode":"0","message":"No results"}';
-	
-	$url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13;
 	$curl = curl_init();
+
+	// Get Library of Congress and Dewey Decimal Numbers from Library of Congress database
+	// SimpleXML also doesn't work for some reason...
+	$url = "http://lx2.loc.gov:210/lcdb?version=2.0&operation=searchRetrieve&query=bath.isbn=".$isbn13."&maximumRecords=1";
+	curl_setopt_array($curl, array(
+		CURLOPT_RETURNTRANSFER => 1,
+		CURLOPT_HEADER => "Content-Type:application/xml",
+		CURLOPT_URL => $url));
+
+	$locResponse = curl_exec($curl);
+
+	$xml_parser = xml_parser_create();
+	xml_parse_into_struct($xml_parser, $locResponse, $values, $index);
+	xml_parser_free($xml_parser);
+
+	$r_loc = '';
+	$r_dcc = '';
+	if ($values[$index['ZS:NUMBEROFRECORDS'][0]]['value'] > 0) {
+		$DATAFIELD = $index['DATAFIELD'];
+
+		$values_loc_start = -1;
+		$values_loc_end = -1;
+		$values_dcc_start = -1;
+		$values_dcc_end = -1;
+
+		// Get the start and end indices for the Datafields in the $values array
+		// that contain lcc and dcc call numbers
+		$k = 0;
+		while (($values_loc_end == -1 || $values_dcc_end == -1) && $k < count($DATAFIELD)) {
+			$valueIndex = $DATAFIELD[$k];
+			$value = $values[$valueIndex];
+			
+			if ($value['type'] == 'open' && $value['attributes']['TAG'] == '050') {
+				$values_loc_start = $valueIndex;
+			}
+			else if ($value['type'] == 'close' && $values_loc_end == -1 && $values_loc_start != -1) {
+				$values_loc_end = $valueIndex;
+			}
+
+			if ($value['type'] == 'open' && $value['attributes']['TAG'] == '082') {
+				$values_dcc_start = $valueIndex;
+			}
+			else if ($value['type'] == 'close' && $values_dcc_end == -1 && $values_dcc_start != -1) {
+				$values_dcc_end = $valueIndex;
+			}
+
+			$k++;
+		}
+
+		// Fill out r_lcc
+		if ($values_loc_start != -1 && $values_loc_end != -1) {
+
+			$k = $values_loc_start + 1;
+			while ($k < $values_loc_end) {
+
+				if ($values[$k]['type'] == 'complete') {
+
+					$code = $values[$k]['attributes']['CODE'];
+					if ($code == 'a' || $code == 'b') {
+						if (strlen($r_loc) > 0) {
+							$r_loc .= ' ';
+						}
+
+						$r_loc .= $values[$k]['value'];
+					}
+				}
+
+				$k += 2;
+			}
+		}
+
+		// Fill out r_dcc
+		if ($values_dcc_start != -1 && $values_dcc_end != -1) {
+
+			$k = $values_dcc_start + 1;
+			while ($k < $values_dcc_end) {
+
+				if ($values[$k]['type'] == 'complete') {
+
+					$code = $values[$k]['attributes']['CODE'];
+					if ($code == 'a' || $code == 'b') {
+						if (strlen($r_dcc) > 0) {
+							$r_dcc .= ' ';
+						}
+
+						$r_dcc .= $values[$k]['value'];
+					}
+				}
+				
+				$k += 2;
+			}
+		}
+	}
+	
+	// Get all other information from Google Books API
+	$url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13;
 	curl_setopt_array($curl, array(
     CURLOPT_RETURNTRANSFER => 1,
     CURLOPT_URL => $url));
@@ -184,77 +487,123 @@ function retrieveBookData($isbn13) {
 	$items = $googJson->items;
 	$itemCount = $googJson->totalItems;
 
-	$bookData = '"bookData":[';
-	for ($i = 0; $i < $itemCount; $i++) {
-		// Are there cases where we would want items beyond the first?
-		$volInfo = $items[$i]->volumeInfo; 
+	if ($itemCount > 0) {
 
-		// response variables
-		// Some of these are too long and need to be cut off
-		$r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 255);
-		$r_author = ($volInfo->authors) ? $volInfo->authors : ''; // This might be an array of authors
-		$r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 255);
-		$r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
-		$r_isbn13 = $isbn13;
-		$r_loc = '';
-		$r_dcc = '';
-		$r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
-		$r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
-		$r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
-		// $r_libid = '';
+		$bookData = '"bookData":[';
+		for ($i = 0; $i < $itemCount; $i++) {
+			// Are there cases where we would want items beyond the first?
+			$volInfo = $items[$i]->volumeInfo; 
 
-		$authorString = '';
+			// response variables
+			// Some of these are too long and need to be cut off
+			$r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 255);
+			$r_author = ($volInfo->authors) ? $volInfo->authors : ''; // This might be an array of authors
+			$r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 255);
+			$r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
+			$r_isbn13 = $isbn13;
+			// $r_loc = '';
+			// $r_dcc = '';
+			$r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
+			$r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
+			$r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
+			// $r_libid = '';
 
-		for ($j = 0; $j < count($r_author); $j++) {
-    		$authorString .= $r_author[$j];
+			$authorString = '';
 
-    		if ($j != count($r_author) - 1) {
-    			$authorString .= ', ';
-    		}
-	    }
+			for ($j = 0; $j < count($r_author); $j++) {
+	    		$authorString .= $r_author[$j];
 
-		$authorString = substr($authorString , 0, 255);
+	    		if ($j != count($r_author) - 1) {
+	    			$authorString .= ', ';
+	    		}
+		    }
 
-	    $tagString = '';
+			$authorString = substr($authorString , 0, 255);
 
-	    for ($j = 0; $j < count($r_tag); $j++) {
-    		$tagString .= $r_tag[$j];
+		    $tagString = '';
 
-    		if($j != count($r_tag) - 1) {
-    			$tagString .= ', ';
-    		}
-	    }
+		    for ($j = 0; $j < count($r_tag); $j++) {
+	    		$tagString .= $r_tag[$j];
 
-	    $tagString = substr($tagString, 0, 255);
+	    		if($j != count($r_tag) - 1) {
+	    			$tagString .= ', ';
+	    		}
+		    }
 
-		// $url = "http://isbndb.com/api/books.xml?access_key=1YS12YZ5&index1=isbn&value1=".$isbn13;
-		// curl_setopt_array($curl, array(
-		// 	CURLOPT_RETURNTRANSFER => 1,
-		// 	CURLOPT_URL => $url));
+		    $tagString = substr($tagString, 0, 255);
 
-		// $isbndbResponse = curl_exec($curl);
+		    $bookData .=
+		    	'{"title":"'.$r_title.'",
+		    	"author":"'.$authorString.'",
+		    	"publisher":"'.$r_publisher.'",
+		    	"isbn13":"'.$r_isbn13.'",
+		    	"year":"'.$r_year.'",
+		    	"loc":"'.$r_loc.'",
+		    	"dcc":"'.$r_dcc.'",
+		    	"tag":"'.$tagString.'",
+		    	"covurl":"'.$r_covurl.'",
+		    	"desc":"'.$r_desc.'"}';
 
-	    $bookData .=
-	    	'{"title":"'.$r_title.'",
-	    	"author":"'.$authorString.'",
-	    	"publisher":"'.$r_publisher.'",
-	    	"isbn13":"'.$r_isbn13.'",
-	    	"year":"'.$r_year.'",
-	    	"loc":"'.$r_loc.'",
-	    	"dcc":"'.$r_dcc.'",
-	    	"tag":"'.$tagString.'",
-	    	"covurl":"'.$r_covurl.'",
-	    	"desc":"'.$r_desc.'"}';
+		    if ($i < $itemCount - 1) {
+		    	$bookData .= ', ';
+		    }
+		}
 
-	    if ($i < $itemCount - 1) {
-	    	$bookData .= ', ';
-	    }
+		$bookData .= ']';
+		$response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found",'.$bookData.'}';
 	}
 
-	$bookData .= ']';
-	$response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found",'.$bookData.'}';
-
 	curl_close($curl);
+	return $response;
+}
+
+/**
+* Retrieves book data the library database for editing
+*
+* @param $libid the library id of the book that needs to be retrieved.
+*
+* @return A JSON formatted response string.
+*/
+function retrieveDBBook($libid) {
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+
+	$mysqli = connectToDB();
+
+	if ($mysqli) {
+
+		$libid = $mysqli->real_escape_string($libid);
+
+		$q = "SELECT * FROM library WHERE libid='$libid'";
+		$result = $mysqli->query($q);
+
+		if ($result->num_rows > 0) {
+			$row = $result->fetch_assoc();
+			$bookData = '"bookData":[';
+
+			$bookData .=
+	    	'{"title":"'.$row['title'].'",
+	    	"author":"'.$row['author'].'",
+	    	"publisher":"'.$row['publisher'].'",
+	    	"isbn13":"'.$row['isbn13'].'",
+	    	"year":"'.$row['year'].'",
+	    	"loc":"'.$row['loc'].'",
+	    	"dcc":"'.$row['dcc'].'",
+	    	"tag":"'.$row['tags'].'",
+	    	"covurl":"'.$row['covurl'].'",
+	    	"comms":"'.$row['comms'].'"}';
+
+		    $bookData .= ']';
+
+			$response = '{"responseCode":"1","message":"Found Library Book",'.$bookData.'}';
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+		}
+	}
+
+	disconnectFromDB($mysqli);
+
 	return $response;
 }
 
@@ -265,18 +614,206 @@ function retrieveBookData($isbn13) {
 * If patron does not exist, add patron.
 * Records date and time patron was added.
 *
-* @param $firstname first name of library patron.
-* @param $lastname last name of library patron.
-* @param $phone phone number of library patron.
-* @param $email email address of library patron.
-* @param $patronid the patron id of the library patron.
+* @param $patronData an associative array that contains the following:
+* firstname first name of library patron.
+* lastname last name of library patron.
+* phone phone number of library patron.
+* email email address of library patron. <- required
 *
 * @return A JSON formatted response string.
 */
-function addLibPatron($firstname, $lastname, $phone, $email, $patronid) {
+function addLibPatron($patronData) {
 
-	$response = '';
-	$response = '{"responseCode":"0","message":"Functionality not yet implemented"}';
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	
+	$mysqli = connectToDB();
+	if ($mysqli) {
+
+		$patronData = escapeData($patronData);
+
+		$q = "SELECT * FROM library_patron WHERE email = '{$patronData['email']}'";
+		$result = $mysqli->query($q);
+
+		if ($result->num_rows == 0) { // Add the new board Member
+
+			$timeStamp = getTimeStamp();
+			$testMember = 'testMember';
+			$q = "INSERT INTO `library_patron`(`firstname`, `lastname`, `phone`, `email`, 
+				`added_by`, `added_timestamp`, `status`, `status_timestamp`) 
+			VALUES ('{$patronData['firstname']}', '{$patronData['lastname']}', 
+				'{$patronData['phone']}', '{$patronData['email']}', 
+				'$testMember', '$timeStamp', 'ADDED', '$timeStamp')";
+
+			$result = $mysqli->query($q);
+			if ($result == true) {
+				$response = '{"responseCode":"1","message":"New library patron added!"}';
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+			}
+		}
+		else { // library patron already exists or was added but eventually removed
+			$row = $result->fetch_assoc();
+			if ($row['status'] == 'REMOVED') {
+
+				$timeStamp = getTimeStamp();
+				$testMember = 'testMember';
+				$q = "UPDATE library_patron 
+				SET status='ADDED', status_by='$testMember', status_timestamp='$timeStamp'
+				WHERE email='{$patronData['email']}'";
+
+				$result = $mysqli->query($q);
+				if ($result == true) {
+					$response = '{"responseCode":"1","message":"New library patron added!"}';
+				}
+				else {
+					$response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+				}
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Library patron already exists!"}';
+			}
+		}
+	}
+	
+	disconnectFromDB($mysqli);
+
+	return $response;
+}
+
+/**
+* Retrieves the data on a library patron via email address.
+*
+* @param $email email of the library patron.
+* @param $reason the reason the patron was removed.
+*
+* @return A JSON formatted response string.
+*/
+function retrieveLibPatron($email) {
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	
+	$mysqli = connectToDB();
+	if ($mysqli) {
+		$email = $mysqli->real_escape_string($email);
+		$q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
+		$request = $mysqli->query($q);
+
+		if ($request->num_rows > 0) {
+			$row = $request->fetch_assoc();
+			
+			$patronData = '"patronData":[';
+			$patronData .=
+	    	'{"firstname":"'.$row['firstname'].'",
+	    	"lastname":"'.$row['lastname'].'",
+	    	"phone":"'.$row['phone'].'",
+	    	"email":"'.$row['email'].'"}';
+		    $patronData .= ']';
+
+			$response = '{"responseCode":"1","message":"Found library patron '.$row['firstname'].' '.$row['lastname'].'",'.$patronData.'}';
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
+		}
+	}
+
+	disconnectFromDB();
+	return $response;
+}
+
+/**
+* Retrieves the data on a library patron via email address.
+*
+* @param $patronData an associative array with the following values:
+* firstname the firstname of the patron
+* lastname the lastname of the patron
+* phone the phone number of the patron
+* email the email of the patron
+*
+* @return A JSON formatted response string.
+*/
+function editLibPatron($patronData) {
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	
+	$mysqli = connectToDB();
+	if ($mysqli) {
+		$patronData = escapeData($patronData);
+		$email = $patronData['email'];
+		$q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
+		$request = $mysqli->query($q);
+
+		if ($request->num_rows > 0) {
+
+			$firstname = $patronData['firstname'];
+			$lastname = $patronData['lastname'];
+			$phone = $patronData['phone'];
+			$email = $patronData['email'];
+
+			$q = "UPDATE library_patron 
+			SET firstname='$firstname', lastname='$lastname', phone='$phone' WHERE email='$email' AND status='ADDED'";
+
+			$request = $mysqli->query($q);
+
+			if ($request) {
+				$response = '{"responseCode":"1","message":"Successfully edited Library Patron"}';
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Error! Did not edit Library Patron"}';
+			}
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
+		}
+	}
+
+	disconnectFromDB();
+	return $response;
+}
+
+/**
+* Removes library patrons from the database.
+*
+* @param $email email of the library patron.
+* @param $reason the reason the patron was removed.
+*
+* @return A JSON formatted response string.
+*/
+function removeLibPatron($email, $reason) {
+
+	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+	$mysqli = connectToDB();
+	
+	if ($mysqli) {
+		$q = "SELECT * FROM library_patron WHERE email = '$email' AND status='ADDED'";
+
+		$result = $mysqli->query($q);
+
+		if ($result->num_rows > 0) {
+			$row = $result->fetch_assoc();
+
+			$testMember = 'testMember';
+			$timeStamp = getTimeStamp();
+
+			$q = "UPDATE library_patron SET status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
+			removed_by='$testMember', removed_timeStamp='$timeStamp', removed_reason='$reason' 
+			WHERE email='$email'";
+
+			$result = $mysqli->query($q);
+
+			if ($result) {
+				$response = '{"responseCode":"1","message":"Library Patron '.$row['firstname'].' '.$row['lastname'].' successfully removed"}';
+			}
+			else {
+				$response = '{"responseCode":"0","message":"Error! Library Patron not successfully removed"}';
+			}
+		}
+		else {
+			$response = '{"responseCode":"0","message":"Invalid Library Patron Email"}';
+		}
+	}
+
+	disconnectFromDB($mysqli);
 
 	return $response;
 }

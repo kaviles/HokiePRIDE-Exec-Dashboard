@@ -27,9 +27,14 @@
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBook.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-editBook.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-removeBook.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addLibPatron.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-editLibPatron.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-removeLibPatron.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBoardMember.html">
 		<link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteBoardMember.html">
+		<link rel="import" href="custom_components/custom-dialog/custom-dialog-viewHoldings.html">
 
 	    <style>
 			html, body {
@@ -77,8 +82,23 @@
 						<custom-tile tile label='Add Book'>
 							<custom-dialog-addBook></custom-dialog-addBook>
 						</custom-tile>
+						<custom-tile tile label='Edit Book'>
+							<custom-dialog-editBook></custom-dialog-editBook>
+						</custom-tile>
+						<custom-tile tile label='Remove Book'>
+							<custom-dialog-removeBook></custom-dialog-removeBook>
+						</custom-tile>
+						<custom-tile tile label='View Holdings'>
+							<custom-dialog-viewHoldings></custom-dialog-viewHoldings>
+						</custom-tile>
 						<custom-tile tile label='Add Library Patron'>
 							<custom-dialog-addLibPatron></custom-dialog-addLibPatron>
+						</custom-tile>
+						<custom-tile tile label='Edit Library Patron'>
+							<custom-dialog-editLibPatron></custom-dialog-editLibPatron>
+						</custom-tile>
+						<custom-tile tile label='Remove Library Patron'>
+							<custom-dialog-removeLibPatron></custom-dialog-removeLibPatron>
 						</custom-tile>
 					</custom-tile-layout>
 					<custom-tile-layout>

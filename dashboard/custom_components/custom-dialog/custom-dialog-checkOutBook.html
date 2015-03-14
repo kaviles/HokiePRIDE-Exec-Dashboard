@@ -36,7 +36,7 @@
 		<section id='mainForm' layout vertical wrap>
 	    	<template repeat='{{input in inputs}}'>
 	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}'>
+					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
 	    		</paper-input-decorator>
 	    	</template>
     	</section>
@@ -59,16 +59,16 @@
 
     ready: function() {
     	this.inputs = [
-    	{id:'libid', label:'Book ID', error:'', pattern:'[0-9]*'},
-    	{id:'patronid', label:'Patron ID', error:'', pattern:'\.*'}];
+    	{id:'libid', label:'Book ID', type:'text', pattern:'^[a-zA-Z0-9]*$', error:''},
+    	{id:'email', label:'Patron Email', type:'email', pattern:'\.*', error:'example@example.com'}];
 	},
 
 	validateForm: function() {
 		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
 		var papDecCount = papDec.length;
 
-		papDec[0].firstElementChild.setAttribute('required', ''); // set book id required
-		papDec[1].firstElementChild.setAttribute('required', ''); // set patron id required
+		this.$.mainForm.querySelector('#mainInput > #libid').setAttribute('required', '');
+		this.$.mainForm.querySelector('#mainInput > #email').setAttribute('required', '');
 
 		var validCount = 0;
 		var valueArray = new Array(papDecCount);
@@ -84,7 +84,7 @@
 
 		if (validCount == papDecCount)
 		{
-			req = '{"libid":"' + valueArray[0] + '","patronid":"' + valueArray[1] + '"}';
+			req = '{"libid":"' + valueArray[0] + '","patronEmail":"' + valueArray[1] + '"}';
 			this.ajaxRequest(req);
 		}
 	},

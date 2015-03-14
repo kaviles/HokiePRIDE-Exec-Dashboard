@@ -59,14 +59,14 @@
 
     ready: function() {
     	this.inputs = [
-    	{id:'libid', label:'Book ID', error:'', pattern:'[0-9]*'}];
+    	{id:'libid', label:'Book ID', error:'', pattern:'^[a-zA-Z0-9]*$'}];
 	},
 
 	validateForm: function() {
 		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
 		var papDecCount = papDec.length;
 
-		papDec[0].firstElementChild.setAttribute('required', ''); // set book id required
+		this.$.mainForm.querySelector('#mainInput > #libid').setAttribute('required', '');
 
 		var validCount = 0;
 		var valueArray = new Array(papDecCount);
@@ -97,7 +97,7 @@
 	ajaxRequest: function(request) {
 		var aj = this.$.ajaxAdd;
 		aj.params = request;
-		// // Find a way to use auto attribute without it making requests on startup calling the go method.
+		// Find a way to use auto attribute without it making requests on startup calling the go method.
 		aj.go();
 	},
 

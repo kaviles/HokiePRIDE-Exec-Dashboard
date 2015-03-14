@@ -1,0 +1,379 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
+<link rel="import" href="../../../bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
+<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+
+<polymer-element name="custom-dialog-editBook" layout vertical center center-justified>
+
+	<template>
+		<style>    
+			:host {
+				background-color: white;
+				padding: 5px;
+				margin: 5px;
+
+				/*border-style: solid;
+				border-width: 1px;
+				border-color: orange;*/
+			}
+			#header {
+				margin: 0px 0px 0px 0px;
+			}
+			#mainPage {
+				min-width:400px;
+				min-height: 350px;
+			}
+			#mainForm {
+				max-width: 400px;
+			}
+			#mainInput {
+				margin: 5px 5px 5px 5px;
+				padding: 0px 0px 0px 0px;
+			}
+		</style>
+
+		<div id='header'>Edit Library Book</div>
+		<core-pages id='mainPage' selected='0'>
+			<template repeat='{{page in pages}}'>
+				<section class='mainForm' id='mainForm{{page.num}}' layout horizontal wrap center center-justified>
+			    	<template repeat='{{input in inputs}}'>
+			    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
+							<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
+			    		</paper-input-decorator>
+			    	</template>
+		    	</section>
+		    </template>
+		</core-pages>
+		<section id='buttons' layout vertical center center-justified>
+			<section id='autofillButts' layout horizontal wrap center center-justified>
+				<core-icon-button id='autoFillLeft' icon='chevron-left'  on-tap='{{autoFillLeft}}' hidden></core-icon-button>
+		    	<core-tooltip id='tooltipRetrieveDBBookButt' label='' position='bottom'>
+			    	<paper-button id='retrieveDBBookButt' raised role='button' on-tap='{{retrieveDBBook}}'>Retrieve Book</paper-button>
+				</core-tooltip>
+				<core-icon-button id='autoFillRight' icon='chevron-right' on-tap='{{autoFillRight}}' hidden></core-icon-button>
+			</section>
+	    	<core-tooltip id='tooltipEditBookButt' label='' position='bottom'>
+		    	<paper-button id='editBookButt' raised role='button' on-tap='{{submitForm}}' disabled>Submit Book Edit</paper-button>
+			</core-tooltip>
+		</section>
+
+		<core-ajax id='ajaxRetrieveDBBook' url='../../phpcommands/retrieveDBBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxRetrieveDBBookResponse}}'></core-ajax>
+	    <core-ajax id='ajaxEdit' url='../../phpcommands/editBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxEditResponse}}'></core-ajax>
+	</template>
+
+	<script>
+    Polymer( 'custom-dialog-editBook', {
+    /**
+     * Specifies the label of the individual tile.
+     *
+     * @attribute label
+     * @type string
+     * @default ''
+     */
+
+    ready: function() {
+    	this.inputs = [
+    	{id:'title', label:'Title', type:'text', error:'', pattern:'\.*'},
+    	{id:'author', label:'Author(s)', type:'text', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+    	{id:'pub', label:'Publisher', type:'text', error:'', pattern:'\.*'},
+    	{id:'year', label:'Year', type:'text', error:'4 digits', pattern:'[0-9]{4}'},
+    	{id:'isbn13', label:'ISBN13', type:'text', error:'13 digits', pattern:'[0-9]{13}'},
+    	{id:'loc', label:'Library of Congress #', type:'text', error:'', pattern:'\.*'},
+    	{id:'dcc', label:'Dewey Decimal #', type:'text', error:'', pattern:'\.*'},
+    	{id:'tags', label:'Tags (comma sep)', type:'text', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+    	{id:'covurl', label:'Cover URL', type:'url', error:'www.example.com', pattern:'\.*'},
+    	{id:'comms', label:'Comments', type:'text', error:'', pattern:'\.*'},
+    	{id:'libid', label:'Library ID', type:'text', error:'', pattern:'\.*'}];
+
+    	// Find a way to add these pages dynamically
+    	this.pages = [{num:'0'}];
+	},
+
+	submitForm: function() {
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		// probably not necessary but just in case...
+		selectedForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
+		selectedForm.querySelector('#libid').setAttribute('required', ''); // set libid required
+		
+		var papDecArr = selectedForm.querySelectorAll('#mainInput');
+		var papDecCount = papDecArr.length;
+
+		var validCount = 0;
+		for (var i = 0; i < papDecCount; i++) {
+			// This should be the input within the paper-decorator
+			var inp = papDecArr[i].firstElementChild;
+			papDecArr[i].isInvalid = !inp.validity.valid; // Validate the input
+
+			if (!papDecArr[i].isInvalid) {
+				validCount++;
+			}
+		}
+
+		if (validCount == papDecCount) {
+			req = '{"title":"' + selectedForm.querySelector('#title').value + 
+				'","author":"' + selectedForm.querySelector('#author').value + 
+				'","pub":"' + selectedForm.querySelector('#pub').value + 
+				'","year":"' + selectedForm.querySelector('#year').value + 
+				'","isbn13":"' + selectedForm.querySelector('#isbn13').value + 
+				'","loc":"' + selectedForm.querySelector('#loc').value + 
+				'","dcc":"' + selectedForm.querySelector('#dcc').value + 
+				'","tags":"' + selectedForm.querySelector('#tags').value + 
+				'","covurl":"' + selectedForm.querySelector('#covurl').value + 
+				'","comms":"' + selectedForm.querySelector('#comms').value + 
+				'","libid":"' + selectedForm.querySelector('#libid').value + '"}';
+			this.ajaxEditRequest(req);
+		}
+	},
+
+	validateISBN13: function() {
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var isbn13Inp = selectedForm.querySelector('#isbn13');
+		isbn13Inp.setAttribute('required', '');
+		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
+
+		// Clear the form, reset isbn13
+		var isbn13 = isbn13Inp.value;
+		this.clearForm();
+		isbn13Inp.value = isbn13;
+
+		if (!isbn13Inp.parentElement.isInvalid) {
+			this.ajaxAutoFillRequest('{"isbn13":"' + isbn13 + '"}');
+		}
+	},
+
+	retrieveDBBook: function() {
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var libidInp = selectedForm.querySelector('#libid');
+
+		libidInp.setAttribute('required', '');
+		libidInp.parentElement.isInvalid = !libidInp.validity.valid;
+
+		var libid = libidInp.value;
+		this.clearForm();
+		libidInp.value = libid;
+
+		if (!libidInp.parentElement.isInvalid) {
+			this.ajaxRetrieveDBBookRequest('{"libid":"' + libid + '"}');
+		}
+	},
+
+	autoFillForm: function(jsonObject) {
+		// console.log(jsonObject);
+		this.$.editBookButt.removeAttribute('disabled');
+
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var isbn13Inp = selectedForm.querySelector('#isbn13');
+		var libidInp = selectedForm.querySelector('#libid');
+		isbn13Inp.setAttribute('disabled', '');
+		libidInp.setAttribute('disabled', '');
+		isbn13Inp.parentElement.disabled = true;
+		libidInp.parentElement.disabled = true;
+
+		var resultsCount = jsonObject.bookData.length;
+		var pageCount = this.pages.length;
+
+		if (resultsCount > pageCount) {
+			resultsCount = pageCount;
+		}
+
+		// var button1 = this.$.autoFillRight;
+		// var button2 = this.$.autoFillLeft;
+
+		// if (resultsCount > 1) {
+		// 	button1.removeAttribute('hidden');
+		// 	button2.removeAttribute('hidden');
+		// }
+		// else {
+		// 	button1.setAttribute('hidden', '');
+		// 	button2.setAttribute('hidden', '');
+		// }
+
+		for (var i = 0; i < resultsCount; i++) {
+			var bookData = jsonObject.bookData[i];
+			// console.log(bookData);
+
+			var form = mainPage.querySelector('#mainForm' + i);
+			form.querySelector('#title').value = bookData.title;		
+			form.querySelector('#author').value = bookData.author;
+			form.querySelector('#pub').value = bookData.publisher;
+			form.querySelector('#year').value = bookData.year;
+			form.querySelector('#isbn13').value = bookData.isbn13;
+			form.querySelector('#loc').value = bookData.loc;
+			form.querySelector('#dcc').value = bookData.dcc;
+			form.querySelector('#tags').value = bookData.tag;
+			form.querySelector('#covurl').value = bookData.covurl;
+			form.querySelector('#comms').value = bookData.comms;	
+		}
+
+		mainPage.selected = 0;
+	},
+
+	autoFillRight: function() {
+		var mainPage = this.$.mainPage;
+
+		var sIndex = mainPage.selected + 1;
+		if (sIndex >= this.pages.length) {
+			mainPage.selected = 0;
+		}
+		else {
+			mainPage.selected = sIndex;
+		}
+	},
+
+	autoFillLeft: function() {
+		var mainPage = this.$.mainPage;
+
+		var sIndex = mainPage.selected - 1;
+		if (sIndex < 0) {
+			mainPage.selected = this.pages.length - 1;
+		}
+		else {
+			mainPage.selected = sIndex;
+		}
+	},
+
+	clearForm: function() {
+		var mainPage = this.$.mainPage;
+
+		var button1 = this.$.autoFillRight;
+		var button2 = this.$.autoFillLeft;
+		button1.setAttribute('hidden', '');
+		button2.setAttribute('hidden', '');
+
+		for (var i = 0; i < this.pages.length; i++) {
+			var selectedForm = mainPage.querySelector('#mainForm' + i);
+			var papDec = selectedForm.querySelectorAll('#mainInput');
+			var papDecCount = papDec.length;
+
+			for (var j = 0; j < papDecCount; j++) {
+				papDec[j].firstElementChild.value = '';
+			}
+		}
+	},
+
+	disableForm: function(val) {
+		var mainPage = this.$.mainPage;
+		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+
+		var papDec = selectedForm.querySelectorAll('#mainInput');
+		var papDecCount = papDec.length;
+
+		var button1 = this.$.retrieveDBBookButt;
+		var button2 = this.$.editBookButt;
+		// var button3 = this.$.autoFillRight;
+		// var button4 = this.$.autoFillLeft;
+
+		if (val) {
+			for (var i = 0; i < papDecCount; i++) {
+				papDec[i].disabled = val;
+				papDec[i].firstElementChild.setAttribute('disabled', '');
+			}
+
+			button1.setAttribute('disabled', '');
+			button2.setAttribute('disabled', '');
+			// button3.setAttribute('hidden', '');
+			// button4.setAttribute('hidden', '');
+		}
+		else {
+			for (var i = 0; i < papDecCount; i++) {
+				papDec[i].disabled = val;
+				papDec[i].firstElementChild.removeAttribute('disabled');
+			}
+
+			button1.removeAttribute('disabled');
+			button2.removeAttribute('disabled');
+			// button3.removeAttribute('hidden');
+			// button4.removeAttribute('hidden');
+		}
+	},
+
+	clearRetrieveDBBookButt: function() {
+		var tip1 = this.$.tooltipRetrieveDBBookButt;
+		tip1.label = '';
+		tip1.querySelector('paper-button#retrieveDBBookButt').style.backgroundColor = "white";
+	},
+
+	clearEditButt: function() {
+		var tip2 = this.$.tooltipEditBookButt;
+		tip2.label = '';
+		tip2.querySelector('paper-button#editBookButt').style.backgroundColor = "white";
+	},
+
+	ajaxRetrieveDBBookRequest: function(params) {
+		this.clearEditButt();
+		this.clearRetrieveDBBookButt();
+		this.disableForm(true);
+
+		var aj = this.$.ajaxRetrieveDBBook;
+		aj.params = params;
+		aj.go();
+	},
+
+	ajaxRetrieveDBBookResponse: function(e) {
+		// console.log(e.detail.response);
+		this.disableForm(false);
+		var resp = JSON.parse(e.detail.response);
+		var tip = this.$.tooltipRetrieveDBBookButt;
+		var button = tip.querySelector('paper-button#retrieveDBBookButt');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+			this.autoFillForm(resp);
+		}
+		else {
+			button.style.backgroundColor = "red";
+			tip.label = resp.message;
+			this.clearEditButt();
+			this.$.editBookButt.setAttribute('disabled', '');
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
+	},
+
+	ajaxEditRequest: function(request) {
+		this.clearEditButt();
+		this.clearRetrieveDBBookButt();
+		this.disableForm(true);
+
+		var aj = this.$.ajaxEdit;
+		aj.params = request;
+		// Find a way to use auto attribute without it making requests on startup calling the go method.
+		aj.go();
+	},
+
+	ajaxEditResponse: function(e) {
+		// console.log('Message: ' + e.detail.response);
+		this.disableForm(false);
+		var resp = JSON.parse(e.detail.response);
+		var tip = this.$.tooltipEditBookButt;
+		var button = tip.querySelector('paper-button#editBookButt');
+
+		if (resp.responseCode == 1) {
+			button.style.backgroundColor = "green";
+			this.clearForm();
+			this.$.editBookButt.setAttribute('disabled', '');
+		}
+		else {
+			button.style.backgroundColor = "red";
+		}
+
+		tip.label = resp.message;
+		tip.show = true;
+	},
+
+    });
+  </script>
+
+</polymer-element>

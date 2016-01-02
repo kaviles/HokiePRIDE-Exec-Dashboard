@@ -1,134 +1,158 @@
 <!DOCTYPE html>
 <html>
 
-	<head>
-	  	<title>Test_Library</title>
-		<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <head>
+        <title>Test_Library</title>
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-	    <!-- Load webcomponents.min.js for polyfill support. -->
-	    <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+        <!-- Load webcomponents.min.js for polyfill support. -->
+        <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
 
         <!-- Load jQuery -->
         <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 
-		<!-- Load standard Polymer Project library. -->
-		<link rel="import" href="../bower_components/core-scaffold/core-scaffold.html">
-	    <link rel="import" href="../bower_components/core-header-panel/core-header-panel.html">
-		<link rel="import" href="../bower_components/core-toolbar/core-toolbar.html">
-		<link rel="import" href="../bower_components/core-menu/core-menu.html">
-		<link rel="import" href="../bower_components/core-item/core-item.html">
-		<link rel="import" href="../bower_components/core-icons/core-icons.html">
-		<link rel="import" href="../bower_components/core-pages/core-pages.html">
+        <!-- Load standard Polymer Project library. -->
+        <link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+        <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+        <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+        <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+        <link rel="import" href="../bower_components/paper-item/paper-item.html">
+        <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+        <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+        <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 
-		<!-- Load custom components -->
-		<link rel="import" href="custom_components/custom-tile/custom-tile-layout.html">
-		<link rel="import" href="custom_components/custom-tile/custom-tile.html">
+        <!-- Load custom components -->
+        <link rel="import" href="custom_components/custom-tile/custom-tile-layout.html">
+        <link rel="import" href="custom_components/custom-tile/custom-tile.html">
 
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBook.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-editBook.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-removeBook.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addLibPatron.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-editLibPatron.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-removeLibPatron.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-addBoardMember.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteBoardMember.html">
-		<link rel="import" href="custom_components/custom-dialog/custom-dialog-viewHoldings.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-viewHoldings.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-addBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-editBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-removeBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteBook.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-addLibPatron.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-editLibPatron.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-removeLibPatron.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteLibPatron.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-addAdmin.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteAdmin.html">
 
-	    <style>
-			html, body {
-			    height: 100%;
-			    margin: 0;
-			    background-color: #CECECE; /* Grey */
-			    font-family: sans-serif;
-			}
-			#mainMenuToolbar, #mainScaffold::shadow core-toolbar {
-				background-color: #800000; /* Maroon */
-				color: white;
-			}	
-			.content {
-				height: 100%;
-				padding: 20px;
-			}
-	    </style>
-	</head>
+        <style>
+            html, body {
+                height: 100%;
+                margin: 0;
+                background-color: #CECECE; /* Grey */
+                font-family: sans-serif;
+            }
+            #mainMenuToolbar {
+                background-color: #800000; /* Maroon */
+                color: white;
+            }
+            #mainContentToolbar {
+                background-color: #800000; /* Maroon */
+                color: white;
+            }   
+            /*.content {
+                height: 100%;
+                padding: 20px;
+            }*/
+        </style>
+    </head>
 
-	<body fullbleed vertical layout unresolved>
-		<core-scaffold id='mainScaffold'>
-			<core-header-panel navigation flex responsiveWidth mode='seamed'>
-			    <core-toolbar id='mainMenuToolbar'>Menu</core-toolbar>
-			    <core-menu id='mainMenu' selected='0'>
-					<core-item icon='dashboard' label='Dashboard'></core-item>
-					<core-item icon='book' label='Library'></core-item>
-					<core-item icon='settings' label='Settings'></core-item>
-			    </core-menu>
-			</core-header-panel>
+    <body fullbleed vertical layout unresolved>
 
-			<div id='mainToolbar' tool flex>HokiePRIDE Exec Dashboard</div>
-			<div class='content'>
-				<core-pages id='mainPages' selected='0'>
-					<custom-tile-layout>
-						<custom-tile tile label='Login'>
-						</custom-tile>
-					</custom-tile-layout>
-					<custom-tile-layout>
-						<custom-tile tile label='Check In Book'>
-							<custom-dialog-checkInBook></custom-dialog-checkInBook>
-						</custom-tile>
-						<custom-tile tile label='Check Out Book'>
-							<custom-dialog-checkOutBook></custom-dialog-checkOutBook>
-						</custom-tile>
-						<custom-tile tile label='Add Book'>
-							<custom-dialog-addBook></custom-dialog-addBook>
-						</custom-tile>
-						<custom-tile tile label='Edit Book'>
-							<custom-dialog-editBook></custom-dialog-editBook>
-						</custom-tile>
-						<custom-tile tile label='Remove Book'>
-							<custom-dialog-removeBook></custom-dialog-removeBook>
-						</custom-tile>
-						<custom-tile tile label='View Holdings'>
-							<custom-dialog-viewHoldings></custom-dialog-viewHoldings>
-						</custom-tile>
-						<custom-tile tile label='Add Library Patron'>
-							<custom-dialog-addLibPatron></custom-dialog-addLibPatron>
-						</custom-tile>
-						<custom-tile tile label='Edit Library Patron'>
-							<custom-dialog-editLibPatron></custom-dialog-editLibPatron>
-						</custom-tile>
-						<custom-tile tile label='Remove Library Patron'>
-							<custom-dialog-removeLibPatron></custom-dialog-removeLibPatron>
-						</custom-tile>
-					</custom-tile-layout>
-					<custom-tile-layout>
-						<custom-tile tile label='Add Exec Board Member'>
-							<custom-dialog-addBoardMember></custom-dialog-addBoardMember>
-						</custom-tile>
-						<custom-tile tile label='Delete Exec Board Member'>
-							<custom-dialog-deleteBoardMember></custom-dialog-deleteBoardMember>
-						</custom-tile>
-					</custom-tile-layout>
-				</core-pages>
-			</div>
-		</core-scaffold>
-		<script>
-			$(document).ready(function() {
-				console.log("Document ready!");
+        <paper-drawer-panel id="navDrawerPanel">
 
-				$(window).bind('polymer-ready', function() {
-					console.log("Event fired: polymer-ready");	
+            <paper-header-panel class='list-panel' drawer>
+                <paper-toolbar id='mainMenuToolbar'>
+                    <div>Menu</div>
+                </paper-toolbar>
 
-				  	$('#mainMenu').bind('core-activate', function() {
-				  		// console.log('Element: mainMenu, Event fired: core-activate');
-				  		// console.log('\t' + this.selectedItem.label + ' selected');
-				  		
-				  		// Switch main pages
-				  		var mainPages = document.querySelector('#mainPages');
-				  		mainPages.selected = this.selected;
-				  	});
-				});
-			});
-		</script>
-	</body>
+                <paper-menu id='mainMenu' selected='0'>
+                    <paper-item icon='dashboard'>Dashboard</paper-item>
+                    <paper-item icon='library'>Library</paper-item>
+                    <paper-item icon='patron'>Patron</paper-item>
+                    <paper-item icon='admin'>Admin</paper-item>
+                </paper-menu>
+            </paper-header-panel>
+
+            <paper-header-panel class='content-panel' main>
+                <paper-toolbar id='mainContentToolbar'>
+                    <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <div>HokiePRIDE Admin Dashboard</div>
+                </paper-toolbar>
+
+                <iron-pages id='mainPages' selected='0'>
+                    <custom-tile-layout>
+                        <custom-tile tile label='Login'></custom-tile>
+                    </custom-tile-layout>
+
+                    <custom-tile-layout>
+                        <custom-tile tile label='Check In Book'>
+                            <custom-dialog-checkInBook></custom-dialog-checkInBook>
+                        </custom-tile>
+                        <custom-tile tile label='Check Out Book'>
+                            <custom-dialog-checkOutBook></custom-dialog-checkOutBook>
+                        </custom-tile>
+                        <custom-tile tile label='View Holdings'>
+                            <custom-dialog-viewHoldings></custom-dialog-viewHoldings>
+                        </custom-tile>
+                        <custom-tile tile label='Add Book'>
+                            <custom-dialog-addBook></custom-dialog-addBook>
+                        </custom-tile>
+                        <custom-tile tile label='Edit Book'>
+                            <custom-dialog-editBook></custom-dialog-editBook>
+                        </custom-tile>
+                        <custom-tile tile label='Remove Book'>
+                            <custom-dialog-removeBook></custom-dialog-removeBook>
+                        </custom-tile>
+                        <custom-tile tile label='Delete Book'>
+                            <custom-dialog-deleteBook></custom-dialog-deleteBook>
+                        </custom-tile>
+                    </custom-tile-layout>
+
+                    <custom-tile-layout>
+                        <custom-tile tile label='Add Patron'>
+                            <custom-dialog-addLibPatron></custom-dialog-addLibPatron>
+                        </custom-tile>
+                        <custom-tile tile label='Edit Patron'>
+                            <custom-dialog-editLibPatron></custom-dialog-editLibPatron>
+                        </custom-tile>
+                        <custom-tile tile label='Remove Patron'>
+                            <custom-dialog-removeLibPatron></custom-dialog-removeLibPatron>
+                        </custom-tile>
+                        <custom-tile tile label='Delete Patron'>
+                            <custom-dialog-deleteLibPatron></custom-dialog-deleteLibPatron>
+                        </custom-tile>
+                    </custom-tile-layout>
+
+                    <custom-tile-layout>
+                        <custom-tile tile label='Add Admin'>
+                            <custom-dialog-addAdmin></custom-dialog-addAdmin>
+                        </custom-tile>
+                        <custom-tile tile label='Delete Admin'>
+                            <custom-dialog-deleteAdmin></custom-dialog-deleteAdmin>
+                        </custom-tile>
+                    </custom-tile-layout>
+                </iron-pages>
+            </paper-header-panel>
+        </paper-drawer-panel>
+
+        <script>
+            $(document).ready(function() {
+                console.log("Document ready!"); 
+
+                $('#mainMenu').bind('iron-select', function() {
+                    // console.log('Element: mainMenu, Event fired: core-activate');
+                    // console.log('\t' + this.selectedItem.label + ' selected');
+                    
+                    // Switch main pages
+                    var mainPages = document.querySelector('#mainPages');
+                    mainPages.selected = this.selected;
+                });
+            });
+        </script>
+    </body>
 </html>

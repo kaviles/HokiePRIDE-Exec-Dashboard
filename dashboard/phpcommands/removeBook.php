@@ -3,8 +3,10 @@ include_once('dashcommands.php');
 
 header('Content-Type: application/json');
 
-$libid = $_REQUEST['libid'];
-$reason = $_REQUEST['reason'];
+$req_params = json_decode(implode("", $_GET), true);
+
+$libid = $req_params['libid'];
+$reason = $req_params['reason'];
 
 $response = removeBook($libid, $reason);
 echo json_encode($response);

@@ -5,8 +5,9 @@ header('Content-Type: application/json');
 
 $req_params = json_decode(implode("", $_GET), true);
 
-$isbn13 = $req_params['isbn13'];
+$pid = $req_params['pid'];
 
-$response = retrieveBookData($isbn13);
+$response = getAdmin($pid);
 echo json_encode($response);
 ?>
+

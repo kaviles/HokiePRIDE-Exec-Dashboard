@@ -3,9 +3,10 @@ include_once('dashcommands.php');
 
 header('Content-Type: application/json');
 
-$libid = $_REQUEST['libid'];
+$req_params = json_decode(implode("", $_GET), true);
+
+$libid = $req_params['libid'];
 
 $response = retrieveDBBook($libid);
 echo json_encode($response);
 ?>
-

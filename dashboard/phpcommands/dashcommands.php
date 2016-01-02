@@ -40,24 +40,24 @@ function isValidIsbn13($isbn) {
 
 function getTimeStamp() {
 
-	return date_format(date_create(), 'Y-m-d H:i:s');
+    return date_format(date_create(), 'Y-m-d H:i:s');
 }
 
 function escapeData($array) {
 
-	$mysqli = connectToDB();
+    $mysqli = connectToDB();
 
-	if ($mysqli) {
-		$arrLength = count($array);
+    if ($mysqli) {
+        $arrLength = count($array);
 
-		foreach ($array as $x => $x_val) {
-			$array[$x] = $mysqli->real_escape_string($x_val);
-		}
-	}
+        foreach ($array as $x => $x_val) {
+            $array[$x] = $mysqli->real_escape_string($x_val);
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $array; // I don't like that this has to be returned...
+    return $array; // I don't like that this has to be returned...
 }
 
 /*
@@ -77,48 +77,48 @@ function escapeData($array) {
 * @return A JSON formatted response string.
 */
 function checkInBook($libid) {
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	$mysqli = connectToDB();
-	
-	if ($mysqli) {
-		$q = "SELECT * FROM library WHERE libid = '$libid'";
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+    
+    if ($mysqli) {
+        $q = "SELECT * FROM library WHERE libid = '$libid'";
 
-		$result_library = $mysqli->query($q);
+        $result_library = $mysqli->query($q);
 
-		if ($result_library->num_rows > 0) {
-			$row_library = $result_library->fetch_assoc();
+        if ($result_library->num_rows > 0) {
+            $row_library = $result_library->fetch_assoc();
 
-			if ($row_library['status'] == 'OUT') {
-				$testMember = 'testMember';
-				$timeStamp = getTimeStamp();
-				$l_libid = $row_library['libid'];
+            if ($row_library['status'] == 'OUT') {
+                $testMember = 'testMember';
+                $timeStamp = getTimeStamp();
+                $l_libid = $row_library['libid'];
 
-				$q = "UPDATE library SET status='IN', status_by='$testMember', status_timestamp='$timeStamp', 
-				patron_firstname='', patron_lastname='', patron_email='' WHERE libid='$l_libid'";
-				$result = $mysqli->query($q);
+                $q = "UPDATE library SET status='IN', status_by='$testMember', status_timestamp='$timeStamp', 
+                patron_firstname='', patron_lastname='', patron_email='' WHERE libid='$l_libid'";
+                $result = $mysqli->query($q);
 
-				if ($result) {
-					$response = '{"responseCode":"1","message":"Book successfully checked IN"}';
-				}
-				else {
-					$response = '{"responseCode":"0","message":"Error! Book not successfully checked IN"}';
-				}
-			}
-			else if ($row_library['status'] == 'REMOVED') {
-				$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Book is not checked OUT"}';
-			}
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-		}
-	}
+                if ($result) {
+                    $response = '{"responseCode":"1","message":"Book successfully checked IN"}';
+                }
+                else {
+                    $response = '{"responseCode":"0","message":"Error! Book not successfully checked IN"}';
+                }
+            }
+            else if ($row_library['status'] == 'REMOVED') {
+                $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Book is not checked OUT"}';
+            }
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 /**
@@ -136,70 +136,70 @@ function checkInBook($libid) {
 * @return A JSON formatted response string.
 */
 function checkOutBook($libid, $patronEmail) {
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	$mysqli = connectToDB();
-	if ($mysqli) {
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+    if ($mysqli) {
 
-		$patronEmail = $mysqli->real_escape_string($patronEmail);
-		$libid = $mysqli->real_escape_string($libid);
+        $patronEmail = $mysqli->real_escape_string($patronEmail);
+        $libid = $mysqli->real_escape_string($libid);
 
-		$q = "SELECT * FROM library WHERE libid = '$libid'";
+        $q = "SELECT * FROM library WHERE libid = '$libid'";
 
-		$result_library = $mysqli->query($q);
+        $result_library = $mysqli->query($q);
 
-		if ($result_library->num_rows > 0) { // Library ID was found
-			$bookRow = $result_library->fetch_assoc();
+        if ($result_library->num_rows > 0) { // Library ID was found
+            $bookRow = $result_library->fetch_assoc();
 
-			if ($bookRow['status'] == 'IN') { // Book of Library ID was found and is checked IN
+            if ($bookRow['status'] == 'IN') { // Book of Library ID was found and is checked IN
 
-				$q = "SELECT * FROM library_patron WHERE email = '$patronEmail'";
-				$result_patron = $mysqli->query($q);
-				
-				$patronRow = $result_patron->fetch_assoc();
-				$timestamp = getTimeStamp();
-				$p_firstname = $patronRow['firstname'];
-				$p_lastname = $patronRow['lastname'];
-				$p_email = $patronRow['email'];
-				$p_phone = $patronRow['phone'];
-				$l_libid = $bookRow['libid'];
-				$testMember = 'testMember';
+                $q = "SELECT * FROM library_patron WHERE email = '$patronEmail'";
+                $result_patron = $mysqli->query($q);
+                
+                $patronRow = $result_patron->fetch_assoc();
+                $timestamp = getTimeStamp();
+                $p_firstname = $patronRow['firstname'];
+                $p_lastname = $patronRow['lastname'];
+                $p_email = $patronRow['email'];
+                $p_phone = $patronRow['phone'];
+                $l_libid = $bookRow['libid'];
+                $testMember = 'testMember';
 
-				if ($result_patron->num_rows > 0) { // Patron email was found
-					$q = "UPDATE library SET status='OUT', status_by='$testMember', status_timestamp='$timestamp', 
-					patron_firstname='$p_firstname', patron_lastname='$p_lastname',
-					patron_email='$p_email' WHERE libid='$l_libid'";
+                if ($result_patron->num_rows > 0) { // Patron email was found
+                    $q = "UPDATE library SET status='OUT', status_by='$testMember', status_timestamp='$timestamp', 
+                    patron_firstname='$p_firstname', patron_lastname='$p_lastname',
+                    patron_email='$p_email' WHERE libid='$l_libid'";
 
-					$result = $mysqli->query($q);
+                    $result = $mysqli->query($q);
 
-					if ($result) {
-						$response = '{"responseCode":"1",
-						"message":"Book checked out to '.$p_firstname.' '.$p_lastname.'"}';
-					}
-					else {
-						$response = '{"responseCode":"0",
-						"message":"Error! Book not checked out to '.$p_firstname.' '.$p_lastname.'"}';
-					}
-				}
-				else if ($row_library['status'] == 'REMOVED') {
-					$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-				}
-				else {
-					$response = '{"responseCode":"0","message":"Library Patron Email does not exist"}';
-				}
+                    if ($result) {
+                        $response = '{"responseCode":"1",
+                        "message":"Book checked out to '.$p_firstname.' '.$p_lastname.'"}';
+                    }
+                    else {
+                        $response = '{"responseCode":"0",
+                        "message":"Error! Book not checked out to '.$p_firstname.' '.$p_lastname.'"}';
+                    }
+                }
+                else if ($bookRow['status'] == 'REMOVED') {
+                    $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+                }
+                else {
+                    $response = '{"responseCode":"0","message":"Library Patron Email does not exist"}';
+                }
 
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Book is not checked IN"}';
-			}
-		}
-		else { // library patron already exists
-			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-		}
-	}
-	
-	disconnectFromDB($mysqli);
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Book is not checked IN"}';
+            }
+        }
+        else { // library patron already exists
+            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        }
+    }
+    
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 /**
@@ -218,43 +218,43 @@ function checkOutBook($libid, $patronEmail) {
 * @return A JSON formatted response string.
 */
 function addBook($bookData) {
-	$response = '';
+    $response = '';
 
-	$ebmem = 'testMember';
+    $admin = 'testAdmin';
 
-	if (isValidIsbn13($bookData['isbn13'])) {
+    if (isValidIsbn13($bookData['isbn13'])) {
 
-		$response = '{"responseCode":"0","message":"Could not connect to database"}';
+        $response = '{"responseCode":"0","message":"Could not connect to database"}';
 
-		$bookData = escapeData($bookData);
-		$timeStamp = getTimeStamp();
-		$libid = uniqid();
-		$status = 'IN';
+        $bookData = escapeData($bookData);
+        $timeStamp = getTimeStamp();
+        // $libid = uniqid();
+        $status = 'IN';
 
-		$mysqli = connectToDB();
-		if ($mysqli) {
-			$q = "INSERT INTO `library`(`libid`, `title`, `author`, `publisher`, `year`, `isbn13`, 
-				`loc`, `dcc`, `tags`, `covurl`, `comms`, `added_timestamp`, `added_by`, `status`, `status_timestamp`) 
-				VALUES ('$libid', '{$bookData['title']}', '{$bookData['author']}', '{$bookData['pub']}', 
-					'{$bookData['year']}', '{$bookData['isbn13']}', '{$bookData['loc']}', '{$bookData['dcc']}', 
-					'{$bookData['tags']}', '{$bookData['covurl']}', '{$bookData['comms']}', '$timeStamp', 
-					'$ebmem', '$status', '$timeStamp')";
-			$result = $mysqli->query($q);
+        $mysqli = connectToDB();
+        if ($mysqli) {
+            $q = "INSERT INTO `library`(`libid`, `title`, `author`, `publisher`, `year`, `isbn13`, 
+                `loc`, `dcc`, `tags`, `covurl`, `comms`, `added_timestamp`, `added_by`, `status`, `status_by`, `status_timestamp`) 
+                VALUES ('{$bookData['libid']}', '{$bookData['title']}', '{$bookData['author']}', '{$bookData['pub']}', 
+                    '{$bookData['year']}', '{$bookData['isbn13']}', '{$bookData['loc']}', '{$bookData['dcc']}', 
+                    '{$bookData['tags']}', '{$bookData['covurl']}', '{$bookData['comms']}', '$timeStamp', 
+                    '$admin', '$status', '$admin', '$timeStamp')";
+            $result = $mysqli->query($q);
 
-			if ($result == true) {
-				$response = '{"responseCode":"1","message":"New book added!"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! New book not added!"}';
-			}
-		}
-	}
-	else {
-		$response = '{"responseCode":"0","message":"Valid ISBN required"}';
-	}
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"New book added!"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! New book not added!"}';
+            }
+        }
+    }
+    else {
+        $response = '{"responseCode":"0","message":"Valid ISBN required"}';
+    }
 
-	disconnectFromDB($mysqli);
-	return $response;
+    disconnectFromDB($mysqli);
+    return $response;
 }
 
 /**
@@ -272,50 +272,50 @@ function addBook($bookData) {
 * @return A JSON formatted response string.
 */
 function editBook($bookData) {
-	$response = '';
+    $response = '';
 
-	$ebmem = 'testMember';
+    $ebmem = 'testMember';
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
 
-	$mysqli = connectToDB();
-	if ($mysqli) {
+    $mysqli = connectToDB();
+    if ($mysqli) {
 
-		$bookData = escapeData($bookData);
-		$q = "SELECT * FROM library WHERE libid='".$bookData['libid']."'";
-		$result = $mysqli->query($q);
-		if ($result) {
+        $bookData = escapeData($bookData);
+        $q = "SELECT * FROM library WHERE libid='".$bookData['libid']."'";
+        $result = $mysqli->query($q);
+        if ($result) {
 
-			$libid = $bookData['libid'];
-			$title = $bookData['title'];
-			$author = $bookData['author'];
-			$publisher = $bookData['pub'];
-			$year = $bookData['year'];
-			$loc = $bookData['loc'];
-			$dcc = $bookData['dcc'];
-			$covurl = $bookData['covurl'];
-			$tags = $bookData['tags'];
-			$comms = $bookData['comms'];
+            $libid = $bookData['libid'];
+            $title = $bookData['title'];
+            $author = $bookData['author'];
+            $publisher = $bookData['pub'];
+            $year = $bookData['year'];
+            $loc = $bookData['loc'];
+            $dcc = $bookData['dcc'];
+            $covurl = $bookData['covurl'];
+            $tags = $bookData['tags'];
+            $comms = $bookData['comms'];
 
-			$q = "UPDATE library SET title='$title', author='$author', publisher='$publisher', 
-			year='$year', loc='$loc', dcc='$dcc', tags='$tags', covurl='$covurl', comms='$comms'
-			WHERE libid='$libid'";
+            $q = "UPDATE library SET title='$title', author='$author', publisher='$publisher', 
+            year='$year', loc='$loc', dcc='$dcc', tags='$tags', covurl='$covurl', comms='$comms'
+            WHERE libid='$libid'";
 
-			$result = $mysqli->query($q);
-			if ($result == true) {
-				$response = '{"responseCode":"1","message":"Book edit accepted!"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! Book edit not accepted!"}';
-			}
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-		}
-	}
+            $result = $mysqli->query($q);
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"Book edit accepted!"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Book edit not accepted!"}';
+            }
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        }
+    }
 
-	disconnectFromDB($mysqli);
-	return $response;
+    disconnectFromDB($mysqli);
+    return $response;
 }
 
 /**
@@ -328,45 +328,85 @@ function editBook($bookData) {
 */
 function removeBook($libid, $reason) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	$mysqli = connectToDB();
-	
-	if ($mysqli) {
-		$q = "SELECT * FROM library WHERE libid = '$libid'";
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+    
+    if ($mysqli) {
+        $q = "SELECT * FROM library WHERE libid = '$libid'";
 
-		$result_library = $mysqli->query($q);
+        $result_library = $mysqli->query($q);
 
-		if ($result_library->num_rows > 0) {
-			$row_library = $result_library->fetch_assoc();
+        if ($result_library->num_rows > 0) {
+            $row_library = $result_library->fetch_assoc();
 
-			if ($row_library['status'] == 'IN') {
-				$testMember = 'testMember';
-				$timeStamp = getTimeStamp();
-				$l_libid = $row_library['libid'];
+            if ($row_library['status'] == 'IN') {
+                $testMember = 'testMember';
+                $timeStamp = getTimeStamp();
+                $l_libid = $row_library['libid'];
 
-				$q = "UPDATE library SET removed_by='$testMember', removed_timestamp='$timeStamp', removed_reason='$reason', 
-				status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
-				$result = $mysqli->query($q);
+                $q = "UPDATE library SET removed_by='$testMember', removed_timestamp='$timeStamp', removed_reason='$reason', 
+                status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
+                $result = $mysqli->query($q);
 
-				if ($result) {
-					$response = '{"responseCode":"1","message":"Book successfully removed"}';
-				}
-				else {
-					$response = '{"responseCode":"0","message":"Error! Book not successfully removed"}';
-				}
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Book is not checked IN"}';
-			}
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-		}
-	}
+                if ($result) {
+                    $response = '{"responseCode":"1","message":"Book successfully removed"}';
+                }
+                else {
+                    $response = '{"responseCode":"0","message":"Error! Book not successfully removed"}';
+                }
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Book is not checked IN"}';
+            }
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
+}
+
+/**
+* Deletes books from library.
+*
+* @param $libid the library id of the book.
+*
+* @return A JSON formatted response string.
+*/
+function deleteBook($libid) {
+
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+
+    if ($mysqli) {
+        $libid = $mysqli->real_escape_string($libid);
+
+        $q = "SELECT * FROM library WHERE libid = '$libid'";
+        $result = $mysqli->query($q);
+
+        if ($result->num_rows == 0) { // Board member not found, cannot delete
+            $response = '{"responseCode":"0","message":"Library Book not found!","libid":"'.$libid.'"}';
+        }
+        else { // Specific book exists, delete
+            $rowGet = $result->fetch_assoc();
+            $q = "DELETE FROM library WHERE libid = '".$rowGet['libid']."'";
+            $result = $mysqli->query($q);
+
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"Library Book deleted!","libid":"'.$rowGet['libid'].'"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Library Book not deleted!","libid":"'.$rowGet['libid'].'"}';
+            }
+        }
+    }
+
+    disconnectFromDB($mysqli);
+
+    return $response;
 }
 
 /**
@@ -379,182 +419,194 @@ function removeBook($libid, $reason) {
 */
 function retrieveBookData($isbn13) {
 
-	$response = '{"responseCode":"0","message":"No results"}';
-	$curl = curl_init();
+    $response = '{"responseCode":"0","message":"No results"}';
+    $curl = curl_init();
 
-	// Get Library of Congress and Dewey Decimal Numbers from Library of Congress database
-	// SimpleXML also doesn't work for some reason...
-	$url = "http://lx2.loc.gov:210/lcdb?version=2.0&operation=searchRetrieve&query=bath.isbn=".$isbn13."&maximumRecords=1";
-	curl_setopt_array($curl, array(
-		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_HEADER => "Content-Type:application/xml",
-		CURLOPT_URL => $url));
+    // Get Library of Congress and Dewey Decimal Numbers from Library of Congress database
+    // SimpleXML also doesn't work for some reason...
+    $url = "http://lx2.loc.gov:210/lcdb?version=2.0&operation=searchRetrieve&query=bath.isbn=".$isbn13."&maximumRecords=1";
+    curl_setopt_array($curl, array(
+        CURLOPT_RETURNTRANSFER => 1,
+        CURLOPT_HEADER => "Content-Type:application/xml",
+        CURLOPT_URL => $url));
 
-	$locResponse = curl_exec($curl);
+    $locResponse = curl_exec($curl);
 
-	$xml_parser = xml_parser_create();
-	xml_parse_into_struct($xml_parser, $locResponse, $values, $index);
-	xml_parser_free($xml_parser);
+    $xml_parser = xml_parser_create();
+    xml_parse_into_struct($xml_parser, $locResponse, $values, $index);
+    xml_parser_free($xml_parser);
 
-	$r_loc = '';
-	$r_dcc = '';
-	if ($values[$index['ZS:NUMBEROFRECORDS'][0]]['value'] > 0) {
-		$DATAFIELD = $index['DATAFIELD'];
+    $r_loc = '';
+    $r_dcc = '';
+    if ($values[$index['ZS:NUMBEROFRECORDS'][0]]['value'] > 0) {
+        $DATAFIELD = $index['DATAFIELD'];
 
-		$values_loc_start = -1;
-		$values_loc_end = -1;
-		$values_dcc_start = -1;
-		$values_dcc_end = -1;
+        $values_loc_start = -1;
+        $values_loc_end = -1;
+        $values_dcc_start = -1;
+        $values_dcc_end = -1;
 
-		// Get the start and end indices for the Datafields in the $values array
-		// that contain lcc and dcc call numbers
-		$k = 0;
-		while (($values_loc_end == -1 || $values_dcc_end == -1) && $k < count($DATAFIELD)) {
-			$valueIndex = $DATAFIELD[$k];
-			$value = $values[$valueIndex];
-			
-			if ($value['type'] == 'open' && $value['attributes']['TAG'] == '050') {
-				$values_loc_start = $valueIndex;
-			}
-			else if ($value['type'] == 'close' && $values_loc_end == -1 && $values_loc_start != -1) {
-				$values_loc_end = $valueIndex;
-			}
+        // Get the start and end indices for the Datafields in the $values array
+        // that contain lcc and dcc call numbers
+        $k = 0;
+        while (($values_loc_end == -1 || $values_dcc_end == -1) && $k < count($DATAFIELD)) {
+            $valueIndex = $DATAFIELD[$k];
+            $value = $values[$valueIndex];
+            
+            if ($value['type'] == 'open' && $value['attributes']['TAG'] == '050') {
+                $values_loc_start = $valueIndex;
+            }
+            else if ($value['type'] == 'close' && $values_loc_end == -1 && $values_loc_start != -1) {
+                $values_loc_end = $valueIndex;
+            }
 
-			if ($value['type'] == 'open' && $value['attributes']['TAG'] == '082') {
-				$values_dcc_start = $valueIndex;
-			}
-			else if ($value['type'] == 'close' && $values_dcc_end == -1 && $values_dcc_start != -1) {
-				$values_dcc_end = $valueIndex;
-			}
+            if ($value['type'] == 'open' && $value['attributes']['TAG'] == '082') {
+                $values_dcc_start = $valueIndex;
+            }
+            else if ($value['type'] == 'close' && $values_dcc_end == -1 && $values_dcc_start != -1) {
+                $values_dcc_end = $valueIndex;
+            }
 
-			$k++;
-		}
+            $k++;
+        }
 
-		// Fill out r_lcc
-		if ($values_loc_start != -1 && $values_loc_end != -1) {
+        // Fill out r_lcc
+        if ($values_loc_start != -1 && $values_loc_end != -1) {
 
-			$k = $values_loc_start + 1;
-			while ($k < $values_loc_end) {
+            $k = $values_loc_start + 1;
+            while ($k < $values_loc_end) {
 
-				if ($values[$k]['type'] == 'complete') {
+                if ($values[$k]['type'] == 'complete') {
 
-					$code = $values[$k]['attributes']['CODE'];
-					if ($code == 'a' || $code == 'b') {
-						if (strlen($r_loc) > 0) {
-							$r_loc .= ' ';
-						}
+                    $code = $values[$k]['attributes']['CODE'];
+                    if ($code == 'a' || $code == 'b') {
+                        if (strlen($r_loc) > 0) {
+                            $r_loc .= ' ';
+                        }
 
-						$r_loc .= $values[$k]['value'];
-					}
-				}
+                        $r_loc .= $values[$k]['value'];
+                    }
+                }
 
-				$k += 2;
-			}
-		}
+                $k += 2;
+            }
+        }
 
-		// Fill out r_dcc
-		if ($values_dcc_start != -1 && $values_dcc_end != -1) {
+        // Fill out r_dcc
+        if ($values_dcc_start != -1 && $values_dcc_end != -1) {
 
-			$k = $values_dcc_start + 1;
-			while ($k < $values_dcc_end) {
+            $k = $values_dcc_start + 1;
+            while ($k < $values_dcc_end) {
 
-				if ($values[$k]['type'] == 'complete') {
+                if ($values[$k]['type'] == 'complete') {
 
-					$code = $values[$k]['attributes']['CODE'];
-					if ($code == 'a' || $code == 'b') {
-						if (strlen($r_dcc) > 0) {
-							$r_dcc .= ' ';
-						}
+                    $code = $values[$k]['attributes']['CODE'];
+                    if ($code == 'a' || $code == 'b') {
+                        if (strlen($r_dcc) > 0) {
+                            $r_dcc .= ' ';
+                        }
 
-						$r_dcc .= $values[$k]['value'];
-					}
-				}
-				
-				$k += 2;
-			}
-		}
-	}
-	
-	// Get all other information from Google Books API
-	$url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13;
-	curl_setopt_array($curl, array(
+                        $r_dcc .= $values[$k]['value'];
+                    }
+                }
+                
+                $k += 2;
+            }
+        }
+    }
+    
+    // Get all other information from Google Books API
+    $url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13;
+    curl_setopt_array($curl, array(
     CURLOPT_RETURNTRANSFER => 1,
     CURLOPT_URL => $url));
 
-	$googResponse = curl_exec($curl);
-	$googJson = json_decode($googResponse);
+    $googResponse = curl_exec($curl);
+    $googJson = json_decode($googResponse);
 
-	$items = $googJson->items;
-	$itemCount = $googJson->totalItems;
+    $items = $googJson->items;
+    $itemCount = $googJson->totalItems;
 
-	if ($itemCount > 0) {
+    if ($itemCount > 0) {
 
-		$bookData = '"bookData":[';
-		for ($i = 0; $i < $itemCount; $i++) {
-			// Are there cases where we would want items beyond the first?
-			$volInfo = $items[$i]->volumeInfo; 
+        $bookData = '"bookData":[';
+        for ($i = 0; $i < $itemCount; $i++) {
+            // Are there cases where we would want items beyond the first?
+            $volInfo = $items[$i]->volumeInfo; 
 
-			// response variables
-			// Some of these are too long and need to be cut off
-			$r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 255);
-			$r_author = ($volInfo->authors) ? $volInfo->authors : ''; // This might be an array of authors
-			$r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 255);
-			$r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
-			$r_isbn13 = $isbn13;
-			// $r_loc = '';
-			// $r_dcc = '';
-			$r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
-			$r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
-			$r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
-			// $r_libid = '';
+            // response variables
+            // Some of these are too long and need to be cut off
+            $r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 255);
+            $r_author = ($volInfo->authors) ? $volInfo->authors : ''; // This might be an array of authors
+            $r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 255);
+            $r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
+            $r_isbn13 = $isbn13;
+            // $r_loc = '';
+            // $r_dcc = '';
+            $r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
+            $r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
+            $r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
+            $r_libid = uniqid();
 
-			$authorString = '';
+            $authorString = '';
 
-			for ($j = 0; $j < count($r_author); $j++) {
-	    		$authorString .= $r_author[$j];
+            for ($j = 0; $j < count($r_author); $j++) {
+                $authorString .= $r_author[$j];
 
-	    		if ($j != count($r_author) - 1) {
-	    			$authorString .= ', ';
-	    		}
-		    }
+                if ($j != count($r_author) - 1) {
+                    $authorString .= ', ';
+                }
+            }
 
-			$authorString = substr($authorString , 0, 255);
+            $authorString = substr($authorString , 0, 255);
 
-		    $tagString = '';
+            $tagString = '';
 
-		    for ($j = 0; $j < count($r_tag); $j++) {
-	    		$tagString .= $r_tag[$j];
+            for ($j = 0; $j < count($r_tag); $j++) {
+                $tagString .= $r_tag[$j];
 
-	    		if($j != count($r_tag) - 1) {
-	    			$tagString .= ', ';
-	    		}
-		    }
+                if($j != count($r_tag) - 1) {
+                    $tagString .= ', ';
+                }
+            }
 
-		    $tagString = substr($tagString, 0, 255);
+            $tagString = substr($tagString, 0, 255);
 
-		    $bookData .=
-		    	'{"title":"'.$r_title.'",
-		    	"author":"'.$authorString.'",
-		    	"publisher":"'.$r_publisher.'",
-		    	"isbn13":"'.$r_isbn13.'",
-		    	"year":"'.$r_year.'",
-		    	"loc":"'.$r_loc.'",
-		    	"dcc":"'.$r_dcc.'",
-		    	"tag":"'.$tagString.'",
-		    	"covurl":"'.$r_covurl.'",
-		    	"desc":"'.$r_desc.'"}';
+            $r_title = str_replace('"', '', $r_title);
+            $authorString = str_replace('"', '', $authorString);
+            $r_publisher = str_replace('"', '', $r_publisher);
+            $r_isbn13 = str_replace('"', '', $r_isbn13);
+            $r_year = str_replace('"', '', $r_year);
+            $r_loc = str_replace('"', '', $r_loc);
+            $r_dcc = str_replace('"', '', $r_dcc);
+            $tagString = str_replace('"', '', $tagString);
+            $r_covurl = str_replace('"', '', $r_covurl);
+            $r_desc = str_replace('"', '', $r_desc);
 
-		    if ($i < $itemCount - 1) {
-		    	$bookData .= ', ';
-		    }
-		}
+            $bookData .=
+                '{"title":"'.$r_title.'",
+                "author":"'.$authorString.'",
+                "publisher":"'.$r_publisher.'",
+                "isbn13":"'.$r_isbn13.'",
+                "year":"'.$r_year.'",
+                "loc":"'.$r_loc.'",
+                "dcc":"'.$r_dcc.'",
+                "tag":"'.$tagString.'",
+                "covurl":"'.$r_covurl.'",
+                "desc":"'.$r_desc.'",
+                "libid":"'.$r_libid.'"}';
 
-		$bookData .= ']';
-		$response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found",'.$bookData.'}';
-	}
+            if ($i < $itemCount - 1) {
+                $bookData .= ', ';
+            }
+        }
 
-	curl_close($curl);
-	return $response;
+        $bookData .= ']';
+        $response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found",'.$bookData.'}';
+    }
+
+    curl_close($curl);
+    return $response;
 }
 
 /**
@@ -566,45 +618,143 @@ function retrieveBookData($isbn13) {
 */
 function retrieveDBBook($libid) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
 
-	$mysqli = connectToDB();
+    $mysqli = connectToDB();
 
-	if ($mysqli) {
+    if ($mysqli) {
 
-		$libid = $mysqli->real_escape_string($libid);
+        $libid = $mysqli->real_escape_string($libid);
 
-		$q = "SELECT * FROM library WHERE libid='$libid'";
-		$result = $mysqli->query($q);
+        $q = "SELECT * FROM library WHERE libid='$libid'";
+        $result = $mysqli->query($q);
 
-		if ($result->num_rows > 0) {
-			$row = $result->fetch_assoc();
-			$bookData = '"bookData":[';
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $bookData = '"bookData":[';
 
-			$bookData .=
-	    	'{"title":"'.$row['title'].'",
-	    	"author":"'.$row['author'].'",
-	    	"publisher":"'.$row['publisher'].'",
-	    	"isbn13":"'.$row['isbn13'].'",
-	    	"year":"'.$row['year'].'",
-	    	"loc":"'.$row['loc'].'",
-	    	"dcc":"'.$row['dcc'].'",
-	    	"tag":"'.$row['tags'].'",
-	    	"covurl":"'.$row['covurl'].'",
-	    	"comms":"'.$row['comms'].'"}';
+            $bookData .=
+            '{"title":"'.$row['title'].'",
+            "author":"'.$row['author'].'",
+            "publisher":"'.$row['publisher'].'",
+            "isbn13":"'.$row['isbn13'].'",
+            "year":"'.$row['year'].'",
+            "loc":"'.$row['loc'].'",
+            "dcc":"'.$row['dcc'].'",
+            "tag":"'.$row['tags'].'",
+            "covurl":"'.$row['covurl'].'",
+            "comms":"'.$row['comms'].'",
+            "libid":"'.$row['libid'].'"}';
 
-		    $bookData .= ']';
+            $bookData .= ']';
 
-			$response = '{"responseCode":"1","message":"Found Library Book",'.$bookData.'}';
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
-		}
-	}
+            $response = '{"responseCode":"1","message":"Found Library Book",'.$bookData.'}';
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
+}
+
+/**
+* Retrieves book data the library database for editing
+*
+* @param $holdingsRequest an associative array that contains the following:
+* holdingStatuses the holdings of this status type to search for
+* count the number of holdings to retrieve
+* offset the number in the library database to start retrieving holdings from
+*
+* @return A JSON formatted response string.
+*/
+function retrieveHoldingsAdmin($holdingsRequest) {
+
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+
+    $mysqli = connectToDB();
+
+    if ($mysqli) {
+
+        $q = "SELECT * FROM library WHERE status IN (";
+
+        $arrCount = count($holdingsRequest['holdingStatuses']);
+
+        for ($i=0; $i<$arrCount; $i++) {
+            if ($i+1 < $arrCount) {
+                $q = $q."'".$holdingsRequest['holdingStatuses'][$i]['type']."', ";
+            }
+            else {
+                $q = $q."'".$holdingsRequest['holdingStatuses'][$i]['type']."') ";
+            }
+        }
+
+        $q = $q."LIMIT {$holdingsRequest['count']} OFFSET {$holdingsRequest['offset']}";
+
+        $result = $mysqli->query($q);
+        $rowCount = $result->num_rows;
+
+        if ($rowCount > 0) {
+
+            $holdings = '"holdingsData":[';
+
+            for ($i=0; $i<$rowCount; $i++) {
+                $row = $result->fetch_assoc();
+
+                if ($i+1 < $rowCount) {
+                    $holdings .= '{"title":"'.$row['title'].'",
+                    "author":"'.$row['author'].'",
+                    "publisher":"'.$row['publisher'].'",
+                    "isbn13":"'.$row['isbn13'].'",
+                    "year":"'.$row['year'].'",
+                    "loc":"'.$row['loc'].'",
+                    "dcc":"'.$row['dcc'].'",
+                    "tag":"'.$row['tags'].'",
+                    "covurl":"'.$row['covurl'].'",
+                    "comms":"'.$row['comms'].'",
+                    "tags":"'.$row['tags'].'",
+                    "libid":"'.$row['libid'].'",
+                    "status":"'.$row['status'].'",
+                    "status_by":"'.$row['status_by'].'",
+                    "status_time":"'.$row['status_timestamp'].'",
+                    "fname":"'.$row['patron_firstname'].'",
+                    "lname":"'.$row['patron_lastname'].'",
+                    "email":"'.$row['patron_email'].'"}, ';
+                }
+                else {
+                    $holdings .= '{"title":"'.$row['title'].'",
+                    "author":"'.$row['author'].'",
+                    "publisher":"'.$row['publisher'].'",
+                    "isbn13":"'.$row['isbn13'].'",
+                    "year":"'.$row['year'].'",
+                    "loc":"'.$row['loc'].'",
+                    "dcc":"'.$row['dcc'].'",
+                    "tag":"'.$row['tags'].'",
+                    "covurl":"'.$row['covurl'].'",
+                    "comms":"'.$row['comms'].'",
+                    "tags":"'.$row['tags'].'",
+                    "libid":"'.$row['libid'].'",
+                    "status":"'.$row['status'].'",
+                    "status_by":"'.$row['status_by'].'",
+                    "status_time":"'.$row['status_timestamp'].'",
+                    "fname":"'.$row['patron_firstname'].'",
+                    "lname":"'.$row['patron_lastname'].'",
+                    "email":"'.$row['patron_email'].'"}]';
+                }
+            }
+
+            $response = '{"responseCode":"1","message":"'.$rowCount.' holding(s) found",'.$holdings.'}';
+        }
+        else {
+            $response = '{"responseCode":"2","message":"No results"}';
+        }
+    }
+
+    disconnectFromDB($mysqli);
+
+    return $response;
 }
 
 /**
@@ -624,61 +774,61 @@ function retrieveDBBook($libid) {
 */
 function addLibPatron($patronData) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	
-	$mysqli = connectToDB();
-	if ($mysqli) {
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    
+    $mysqli = connectToDB();
+    if ($mysqli) {
 
-		$patronData = escapeData($patronData);
+        $patronData = escapeData($patronData);
 
-		$q = "SELECT * FROM library_patron WHERE email = '{$patronData['email']}'";
-		$result = $mysqli->query($q);
+        $q = "SELECT * FROM library_patron WHERE email = '{$patronData['email']}'";
+        $result = $mysqli->query($q);
 
-		if ($result->num_rows == 0) { // Add the new board Member
+        if ($result->num_rows == 0) { // Add the new board Member
 
-			$timeStamp = getTimeStamp();
-			$testMember = 'testMember';
-			$q = "INSERT INTO `library_patron`(`firstname`, `lastname`, `phone`, `email`, 
-				`added_by`, `added_timestamp`, `status`, `status_timestamp`) 
-			VALUES ('{$patronData['firstname']}', '{$patronData['lastname']}', 
-				'{$patronData['phone']}', '{$patronData['email']}', 
-				'$testMember', '$timeStamp', 'ADDED', '$timeStamp')";
+            $timeStamp = getTimeStamp();
+            $testMember = 'testMember';
+            $q = "INSERT INTO `library_patron`(`firstname`, `lastname`, `phone`, `email`, 
+                `added_by`, `added_timestamp`, `status`, `status_timestamp`) 
+            VALUES ('{$patronData['firstname']}', '{$patronData['lastname']}', 
+                '{$patronData['phone']}', '{$patronData['email']}', 
+                '$testMember', '$timeStamp', 'ADDED', '$timeStamp')";
 
-			$result = $mysqli->query($q);
-			if ($result == true) {
-				$response = '{"responseCode":"1","message":"New library patron added!"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
-			}
-		}
-		else { // library patron already exists or was added but eventually removed
-			$row = $result->fetch_assoc();
-			if ($row['status'] == 'REMOVED') {
+            $result = $mysqli->query($q);
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"New library patron added!"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+            }
+        }
+        else { // library patron already exists or was added but eventually removed
+            $row = $result->fetch_assoc();
+            if ($row['status'] == 'REMOVED') {
 
-				$timeStamp = getTimeStamp();
-				$testMember = 'testMember';
-				$q = "UPDATE library_patron 
-				SET status='ADDED', status_by='$testMember', status_timestamp='$timeStamp'
-				WHERE email='{$patronData['email']}'";
+                $timeStamp = getTimeStamp();
+                $testMember = 'testMember';
+                $q = "UPDATE library_patron 
+                SET status='ADDED', status_by='$testMember', status_timestamp='$timeStamp'
+                WHERE email='{$patronData['email']}'";
 
-				$result = $mysqli->query($q);
-				if ($result == true) {
-					$response = '{"responseCode":"1","message":"New library patron added!"}';
-				}
-				else {
-					$response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
-				}
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Library patron already exists!"}';
-			}
-		}
-	}
-	
-	disconnectFromDB($mysqli);
+                $result = $mysqli->query($q);
+                if ($result == true) {
+                    $response = '{"responseCode":"1","message":"New library patron added!"}';
+                }
+                else {
+                    $response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+                }
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Library patron already exists!"}';
+            }
+        }
+    }
+    
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 /**
@@ -691,34 +841,34 @@ function addLibPatron($patronData) {
 */
 function retrieveLibPatron($email) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	
-	$mysqli = connectToDB();
-	if ($mysqli) {
-		$email = $mysqli->real_escape_string($email);
-		$q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
-		$request = $mysqli->query($q);
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    
+    $mysqli = connectToDB();
+    if ($mysqli) {
+        $email = $mysqli->real_escape_string($email);
+        $q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
+        $request = $mysqli->query($q);
 
-		if ($request->num_rows > 0) {
-			$row = $request->fetch_assoc();
-			
-			$patronData = '"patronData":[';
-			$patronData .=
-	    	'{"firstname":"'.$row['firstname'].'",
-	    	"lastname":"'.$row['lastname'].'",
-	    	"phone":"'.$row['phone'].'",
-	    	"email":"'.$row['email'].'"}';
-		    $patronData .= ']';
+        if ($request->num_rows > 0) {
+            $row = $request->fetch_assoc();
+            
+            $patronData = '"patronData":[';
+            $patronData .=
+            '{"firstname":"'.$row['firstname'].'",
+            "lastname":"'.$row['lastname'].'",
+            "phone":"'.$row['phone'].'",
+            "email":"'.$row['email'].'"}';
+            $patronData .= ']';
 
-			$response = '{"responseCode":"1","message":"Found library patron '.$row['firstname'].' '.$row['lastname'].'",'.$patronData.'}';
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
-		}
-	}
+            $response = '{"responseCode":"1","message":"Found library patron '.$row['firstname'].' '.$row['lastname'].'",'.$patronData.'}';
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
+        }
+    }
 
-	disconnectFromDB();
-	return $response;
+    disconnectFromDB();
+    return $response;
 }
 
 /**
@@ -734,41 +884,41 @@ function retrieveLibPatron($email) {
 */
 function editLibPatron($patronData) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	
-	$mysqli = connectToDB();
-	if ($mysqli) {
-		$patronData = escapeData($patronData);
-		$email = $patronData['email'];
-		$q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
-		$request = $mysqli->query($q);
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    
+    $mysqli = connectToDB();
+    if ($mysqli) {
+        $patronData = escapeData($patronData);
+        $email = $patronData['email'];
+        $q = "SELECT * FROM library_patron WHERE email='$email' AND status='ADDED'";
+        $request = $mysqli->query($q);
 
-		if ($request->num_rows > 0) {
+        if ($request->num_rows > 0) {
 
-			$firstname = $patronData['firstname'];
-			$lastname = $patronData['lastname'];
-			$phone = $patronData['phone'];
-			$email = $patronData['email'];
+            $firstname = $patronData['firstname'];
+            $lastname = $patronData['lastname'];
+            $phone = $patronData['phone'];
+            $email = $patronData['email'];
 
-			$q = "UPDATE library_patron 
-			SET firstname='$firstname', lastname='$lastname', phone='$phone' WHERE email='$email' AND status='ADDED'";
+            $q = "UPDATE library_patron 
+            SET firstname='$firstname', lastname='$lastname', phone='$phone' WHERE email='$email' AND status='ADDED'";
 
-			$request = $mysqli->query($q);
+            $request = $mysqli->query($q);
 
-			if ($request) {
-				$response = '{"responseCode":"1","message":"Successfully edited Library Patron"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! Did not edit Library Patron"}';
-			}
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
-		}
-	}
+            if ($request) {
+                $response = '{"responseCode":"1","message":"Successfully edited Library Patron"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Did not edit Library Patron"}';
+            }
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Error! Invalid library patron email"}';
+        }
+    }
 
-	disconnectFromDB();
-	return $response;
+    disconnectFromDB();
+    return $response;
 }
 
 /**
@@ -781,41 +931,81 @@ function editLibPatron($patronData) {
 */
 function removeLibPatron($email, $reason) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	$mysqli = connectToDB();
-	
-	if ($mysqli) {
-		$q = "SELECT * FROM library_patron WHERE email = '$email' AND status='ADDED'";
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+    
+    if ($mysqli) {
+        $q = "SELECT * FROM library_patron WHERE email = '$email' AND status='ADDED'";
 
-		$result = $mysqli->query($q);
+        $result = $mysqli->query($q);
 
-		if ($result->num_rows > 0) {
-			$row = $result->fetch_assoc();
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
 
-			$testMember = 'testMember';
-			$timeStamp = getTimeStamp();
+            $testMember = 'testMember';
+            $timeStamp = getTimeStamp();
 
-			$q = "UPDATE library_patron SET status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
-			removed_by='$testMember', removed_timeStamp='$timeStamp', removed_reason='$reason' 
-			WHERE email='$email'";
+            $q = "UPDATE library_patron SET status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
+            removed_by='$testMember', removed_timeStamp='$timeStamp', removed_reason='$reason' 
+            WHERE email='$email'";
 
-			$result = $mysqli->query($q);
+            $result = $mysqli->query($q);
 
-			if ($result) {
-				$response = '{"responseCode":"1","message":"Library Patron '.$row['firstname'].' '.$row['lastname'].' successfully removed"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! Library Patron not successfully removed"}';
-			}
-		}
-		else {
-			$response = '{"responseCode":"0","message":"Invalid Library Patron Email"}';
-		}
-	}
+            if ($result) {
+                $response = '{"responseCode":"1","message":"Library Patron '.$row['firstname'].' '.$row['lastname'].' successfully removed"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Library Patron not successfully removed"}';
+            }
+        }
+        else {
+            $response = '{"responseCode":"0","message":"Invalid Library Patron Email"}';
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
+}
+
+/**
+* Deletes library patrons from library.
+*
+* @param $email the library patron.
+*
+* @return A JSON formatted response string.
+*/
+function deleteLibPatron($email) {
+
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+
+    if ($mysqli) {
+        $email = $mysqli->real_escape_string($email);
+
+        $q = "SELECT * FROM library_patron WHERE email = '$email'";
+        $result = $mysqli->query($q);
+
+        if ($result->num_rows == 0) {
+            $response = '{"responseCode":"0","message":"Library Patron not found!","email":"'.$email.'"}';
+        }
+        else {
+            $rowGet = $result->fetch_assoc();
+            $q = "DELETE FROM library_patron WHERE email = '".$rowGet['email']."'";
+            $result = $mysqli->query($q);
+
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"Library Patron deleted!","email":"'.$rowGet['email'].'"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Library Patron not deleted!","email":"'.$rowGet['email'].'"}';
+            }
+        }
+    }
+
+    disconnectFromDB($mysqli);
+
+    return $response;
 }
 
 /*
@@ -829,150 +1019,150 @@ function removeLibPatron($email, $reason) {
 * All parameters except position should never be NULL.
 *
 * @param member the member to get from the database. Can be
-* all to get all the members in the database.
+* all to get all the admins in the database.
 *
 * @return A JSON formatted response string.
 */
-function getBoardMember($pid) {
+function getAdmin($pid) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
 
-	$mysqli = connectToDB();
-	if ($mysqli) {
-		if ($pid == 'all') { // get all members
+    $mysqli = connectToDB();
+    if ($mysqli) {
+        if ($pid == 'all') { // get all admins
 
-			$q = "SELECT * FROM exec_board";
-			$result = $mysqli->query($q);
+            $q = "SELECT * FROM admins";
+            $result = $mysqli->query($q);
 
-			$rowCount = $result->num_rows;
-			if ($rowCount == 0) { // no board members
-				$response = '{"responseCode":"0","message":"Error! No board members found!","pid":"'.$pid.'"}';
-			}
-			else { // board members found
+            $rowCount = $result->num_rows;
+            if ($rowCount == 0) { // no admins
+                $response = '{"responseCode":"0","message":"Error! No admins found!","pid":"'.$pid.'"}';
+            }
+            else { // admins found
 
-				$members = '"members":[';
+                $admins = '"admins":[';
 
-				for ($i = 0; $i < $rowCount; $i++) {
-					$row = $result->fetch_assoc();
+                for ($i = 0; $i < $rowCount; $i++) {
+                    $row = $result->fetch_assoc();
 
-					$members .= '{"firstname":"'.$row['firstname'].'","lastname":"'.$row['lastname'].'","pid":"'.$row['pid'].'"}';
+                    $admins .= '{"firstname":"'.$row['firstname'].'","lastname":"'.$row['lastname'].'","pid":"'.$row['pid'].'"}';
 
-					if ($i < $rowCount - 1) {
-						$members .= ',';
-					}
-				}
+                    if ($i < $rowCount - 1) {
+                        $admins .= ',';
+                    }
+                }
 
-				$members .= ']';
-				$response = '{"responseCode":"1","message":"'.$rowCount.' board member(s) found!","memberCount":"'.$rowCount.'",'.$members.'}';	
-			}
-		}
-		else { // look for specific member
-			$pid = $mysqli->real_escape_string($pid);
-			$q = "SELECT * FROM exec_board WHERE pid = '$pid'";
-			$result = $mysqli->query($q);
+                $admins .= ']';
+                $response = '{"responseCode":"1","message":"'.$rowCount.' admin(s) found!","adminCount":"'.$rowCount.'",'.$admins.'}';  
+            }
+        }
+        else { // look for specific admin
+            $pid = $mysqli->real_escape_string($pid);
+            $q = "SELECT * FROM admins WHERE pid = '$pid'";
+            $result = $mysqli->query($q);
 
-			if ($result->num_rows == 0) { // Specific board member not found
-				$response = '{"responseCode":"0","message":"Board member '.$pid.' not found!"}';
-			}
-			else { // Specific board member exists
-				$rowGet = $result->fetch_assoc();
-				$response = '{"responseCode":"1","message":"Board member '.$pid.' found!",
-				"member":["firstname":"'.$rowGet['firstname'].'","lastname":"'.$rowGet['lastname'].'","pid":"'.$rowGet['pid'].'"]}';
-			}
-		}
-	}
+            if ($result->num_rows == 0) { // Specific admin not found
+                $response = '{"responseCode":"0","message":"Admin '.$pid.' not found!"}';
+            }
+            else { // Specific admin exists
+                $rowGet = $result->fetch_assoc();
+                $response = '{"responseCode":"1","message":"Admin '.$pid.' found!",
+                "admin":["firstname":"'.$rowGet['firstname'].'","lastname":"'.$rowGet['lastname'].'","pid":"'.$rowGet['pid'].'"]}';
+            }
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 /**
 * Adds a user to the database table.
 * All parameters except position should never be NULL.
 *
-* @param member the member to delete from the database.
+* @param pid the pid of the admin to delete from the database.
 *
 * @return A JSON formatted response string.
 */
-function deleteBoardMember($pid) {
+function deleteAdmin($pid) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	$mysqli = connectToDB();
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
 
-	if ($mysqli) {
-		$pid = $mysqli->real_escape_string($pid);
+    if ($mysqli) {
+        $pid = $mysqli->real_escape_string($pid);
 
-		$q = "SELECT * FROM exec_board WHERE pid = '$pid'";
-		$result = $mysqli->query($q);
+        $q = "SELECT * FROM admins WHERE pid = '$pid'";
+        $result = $mysqli->query($q);
 
-		if ($result->num_rows == 0) { // Board member not found, cannot delete
-			$response = '{"responseCode":"0","message":"Board member not found!","member":"'.$pid.'"}';
-		}
-		else { // Specific board member exists, delete
-			$rowGet = $result->fetch_assoc();
-			$q = "DELETE FROM exec_board WHERE pid = '".$rowGet['pid']."'";
-			$result = $mysqli->query($q);
+        if ($result->num_rows == 0) { // Admin not found, cannot delete
+            $response = '{"responseCode":"0","message":"Admin not found!","admin":"'.$pid.'"}';
+        }
+        else { // Specific admin exists, delete
+            $rowGet = $result->fetch_assoc();
+            $q = "DELETE FROM admins WHERE pid = '".$rowGet['pid']."'";
+            $result = $mysqli->query($q);
 
-			if ($result == true) {
-				$response = '{"responseCode":"1","message":"Board member deleted!","member":"'.$rowGet['pid'].'"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! Board member not deleted!","member":"'.$rowGet['pid'].'"}';
-			}
-		}
-	}
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"Admin deleted!","admin":"'.$rowGet['pid'].'"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! Admin not deleted!","admin":"'.$rowGet['pid'].'"}';
+            }
+        }
+    }
 
-	disconnectFromDB($mysqli);
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 /**
 * Adds a user to the database table.
 * All parameters except position should never be NULL.
 *
-* @param $bMemData an associative array that contains the following:
+* @param $adminData an associative array that contains the following:
 * firstname: first name of user.
 * lastname: last name of user.
 * position: position of user.
-* pid: pid of board member.
+* pid: pid of admin
 *
 * @return A JSON formatted response string.
 */
-function addBoardMember($bMemData) {
+function addAdmin($adminData) {
 
-	$response = '{"responseCode":"0","message":"Could not connect to database"}';
-	
-	$mysqli = connectToDB();
-	if ($mysqli) {
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    
+    $mysqli = connectToDB();
+    if ($mysqli) {
 
-		$bMemData = escapeData($bMemData);
-		$pid = $bMemData['pid'];
+        $adminData = escapeData($adminData);
+        $pid = $adminData['pid'];
 
-		$q = "SELECT * FROM exec_board WHERE pid = '$pid'";
-		$result = $mysqli->query($q);
+        $q = "SELECT * FROM admins WHERE pid = '$pid'";
+        $result = $mysqli->query($q);
 
-		if ($result->num_rows == 0) { // Add the new board Member
-			$q = "INSERT INTO `exec_board`(`pid`, `position`, `firstname`, `lastname`) 
-			VALUES ('$pid', '{$bMemData['position']}', '{$bMemData['firstname']}', '{$bMemData['lastname']}')";
-			$result = $mysqli->query($q);
+        if ($result->num_rows == 0) { // Add the new admin
+            $q = "INSERT INTO `admins`(`pid`, `position`, `firstname`, `lastname`) 
+            VALUES ('$pid', '{$adminData['position']}', '{$adminData['firstname']}', '{$adminData['lastname']}')";
+            $result = $mysqli->query($q);
 
-			if ($result == true) {
-				$response = '{"responseCode":"1","message":"New board member added!","pid":"'.$pid.'"}';
-			}
-			else {
-				$response = '{"responseCode":"0","message":"Error! New board member not added!","pid":"'.$pid.'"}';
-			}
-		}
-		else { // pid already exists
-			$response = '{"responseCode":"0","message":"Board member already exists!","pid":"'.$pid.'"}';
-		}
-	}
-	
-	disconnectFromDB($mysqli);
+            if ($result == true) {
+                $response = '{"responseCode":"1","message":"New admin added!","pid":"'.$pid.'"}';
+            }
+            else {
+                $response = '{"responseCode":"0","message":"Error! New admin not added!","pid":"'.$pid.'"}';
+            }
+        }
+        else { // pid already exists
+            $response = '{"responseCode":"0","message":"Admin already exists!","pid":"'.$pid.'"}';
+        }
+    }
+    
+    disconnectFromDB($mysqli);
 
-	return $response;
+    return $response;
 }
 
 ?>

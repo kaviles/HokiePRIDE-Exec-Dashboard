@@ -1,125 +1,159 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
-<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<polymer-element name="custom-dialog-checkInBook" layout vertical center center-justified>
+<dom-module id="custom-dialog-checkInBook">
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 5px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: orange;*/
-			}
-			#header {
-				margin: 0px 0px 0px 0px;
-			}
-			#mainForm {
-				max-width: 400px;
-			}
-			#mainInput {
-				margin: 5px 5px 5px 5px;
-				padding: 0px 0px 0px 0px;
-			}
-			paper-button {
-				margin: 10px 0px 0px 0px;
-			}
-		</style>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-		<div id='header'>Check Book Back Into Library</div>
-		<section id='mainForm' layout vertical wrap>
-	    	<template repeat='{{input in inputs}}'>
-	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-					<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}'>
-	    		</paper-input-decorator>
-	    	</template>
-    	</section>
-    	<core-tooltip id='tooltip' label='' position='bottom'>
-	    	<paper-button raised role='button' on-tap='{{validateForm}}'>Check In Book</paper-button>
-		</core-tooltip>
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                max-width: 400px;
 
-	    <core-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax>
-	</template>
+                @apply(--layout-vertical);
+                @apply(--layout-wrap);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+        </style>
 
-	<script>
-    Polymer( 'custom-dialog-checkInBook', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+        <div id='header'>Check Book Back Into Library</div>
+        <div id='mainForm'>
+            <template is='dom-repeat' items='{{inputs}}' as='input'>
+                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
+                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                </paper-input>
+            </template>
+        </div>
 
-    ready: function() {
-    	this.inputs = [
-    	{id:'libid', label:'Book ID', error:'', pattern:'^[a-zA-Z0-9]*$'}];
-	},
+        <paper-button id='checkInBtn' raised role='button' on-tap='validateForm'>Check In Book</paper-button>
+        <paper-tooltip id='tooltip' for='checkInBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
 
-	validateForm: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
+        <iron-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' 
+        handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+    </template>
 
-		this.$.mainForm.querySelector('#mainInput > #libid').setAttribute('required', '');
+    <script>
+    Polymer({
+        is: 'custom-dialog-checkInBook', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
 
-		var validCount = 0;
-		var valueArray = new Array(papDecCount);
-		for (var i = 0; i < papDecCount; i++) {
-			var inp = papDec[i].firstElementChild;
-			valueArray[i] = inp.value;
-			papDec[i].isInvalid = !inp.validity.valid;
+        ready: function() {
+            this.inputs = [
+            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            ];
+        },
 
-			if (!papDec[i].isInvalid) {
-				validCount++;
-			}
-		}
+        validateForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		if (validCount == papDecCount) {
-			req = '{"libid":"' + valueArray[0] + '"}';
-			this.ajaxRequest(req);
-		}
-	},
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-	clearForm: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
-		for (var i = 0; i < papDecCount; i++) {
-			papDec[i].firstElementChild.value = '';
-		}
-	},
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-	ajaxRequest: function(request) {
-		var aj = this.$.ajaxAdd;
-		aj.params = request;
-		// Find a way to use auto attribute without it making requests on startup calling the go method.
-		aj.go();
-	},
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-	ajaxResponse: function(e) {
-		var resp = JSON.parse(e.detail.response);
-		// console.log('Message: ' + resp.message);
-		var tip = this.$.tooltip;
-		var button = tip.querySelector('paper-button');
+            if (validCount == formInputCount) {
+                req = '{"libid":"' + formInputArr[0].value + '"}';
+                // console.log(req);
+                this.disableForm(true);
+                this.ajaxRequest(req);
+            }
+        },
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.clearForm();
-		}
-		else {
-			button.style.backgroundColor = "red";
-		}
+        disableForm: function(val) {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
 
+            this.$.checkInBtn.disabled = val;
+        },
+
+        clearForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].value = '';
+                formInputArr[i].invalid = false;
+            }
+
+            this.$.tooltip.hide();
+            this.$.tooltiptext.innerHTML = '';
+            this.$.checkInBtn.style.backgroundColor = "white";
+        },
+
+        ajaxRequest: function(request) {
+            var aj = this.$.ajaxAdd;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+            this.disableForm(false);
+
+            var ttip = this.$.tooltip;
+            var ttiptext = this.$.tooltiptext;
+            var button = this.$.checkInBtn;
+
+            if (resp.responseCode == 1) {
+                this.clearForm();
+                button.style.backgroundColor = "green";
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
     });
   </script>
 
-</polymer-element>
+</dom-module>

@@ -4,7 +4,7 @@
 <link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<dom-module id="custom-dialog-addLibPatron" layout vertical center center-justified>>
+<dom-module id="custom-dialog-addAdmin" layout vertical center center-justified>>
 
     <template>
         <style>    
@@ -28,11 +28,7 @@
                 max-width: 400px;
 
                 @apply(--layout-vertical);
-                @apply(--layout-center-justified);
-            }
-            #mainInput {
-                margin: 5px 5px 5px 5px;
-                padding: 0px 0px 0px 0px;
+                @apply(--layout-wrap);
             }
             .formInput {
                 margin: 5px 5px 5px 5px;
@@ -43,25 +39,24 @@
             }
         </style>
 
-        <div id='header'>Add Library Patron</div>
+        <div id='header'>Add Administrator</div>
         <section id='mainForm'>
             <template is='dom-repeat' items='{{inputs}}' as='input'>
-                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
-                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' required 
+                preventInvalidInput auto-validate error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </section>
 
-        <paper-button id='addLibPatronBtn' raised role='button' on-tap='validateForm'>Add Library Patron</paper-button>
-        <paper-tooltip id='tooltip' for='addLibPatronBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-button id='addAdminBtn' raised role='button' on-tap='validateForm'>Add Admin</paper-button>
+        <paper-tooltip id='tooltip' for='addAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
 
-        <iron-ajax id='ajaxAdd' url='../../phpcommands/addLibPatron.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+        <iron-ajax id='ajaxAdd' url='../../phpcommands/addAdmin.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
 
     <script>
     Polymer( {
-        is: 'custom-dialog-addLibPatron', 
+        is: 'custom-dialog-addAdmin', 
         properties: {},
         /**
          * Specifies the label of the individual tile.
@@ -73,15 +68,13 @@
 
         ready: function() {
             this.inputs = [
-            {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-            {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-            {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:'false', error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
-            {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:'true', error:'email@example.com', pattern:'\.*'}
-            ];
+            {id:'firstname', label:'First Name', error:''},
+            {id:'lastname', label:'Last Name', error:''},
+            {id:'position', label:'Position', error:''},
+            {id:'pid', label:'VT PID', error:''}];
         },
 
         validateForm: function() {
-            
             var formInputArr = this.getElementsByClassName('formInput');
             var formInputCount = formInputArr.length;
 
@@ -102,9 +95,7 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + 
-                '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
-                this.disableForm(true);
+                req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + '","position":"' + formInputArr[2].value + '","pid":"' + formInputArr[3].value + '"}';
                 this.ajaxRequest(req);
             }
         },
@@ -117,7 +108,7 @@
                 formInputArr[i].disabled = val;
             }
 
-            this.$.addLibPatronBtn.disabled = val;
+            this.$.addAdminBtn.disabled = val;
         },
 
         clearForm: function() {
@@ -131,13 +122,12 @@
 
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
-            this.$.addLibPatronBtn.style.backgroundColor = "white";
+            this.$.addAdminBtn.style.backgroundColor = "white";
         },
 
         ajaxRequest: function(request) {
             var aj = this.$.ajaxAdd;
             aj.params = request;
-            // Find a way to use auto attribute without it making requests on startup calling the go method.
             aj.generateRequest();
         },
 
@@ -147,8 +137,8 @@
             this.disableForm(false);
 
             var ttip = this.$.tooltip;
-            var ttiptext = this.$.tooltiptext
-            var button = this.$.addLibPatronBtn;
+            var ttiptext = this.$.tooltiptext;
+            var button = this.$.addAdminBtn;
 
             if (resp.responseCode == 1) {
                 this.clearForm();
@@ -161,6 +151,7 @@
             ttiptext.innerHTML = resp.message;
             ttip.show();
         },
+
     });
   </script>
 

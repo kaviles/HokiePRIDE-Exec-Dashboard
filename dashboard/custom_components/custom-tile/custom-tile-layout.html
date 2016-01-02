@@ -1,48 +1,60 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="custom-tile-layout" attributes="label" layout vertical center center-justified wrap>
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 
-  <template>
-    <style>    
-		:host {
-			background-color: white;
-			padding: 5px;
-			height: 500px;
+<dom-module id="custom-tile-layout" attributes="label">
 
-			/*border: 1px;
-			border-color: green;
-			border-style: solid;*/
-		}
-		.tile-container {
-			margin: 5px;
-			border: 1px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                height: 100%;
 
-			/*border: 1px;
-			border-color: blue;
-			border-style: solid;*/
-		}
-		polyfill-next-selector { content: '.tile-container [tile]'; }
-		.tile-container ::content [tile] {
-		}
-    </style>
-    <div class='tile-container' layout horizontal center center-justified wrap>
-    	<!-- <content select="[tile]"></content> -->
-    	<shadow></shadow>
-    </div>
-  </template>
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+                @apply(--layout-wrap);
 
-  <script>
+                border: 1px;
+                border-color: green;
+                border-style: solid;
+            }
+            .tile-container {
+                margin: 5px;
+                border: 1px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+                @apply(--layout-wrap);
+            }
+            polyfill-next-selector { content: '.tile-container [tile]'; }
+            .tile-container ::content [tile] {
+            }
+        </style>
+
+        <div class='tile-container'>
+            <content select="[tile]"></content>
+            <!-- <shadow></shadow> -->
+        </div>
+    </template>
+
+    <script>
 
     Polymer({
-    /**
-     * Specifies the label for the set of tiles.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+        is: 'custom-tile-layout',
+        properties: {},
+
+        /**
+         * Specifies the label for the set of tiles.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
     });
 
-  </script>
+    </script>
 
-</polymer-element>
+</dom-module>

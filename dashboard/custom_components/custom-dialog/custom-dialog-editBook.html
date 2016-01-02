@@ -1,379 +1,367 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
-<link rel="import" href="../../../bower_components/core-icon-button/core-icon-button.html">
-<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
-<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<polymer-element name="custom-dialog-editBook" layout vertical center center-justified>
+<dom-module id="custom-dialog-editBook">
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 5px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: orange;*/
-			}
-			#header {
-				margin: 0px 0px 0px 0px;
-			}
-			#mainPage {
-				min-width:400px;
-				min-height: 350px;
-			}
-			#mainForm {
-				max-width: 400px;
-			}
-			#mainInput {
-				margin: 5px 5px 5px 5px;
-				padding: 0px 0px 0px 0px;
-			}
-		</style>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-		<div id='header'>Edit Library Book</div>
-		<core-pages id='mainPage' selected='0'>
-			<template repeat='{{page in pages}}'>
-				<section class='mainForm' id='mainForm{{page.num}}' layout horizontal wrap center center-justified>
-			    	<template repeat='{{input in inputs}}'>
-			    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-							<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
-			    		</paper-input-decorator>
-			    	</template>
-		    	</section>
-		    </template>
-		</core-pages>
-		<section id='buttons' layout vertical center center-justified>
-			<section id='autofillButts' layout horizontal wrap center center-justified>
-				<core-icon-button id='autoFillLeft' icon='chevron-left'  on-tap='{{autoFillLeft}}' hidden></core-icon-button>
-		    	<core-tooltip id='tooltipRetrieveDBBookButt' label='' position='bottom'>
-			    	<paper-button id='retrieveDBBookButt' raised role='button' on-tap='{{retrieveDBBook}}'>Retrieve Book</paper-button>
-				</core-tooltip>
-				<core-icon-button id='autoFillRight' icon='chevron-right' on-tap='{{autoFillRight}}' hidden></core-icon-button>
-			</section>
-	    	<core-tooltip id='tooltipEditBookButt' label='' position='bottom'>
-		    	<paper-button id='editBookButt' raised role='button' on-tap='{{submitForm}}' disabled>Submit Book Edit</paper-button>
-			</core-tooltip>
-		</section>
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainPage {
+                min-width:400px;
+                min-height: 350px;
+            }
+            .mainForm {
+                max-width: 400px;
 
-		<core-ajax id='ajaxRetrieveDBBook' url='../../phpcommands/retrieveDBBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxRetrieveDBBookResponse}}'></core-ajax>
-	    <core-ajax id='ajaxEdit' url='../../phpcommands/editBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxEditResponse}}'></core-ajax>
-	</template>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            .mainFormSub {
 
-	<script>
-    Polymer( 'custom-dialog-editBook', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                @apply(--layout-center);
+                @apply(--layout-center-justified); 
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+            paper-icon-button {
+                margin: 5px 5px 5px 5px;
+            }
+            .mainFormBtns {
+                margin: 5px 5px 5px 5px;
 
-    ready: function() {
-    	this.inputs = [
-    	{id:'title', label:'Title', type:'text', error:'', pattern:'\.*'},
-    	{id:'author', label:'Author(s)', type:'text', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'pub', label:'Publisher', type:'text', error:'', pattern:'\.*'},
-    	{id:'year', label:'Year', type:'text', error:'4 digits', pattern:'[0-9]{4}'},
-    	{id:'isbn13', label:'ISBN13', type:'text', error:'13 digits', pattern:'[0-9]{13}'},
-    	{id:'loc', label:'Library of Congress #', type:'text', error:'', pattern:'\.*'},
-    	{id:'dcc', label:'Dewey Decimal #', type:'text', error:'', pattern:'\.*'},
-    	{id:'tags', label:'Tags (comma sep)', type:'text', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'covurl', label:'Cover URL', type:'url', error:'www.example.com', pattern:'\.*'},
-    	{id:'comms', label:'Comments', type:'text', error:'', pattern:'\.*'},
-    	{id:'libid', label:'Library ID', type:'text', error:'', pattern:'\.*'}];
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+        </style>
 
-    	// Find a way to add these pages dynamically
-    	this.pages = [{num:'0'}];
-	},
+        <div id='header'>Edit Library Book</div>
+        <iron-pages id='mainPage' selected='0'>
+            <div class='mainForm' id='mainForm0'>
+                <div class='mainFormSub' id='mainForm0_sub0'>
+                    <template is='dom-repeat' items='{{libid_inputs}}' as='input'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        </paper-input>
+                    </template>
+                </div>
 
-	submitForm: function() {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+                <div class='mainFormBtns' id='mainForm0_btns'>
+                    <paper-button id='editBookBtn' raised role='button' on-tap='validateLibID'>Edit Book</paper-button>
+                    <paper-tooltip id='tooltip_editBookBtn' for='editBookBtn' position='bottom'><span id='tooltiptext_editBookBtn'></span></paper-tooltip>
+                    <paper-icon-button id='editRight' icon='chevron-right' on-tap='editRight'></paper-icon-button>
+                </div>
+            </div>
 
-		// probably not necessary but just in case...
-		selectedForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
-		selectedForm.querySelector('#libid').setAttribute('required', ''); // set libid required
-		
-		var papDecArr = selectedForm.querySelectorAll('#mainInput');
-		var papDecCount = papDecArr.length;
+            <div class='mainForm' id='mainForm1'>
+                <div class='mainFormSub' id='mainForm1_sub0'>
+                    <template is='dom-repeat' items='{{edit_inputs}}' as='input'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' 
+                        disabled='true' required='{{input.required}}' 
+                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        </paper-input>
+                    </template>
+                </div>
 
-		var validCount = 0;
-		for (var i = 0; i < papDecCount; i++) {
-			// This should be the input within the paper-decorator
-			var inp = papDecArr[i].firstElementChild;
-			papDecArr[i].isInvalid = !inp.validity.valid; // Validate the input
+                <div class='mainFormBtns' id='mainForm1_btns'>
+                    <paper-icon-button id='editLeft' icon='chevron-left' on-tap='editLeft'></paper-icon-button>
+                    <paper-button id='submitBookEditBtn' raised role='button' on-tap='validateEdit'>Submit Book Edit</paper-button>
+                    <paper-tooltip id='tooltip_submitBookEditBtn' for='submitBookEditBtn' position='bottom'><span id='tooltiptext_submitBookEditBtn'></span></paper-tooltip>
+                </div>
+            </div>
+        </iron-pages>
 
-			if (!papDecArr[i].isInvalid) {
-				validCount++;
-			}
-		}
+        <iron-ajax id='ajaxRetrieveDBBook' url='../../phpcommands/retrieveDBBook.php' handleAs='json' method='GET' on-response='ajaxRetrieveDBBookResponse'></iron-ajax>
+        <iron-ajax id='ajaxEdit' url='../../phpcommands/editBook.php' handleAs='json' method='GET' on-response='ajaxEditResponse'></iron-ajax>
+    </template>
 
-		if (validCount == papDecCount) {
-			req = '{"title":"' + selectedForm.querySelector('#title').value + 
-				'","author":"' + selectedForm.querySelector('#author').value + 
-				'","pub":"' + selectedForm.querySelector('#pub').value + 
-				'","year":"' + selectedForm.querySelector('#year').value + 
-				'","isbn13":"' + selectedForm.querySelector('#isbn13').value + 
-				'","loc":"' + selectedForm.querySelector('#loc').value + 
-				'","dcc":"' + selectedForm.querySelector('#dcc').value + 
-				'","tags":"' + selectedForm.querySelector('#tags').value + 
-				'","covurl":"' + selectedForm.querySelector('#covurl').value + 
-				'","comms":"' + selectedForm.querySelector('#comms').value + 
-				'","libid":"' + selectedForm.querySelector('#libid').value + '"}';
-			this.ajaxEditRequest(req);
-		}
-	},
+    <script>
+    Polymer({ 
+        is: 'custom-dialog-editBook', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
 
-	validateISBN13: function() {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+        ready: function() {
 
-		var isbn13Inp = selectedForm.querySelector('#isbn13');
-		isbn13Inp.setAttribute('required', '');
-		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
+            this.libid_inputs = [
+            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            ];
 
-		// Clear the form, reset isbn13
-		var isbn13 = isbn13Inp.value;
-		this.clearForm();
-		isbn13Inp.value = isbn13;
+            this.edit_inputs = [
+            {id:'title', label:'Title', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'author', label:'Author(s)', minlength:'', maxlength:'', type:'text', required:'false', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'pub', label:'Publisher', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'year', label:'Year', minlength:'4', maxlength:'4', type:'text', required:'false', error:'4 digits', pattern:'[0-9]{4}'},
+            {id:'isbn13', label:'ISBN13', minlength:'13', maxlength:'16', type:'text', required:'true', error:'13 digits', pattern:'[0-9]{13}'},
+            {id:'loc', label:'Library of Congress #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'dcc', label:'Dewey Decimal #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'tags', label:'Tags (comma sep)', minlength:'', maxlength:'', type:'text', required:'false', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'covurl', label:'Cover URL', minlength:'', maxlength:'', type:'url', required:'false', error:'www.example.com', pattern:'.*'},
+            {id:'desc', label:'Description', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', type:'text', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            ];
 
-		if (!isbn13Inp.parentElement.isInvalid) {
-			this.ajaxAutoFillRequest('{"isbn13":"' + isbn13 + '"}');
-		}
-	},
+            this.$.submitBookEditBtn.disabled = true;
+        },
 
-	retrieveDBBook: function() {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+        validateLibID: function() {
+            var mainForm0 = this.$.mainPage.querySelector('#mainForm0');
 
-		var libidInp = selectedForm.querySelector('#libid');
+            var formInputArr = mainForm0.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		libidInp.setAttribute('required', '');
-		libidInp.parentElement.isInvalid = !libidInp.validity.valid;
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-		var libid = libidInp.value;
-		this.clearForm();
-		libidInp.value = libid;
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-		if (!libidInp.parentElement.isInvalid) {
-			this.ajaxRetrieveDBBookRequest('{"libid":"' + libid + '"}');
-		}
-	},
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-	autoFillForm: function(jsonObject) {
-		// console.log(jsonObject);
-		this.$.editBookButt.removeAttribute('disabled');
+            if (validCount == formInputCount) {
 
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+                var libid = mainForm0.querySelector('#libid').value;
+                this.ajaxRetrieveDBBookRequest('{"libid":"' + libid + '"}');
+            }
+        },
 
-		var isbn13Inp = selectedForm.querySelector('#isbn13');
-		var libidInp = selectedForm.querySelector('#libid');
-		isbn13Inp.setAttribute('disabled', '');
-		libidInp.setAttribute('disabled', '');
-		isbn13Inp.parentElement.disabled = true;
-		libidInp.parentElement.disabled = true;
+        validateEdit: function() {
+            var mainForm1 = this.$.mainPage.querySelector('#mainForm1');
 
-		var resultsCount = jsonObject.bookData.length;
-		var pageCount = this.pages.length;
+            var formInputArr = mainForm1.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		if (resultsCount > pageCount) {
-			resultsCount = pageCount;
-		}
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-		// var button1 = this.$.autoFillRight;
-		// var button2 = this.$.autoFillLeft;
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-		// if (resultsCount > 1) {
-		// 	button1.removeAttribute('hidden');
-		// 	button2.removeAttribute('hidden');
-		// }
-		// else {
-		// 	button1.setAttribute('hidden', '');
-		// 	button2.setAttribute('hidden', '');
-		// }
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-		for (var i = 0; i < resultsCount; i++) {
-			var bookData = jsonObject.bookData[i];
-			// console.log(bookData);
+            if (validCount == formInputCount) {
 
-			var form = mainPage.querySelector('#mainForm' + i);
-			form.querySelector('#title').value = bookData.title;		
-			form.querySelector('#author').value = bookData.author;
-			form.querySelector('#pub').value = bookData.publisher;
-			form.querySelector('#year').value = bookData.year;
-			form.querySelector('#isbn13').value = bookData.isbn13;
-			form.querySelector('#loc').value = bookData.loc;
-			form.querySelector('#dcc').value = bookData.dcc;
-			form.querySelector('#tags').value = bookData.tag;
-			form.querySelector('#covurl').value = bookData.covurl;
-			form.querySelector('#comms').value = bookData.comms;	
-		}
+                req = '{"title":"' + formInputArr[0].value + 
+                        '","author":"' + formInputArr[1].value + 
+                        '","pub":"' + formInputArr[2].value + 
+                        '","year":"' + formInputArr[3].value + 
+                        '","isbn13":"' + formInputArr[4].value + 
+                        '","loc":"' + formInputArr[5].value + 
+                        '","dcc":"' + formInputArr[6].value + 
+                        '","tags":"' + formInputArr[7].value + 
+                        '","covurl":"' + formInputArr[8].value + 
+                        '","desc":"' + formInputArr[9].value + 
+                        '","libid":"' + formInputArr[10].value + '"}';
 
-		mainPage.selected = 0;
-	},
+                this.ajaxEditRequest(req);
+            }
+        },
 
-	autoFillRight: function() {
-		var mainPage = this.$.mainPage;
+        fillBookForm: function(jsonObject) {
+            this.$.mainPage.selected = 1;
 
-		var sIndex = mainPage.selected + 1;
-		if (sIndex >= this.pages.length) {
-			mainPage.selected = 0;
-		}
-		else {
-			mainPage.selected = sIndex;
-		}
-	},
+            var mainForm1 = this.$.mainPage.querySelector('#mainForm1');
 
-	autoFillLeft: function() {
-		var mainPage = this.$.mainPage;
+            mainForm1.querySelector('#isbn13').disabled = true;
+            mainForm1.querySelector('#libid').disabled = true;
 
-		var sIndex = mainPage.selected - 1;
-		if (sIndex < 0) {
-			mainPage.selected = this.pages.length - 1;
-		}
-		else {
-			mainPage.selected = sIndex;
-		}
-	},
+            var bookData = jsonObject.bookData[0];
+  
+            mainForm1.querySelector('#title').value = bookData.title;        
+            mainForm1.querySelector('#author').value = bookData.author;
+            mainForm1.querySelector('#pub').value = bookData.publisher;
+            mainForm1.querySelector('#year').value = bookData.year;
+            mainForm1.querySelector('#isbn13').value = bookData.isbn13;
+            mainForm1.querySelector('#loc').value = bookData.loc;
+            mainForm1.querySelector('#dcc').value = bookData.dcc;
+            mainForm1.querySelector('#tags').value = bookData.tag;
+            mainForm1.querySelector('#covurl').value = bookData.covurl;
+            mainForm1.querySelector('#desc').value = bookData.comms;   
+            mainForm1.querySelector('#libid').value = bookData.libid;    
+        },
 
-	clearForm: function() {
-		var mainPage = this.$.mainPage;
+        editRight: function() {
+            this.$.mainPage.selected = 1;
+        },
 
-		var button1 = this.$.autoFillRight;
-		var button2 = this.$.autoFillLeft;
-		button1.setAttribute('hidden', '');
-		button2.setAttribute('hidden', '');
+        editLeft: function() {
+            this.$.mainPage.selected = 0;
+        },
 
-		for (var i = 0; i < this.pages.length; i++) {
-			var selectedForm = mainPage.querySelector('#mainForm' + i);
-			var papDec = selectedForm.querySelectorAll('#mainInput');
-			var papDecCount = papDec.length;
+        disableForm: function(val) {
+            this.disableEditBookForm(val);
+            this.disableSubmitBookEditForm(val);
+        },
 
-			for (var j = 0; j < papDecCount; j++) {
-				papDec[j].firstElementChild.value = '';
-			}
-		}
-	},
+        disableEditBookForm: function(val) {
+            var formInputArr = this.$.mainForm0_sub0.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
 
-	disableForm: function(val) {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
 
-		var papDec = selectedForm.querySelectorAll('#mainInput');
-		var papDecCount = papDec.length;
+            this.$.editBookBtn.disabled = val;
+        },
 
-		var button1 = this.$.retrieveDBBookButt;
-		var button2 = this.$.editBookButt;
-		// var button3 = this.$.autoFillRight;
-		// var button4 = this.$.autoFillLeft;
+        disableSubmitBookEditForm: function(val) {
+            var formInputArr = this.$.mainForm1_sub0.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
 
-		if (val) {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.setAttribute('disabled', '');
-			}
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
 
-			button1.setAttribute('disabled', '');
-			button2.setAttribute('disabled', '');
-			// button3.setAttribute('hidden', '');
-			// button4.setAttribute('hidden', '');
-		}
-		else {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.removeAttribute('disabled');
-			}
+            this.$.submitBookEditBtn.disabled = val;
+        },
 
-			button1.removeAttribute('disabled');
-			button2.removeAttribute('disabled');
-			// button3.removeAttribute('hidden');
-			// button4.removeAttribute('hidden');
-		}
-	},
+        clearForm: function() {
+            var formInputArr = this.$.mainPage.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
 
-	clearRetrieveDBBookButt: function() {
-		var tip1 = this.$.tooltipRetrieveDBBookButt;
-		tip1.label = '';
-		tip1.querySelector('paper-button#retrieveDBBookButt').style.backgroundColor = "white";
-	},
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].value = '';
+                formInputArr[i].invalid = false;
+            }
 
-	clearEditButt: function() {
-		var tip2 = this.$.tooltipEditBookButt;
-		tip2.label = '';
-		tip2.querySelector('paper-button#editBookButt').style.backgroundColor = "white";
-	},
+            this.clearEditBookBtn();
+            this.clearSubmitBookEditBtn();
+        },
 
-	ajaxRetrieveDBBookRequest: function(params) {
-		this.clearEditButt();
-		this.clearRetrieveDBBookButt();
-		this.disableForm(true);
+        clearEditBookBtn: function() {
+            var ttip = this.$.tooltip_editBookBtn;
+            var ttiptext = this.$.tooltiptext_editBookBtn;
 
-		var aj = this.$.ajaxRetrieveDBBook;
-		aj.params = params;
-		aj.go();
-	},
+            ttip.hide();
+            ttiptext.innerHTML = '';
+            this.$.editBookBtn.style.backgroundColor = "white";
+        },
 
-	ajaxRetrieveDBBookResponse: function(e) {
-		// console.log(e.detail.response);
-		this.disableForm(false);
-		var resp = JSON.parse(e.detail.response);
-		var tip = this.$.tooltipRetrieveDBBookButt;
-		var button = tip.querySelector('paper-button#retrieveDBBookButt');
+        clearSubmitBookEditBtn: function() {
+            var ttip = this.$.tooltip_submitBookEditBtn;
+            var ttiptext = this.$.tooltiptext_submitBookEditBtn;
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.autoFillForm(resp);
-		}
-		else {
-			button.style.backgroundColor = "red";
-			tip.label = resp.message;
-			this.clearEditButt();
-			this.$.editBookButt.setAttribute('disabled', '');
-		}
+            ttip.hide();
+            ttiptext.innerHTML = '';
+            this.$.submitBookEditBtn.style.backgroundColor = "white";
+        },
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+        ajaxRetrieveDBBookRequest: function(request) {
+            this.clearForm();
+            this.disableForm(true);
 
-	ajaxEditRequest: function(request) {
-		this.clearEditButt();
-		this.clearRetrieveDBBookButt();
-		this.disableForm(true);
+            var aj = this.$.ajaxRetrieveDBBook;
+            aj.params = request;
+            // console.log(request);
+            aj.generateRequest();
+        },
 
-		var aj = this.$.ajaxEdit;
-		aj.params = request;
-		// Find a way to use auto attribute without it making requests on startup calling the go method.
-		aj.go();
-	},
+        ajaxRetrieveDBBookResponse: function(e) {
+            // console.log(e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_editBookBtn;
+            var ttiptext = this.$.tooltiptext_editBookBtn;
+            var button = this.$.editBookBtn;
 
-	ajaxEditResponse: function(e) {
-		// console.log('Message: ' + e.detail.response);
-		this.disableForm(false);
-		var resp = JSON.parse(e.detail.response);
-		var tip = this.$.tooltipEditBookButt;
-		var button = tip.querySelector('paper-button#editBookButt');
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.clearForm();
-			this.$.editBookButt.setAttribute('disabled', '');
-		}
-		else {
-			button.style.backgroundColor = "red";
-		}
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+                // console.log(resp);
+                this.fillBookForm(resp);
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+        },
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+        ajaxEditRequest: function(request) {
+            this.clearForm();
+            this.disableForm(true);
+
+            var aj = this.$.ajaxEdit;
+            aj.params = request;
+            // Find a way to use auto attribute without it making requests on startup calling the go method.
+            aj.generateRequest();
+        },
+
+        ajaxEditResponse: function(e) {
+            // console.log('Message: ' + e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_submitBookEditBtn;
+            var ttiptext = this.$.tooltiptext_submitBookEditBtn;
+            var button = this.$.submitBookEditBtn;
+
+            if (resp.responseCode == 1) {
+                this.clearForm();
+                button.style.backgroundColor = "green";
+                this.disableSubmitBookEditForm(true);
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
 
     });
   </script>
 
-</polymer-element>
+</dom-module>

@@ -1,237 +1,322 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
-<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<polymer-element name="custom-dialog-editLibPatron" layout vertical center center-justified>>
+<dom-module id="custom-dialog-editLibPatron" layout vertical center center-justified>>
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 5px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: orange;*/
-			}
-			#header {
-				margin: 0px 0px 0px 0px;
-			}
-			#mainForm {
-				max-width: 400px;
-			}
-			#mainInput {
-				margin: 5px 5px 5px 5px;
-				padding: 0px 0px 0px 0px;
-			}
-			paper-button {
-				margin: 10px 0px 0px 0px;
-			}
-		</style>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-		<div id='header'>Edit Library Patron</div>
-		<section id='mainForm' layout vertical>
-	    	<template repeat='{{input in inputs}}'>
-	    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}' layout="" vertical="">
-					<input is="core-input" id='{{input.id}}' type='{{input.type}}' pattern='{{input.pattern}}'>
-		    	</paper-input-decorator>
-	    	</template>
-    	</section>
-    	<core-tooltip id='tooltipRetrieve' label='' position='bottom'>
-	    	<paper-button id='retrieveLibPatronButt'raised role='button' on-tap='{{retrieveLibPatron}}'>Retrieve Patron</paper-button>
-		</core-tooltip>
-    	<core-tooltip id='tooltipEdit' label='' position='bottom'>
-	    	<paper-button id='editLibPatronButt' raised role='button' on-tap='{{editLibPatron}}' disabled>Submit Patron Edit</paper-button>
-		</core-tooltip>
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                max-width: 400px;
 
-	    <core-ajax id='ajaxRetrieveLibPatron' url='../../phpcommands/retrieveLibPatron.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxRetrieveLibPatronResponse}}'></core-ajax>
-	    <core-ajax id='ajaxEditLibPatron' url='../../phpcommands/editLibPatron.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxEditLibPatronResponse}}'></core-ajax>
-	</template>
+                @apply(--layout-vertical);
+                @apply(--layout-wrap);
+                @apply(--layout-center-justified);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+        </style>
 
-	<script>
-    Polymer( 'custom-dialog-editLibPatron', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+        <div id='header'>Edit Library Patron</div>
+        <iron-pages id='mainPage' selected='0'>
+            <div class='mainForm' id='mainForm0'>
+                <div class='mainFormSub' id='mainForm0_sub0'>
+                    <template is='dom-repeat' items='{{libpats_inputs}}' as='input'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        </paper-input>
+                    </template>
+                </div>
 
-    ready: function() {
-    	this.inputs = [
-    	{id:'firstname', label:'First Name', type:'text', pattern:'\.*', error:''},
-    	{id:'lastname', label:'Last Name', type:'text', pattern:'\.*', error:''},
-    	{id:'phone', label:'Phone Number', type:'tel', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}', error:'123-456-7890'},
-    	{id:'email', label:'E-Mail Address', type:'email', pattern:'\.*' , error:'email@example.com'}];//,
-    	// {id:'patronid', label:'Patron ID', type:'text', pattern:'\.*' , error:''}];
-	},
+                <div class='mainFormBtns' id='mainForm0_btns'>
+                    <paper-button id='editLibPatBtn' raised role='button' on-tap='validateLibPat'>Edit Book</paper-button>
+                    <paper-tooltip id='tooltip_editLibPatBtn' for='editLibPatBtn' position='bottom'><span id='tooltiptext_editLibPatBtn'></span></paper-tooltip>
+                    <paper-icon-button id='editRight' icon='chevron-right' on-tap='editRight'></paper-icon-button>
+                </div>
+            </div>
 
-	retrieveLibPatron: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
+            <div class='mainForm' id='mainForm1'>
+                <div class='mainFormSub' id='mainForm1_sub0'>
+                    <template is='dom-repeat' items='{{edit_inputs}}' as='input'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' 
+                        disabled='true' required='{{input.required}}' 
+                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        </paper-input>
+                    </template>
+                </div>
 
-		var emailInp = this.$.mainForm.querySelector('#mainInput > #email');
-		emailInp.setAttribute('required', '');
+                <div class='mainFormBtns' id='mainForm1_btns'>
+                    <paper-icon-button id='editLeft' icon='chevron-left' on-tap='editLeft'></paper-icon-button>
+                    <paper-button id='submitLibPatEditBtn' raised role='button' on-tap='validateEdit'>Submit Book Edit</paper-button>
+                    <paper-tooltip id='tooltip_submitLibPatEditBtn' for='submitLibPatEditBtn' position='bottom'><span id='tooltiptext_submitLibPatEditBtn'></span></paper-tooltip>
+                </div>
+            </div>
+        </iron-pages>
 
-		emailInp.parentElement.isInvalid = !emailInp.validity.valid;
+        <iron-ajax id='ajaxRetrieveLibPatron' url='../../phpcommands/retrieveLibPatron.php' handleAs='json' method='POST' on-response='ajaxRetrieveLibPatronResponse'></iron-ajax>
+        <iron-ajax id='ajaxEditLibPatron' url='../../phpcommands/editLibPatron.php' handleAs='json' method='POST' on-response='ajaxEditLibPatronResponse'></iron-ajax>
+    </template>
 
-		if (!emailInp.parentElement.isInvalid) {
-			var params = '{"email":"' + emailInp.value + '"}';
-			this.ajaxRetrieveLibPatronRequest(params);
-		}
-	},
+    <script>
+    Polymer({
+        is: 'custom-dialog-editLibPatron', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
 
-	fillPatronData: function(jsonObject) {
-		// console.log(jsonObject);
-		var mainForm = this.$.mainForm;
-		var patronData = jsonObject.patronData[0];
-		mainForm.querySelector('#mainInput > #firstname').value = patronData.firstname;		
-		mainForm.querySelector('#mainInput > #lastname').value = patronData.lastname;
-		mainForm.querySelector('#mainInput > #phone').value = patronData.phone;
-		mainForm.querySelector('#mainInput > #email').value = patronData.email;
-	},
+        ready: function() {
+            this.libpats_inputs = [
+            {id:'email', label:'E-Mail Address', minlength:'', maxlength:'', type:'email', error:'email@example.com', pattern:'\.*'}
+            ];
 
-	editLibPatron: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
+            this.edit_inputs = [
+                {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
+                {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
+                {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:'false', error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
+                {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:'true', error:'email@example.com', pattern:'\.*'}
+            ];
 
-		var validCount = 0;
-		var valueArray = new Array(papDecCount);
-		for (var i = 0; i < papDecCount; i++) {
-			var inp = papDec[i].firstElementChild;
-			valueArray[i] = inp.value;
-			papDec[i].isInvalid = !inp.validity.valid;
+            this.$.submitLibPatEditBtn.disabled = true;
+        },
 
-			if (!papDec[i].isInvalid) {
-				validCount++;
-			}
-		}
+        validateLibPat: function() {
+            var mainForm0 = this.$.mainPage.querySelector('#mainForm0');
 
-		if (validCount == papDecCount) {
-			var params = '{"firstname":"' + valueArray[0] + '","lastname":"' + valueArray[1] + 
-			'","phone":"' + valueArray[2] + '","email":"' + valueArray[3] + '"}';
-			this.ajaxEditLibPatronRequest(params);
-		}
-	},
+            var formInputArr = mainForm0.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-	clearForm: function() {
-		var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-		var papDecCount = papDec.length;
-		for (var i = 0; i < papDecCount; i++) {
-			papDec[i].firstElementChild.value = '';
-		}
-	},
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-	disableForm: function(flag) {
-		var mainForm = this.$.mainForm;
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-		var papDec = mainForm.querySelectorAll('#mainInput');
-		var papDecCount = papDec.length;
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-		if (flag) {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.setAttribute('disabled', '');
-			}
-			
-			this.$.retrieveLibPatronButt.setAttribute('disabled', '');
-			this.$.editLibPatronButt.setAttribute('disabled', '');
-		}
-		else {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.removeAttribute('disabled');
-			}
-			
-			this.$.retrieveLibPatronButt.removeAttribute('disabled');
-			this.$.editLibPatronButt.removeAttribute('disabled');
-		}
-	},
+            if (validCount == formInputCount) {
 
-	clearRetrieveButt: function() {
-		this.$.tooltipRetrieve.label = '';
-		this.$.retrieveLibPatronButt.style.background = "white";
-	},
+                var email = mainForm0.querySelector('#email').value;
+                this.ajaxRetrieveLibPatronRequest('{"email":"' + email + '"}');
+            }
+        },
 
-	clearEditButt: function() {
-		this.$.tooltipEdit.label = '';
-		this.$.editLibPatronButt.style.background = "white";
-	},
+        validateEdit: function() {
+            var mainForm1 = this.$.mainPage.querySelector('#mainForm1');
 
-	disableEmailInput: function(flag) {
-		if (flag) {
-			this.$.mainForm.querySelector('#mainInput > #email').setAttribute('disabled', '');
-		}
-		else {
-			this.$.mainForm.querySelector('#mainInput > #email').removeAttribute('disabled');
-		}
+            var formInputArr = mainForm1.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		this.$.mainForm.querySelector('#mainInput > #email').parentElement.disabled = flag;
-	},
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-	ajaxRetrieveLibPatronRequest: function(params) {
-		var aj = this.$.ajaxRetrieveLibPatron;
-		aj.params = params;
-		aj.go();
-	},
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-	ajaxRetrieveLibPatronResponse: function(e) {
-		var resp = JSON.parse(e.detail.response);
-		// console.log('Message: ' + resp.message);
-		var tip = this.$.tooltipRetrieve;
-		var button = tip.querySelector('paper-button');
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.$.editLibPatronButt.removeAttribute('disabled');
-			this.disableEmailInput(true);
-			this.fillPatronData(resp);
-		}
-		else {
-			button.style.backgroundColor = "red";
-			this.$.editLibPatronButt.setAttribute('disabled', '');
-			this.disableEmailInput(false);
-		}
+            if (validCount == formInputCount) {
+                var req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + 
+                '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
+                this.ajaxEditLibPatronRequest(req);
+            }
+        },
 
-		this.clearEditButt();
+        fillPatronForm: function(jsonObject) {
+            this.$.mainPage.selected = 1;
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+            var mainForm1 = this.$.mainPage.querySelector('#mainForm1');
 
-	ajaxEditLibPatronRequest: function(params) {
-		var aj = this.$.ajaxEditLibPatron;
-		aj.params = params;
-		aj.go();
-	},
+            mainForm1.querySelector('#email').disabled = true;
 
-	ajaxEditLibPatronResponse: function(e) {
-		var resp = JSON.parse(e.detail.response);
-		// console.log('Message: ' + resp.message);
-		var tip = this.$.tooltipEdit;
-		var button = tip.querySelector('paper-button');
+            var libPatData = jsonObject.patronData[0];
+  
+            mainForm1.querySelector('#firstname').value = libPatData.firstname;        
+            mainForm1.querySelector('#lastname').value = libPatData.lastname;
+            mainForm1.querySelector('#phone').value = libPatData.phone;
+            mainForm1.querySelector('#email').value = libPatData.email;
+        },
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.$.editLibPatronButt.setAttribute('disabled', '');
-			this.disableEmailInput(false);
-			this.clearRetrieveButt();
-			this.clearForm();
-		}
-		else {
-			button.style.backgroundColor = "red";
-			this.disableEmailInput(true);
-		}
+        clearForm: function() {
+            var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
+            var papDecCount = papDec.length;
+            for (var i = 0; i < papDecCount; i++) {
+                papDec[i].firstElementChild.value = '';
+            }
+        },
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+        editRight: function() {
+            this.$.mainPage.selected = 1;
+        },
+
+        editLeft: function() {
+            this.$.mainPage.selected = 0;
+        },
+
+        disableForm: function(val) {
+            this.disableEditLibPatForm(val);
+            this.disableSubmitLibPatEditForm(val);
+        },
+
+        disableEditLibPatForm: function(val) {
+            var formInputArr = this.$.mainForm0_sub0.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
+
+            this.$.editLibPatBtn.disabled = val;
+        },
+
+        disableSubmitLibPatEditForm: function(val) {
+            var formInputArr = this.$.mainForm1_sub0.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
+
+            this.$.submitLibPatEditBtn.disabled = val;
+        },
+
+        clearForm: function() {
+            var formInputArr = this.$.mainPage.querySelectorAll('.formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].value = '';
+                formInputArr[i].invalid = false;
+            }
+
+            this.clearEditLibPatBtn();
+            this.clearSubmitLibPatEditBtn();
+        },
+
+        clearEditLibPatBtn: function() {
+            var ttip = this.$.tooltip_editLibPatBtn;
+            var ttiptext = this.$.tooltiptext_editLibPatBtn;
+
+            ttip.hide();
+            ttiptext.innerHTML = '';
+            this.$.editLibPatBtn.style.backgroundColor = "white";
+        },
+
+        clearSubmitLibPatEditBtn: function() {
+            var ttip = this.$.tooltip_submitLibPatEditBtn;
+            var ttiptext = this.$.tooltiptext_submitLibPatEditBtn;
+
+            ttip.hide();
+            ttiptext.innerHTML = '';
+            this.$.submitLibPatEditBtn.style.backgroundColor = "white";
+        },
+
+        ajaxRetrieveLibPatronRequest: function(params) {
+            var aj = this.$.ajaxRetrieveLibPatron;
+            aj.params = params;
+            aj.generateRequest();
+        },
+
+        ajaxRetrieveLibPatronResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_editLibPatBtn;
+            var ttiptext = this.$.tooltiptext_editLibPatBtn;
+            var button = this.$.editLibPatBtn;
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+                // console.log(resp);
+                this.fillPatronForm(resp);
+            }
+            else {
+                button.style.backgroundColor = "red";
+                this.disableSubmitLibPatEditForm(true);
+            }
+        },
+
+        ajaxEditLibPatronRequest: function(params) {
+            var aj = this.$.ajaxEditLibPatron;
+            aj.params = params;
+            aj.generateRequest();
+        },
+
+        ajaxEditLibPatronResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_submitLibPatEditBtn;
+            var ttiptext = this.$.tooltiptext_submitLibPatEditBtn;
+            var button = this.$.submitLibPatEditBtn;
+
+            if (resp.responseCode == 1) {
+                this.clearForm();
+                button.style.backgroundColor = "green";
+                this.disableSubmitLibPatEditForm(true);
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
 
     });
   </script>
 
-</polymer-element>
+</dom-module>

@@ -1,349 +1,373 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
-<link rel="import" href="../../../bower_components/core-icon-button/core-icon-button.html">
-<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
-<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<polymer-element name="custom-dialog-addBook" layout vertical center center-justified>
+<dom-module id="custom-dialog-addBook">
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 5px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: orange;*/
-			}
-			#header {
-				margin: 0px 0px 0px 0px;
-			}
-			#mainPage {
-				min-width:400px;
-				min-height: 350px;
-			}
-			#mainForm {
-				max-width: 400px;
-			}
-			#mainInput {
-				margin: 5px 5px 5px 5px;
-				padding: 0px 0px 0px 0px;
-			}
-		</style>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-		<div id='header'>Add Book to Library</div>
-		<core-pages id='mainPage' selected='0'>
-			<template repeat='{{page in pages}}'>
-				<section class='mainForm' id='mainForm{{page.num}}' layout horizontal wrap center center-justified>
-			    	<template repeat='{{input in inputs}}'>
-			    		<paper-input-decorator id='mainInput' label='{{input.label}}' floatinglabel error='{{input.error}}'>
-							<input is="core-input" id='{{input.id}}' placeholder="{{input.label}}" pattern='{{input.pattern}}' type='{{input.type}}'>
-			    		</paper-input-decorator>
-			    	</template>
-		    	</section>
-		    </template>
-		</core-pages>
-		<section id='buttons' layout vertical center center-justified>
-			<section id='autofillButts' layout horizontal wrap center center-justified>
-				<core-icon-button id='autoFillLeft' icon='chevron-left'  on-tap='{{autoFillLeft}}' hidden></core-icon-button>
-		    	<core-tooltip id='tooltipAutoFillButt' label='' position='bottom'>
-			    	<paper-button id='autoFillButt' raised role='button' on-tap='{{validateISBN13}}'>Auto Fill Form</paper-button>
-				</core-tooltip>
-				<core-icon-button id='autoFillRight' icon='chevron-right' on-tap='{{autoFillRight}}' hidden></core-icon-button>
-			</section>
-	    	<core-tooltip id='tooltipAddBookButt' label='' position='bottom'>
-		    	<paper-button id='addBookButt' raised role='button' on-tap='{{validateForm}}'>Add Book to Library</paper-button>
-			</core-tooltip>
-		</section>
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainPage {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
 
-		<core-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAutoFillResponse}}'></core-ajax>
-	    <core-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxAddResponse}}'></core-ajax>
-	</template>
+                min-width: 400px;
+                min-height: 350px;
+            }
+            .mainForm {
+                max-width: 400px;
 
-	<script>
-    Polymer( 'custom-dialog-addBook', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            #buttons {
 
-    ready: function() {
-    	this.inputs = [
-    	{id:'title', label:'Title', type:'text', error:'', pattern:'.*'},
-    	{id:'author', label:'Author(s)', type:'text', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'pub', label:'Publisher', type:'text', error:'', pattern:'.*'},
-    	{id:'year', label:'Year', type:'text', error:'4 digits', pattern:'[0-9]{4}'},
-    	{id:'isbn13', label:'ISBN13', type:'text', error:'13 digits', pattern:'[0-9]{13}'},
-    	{id:'loc', label:'Library of Congress #', type:'text', error:'', pattern:'.*'},
-    	{id:'dcc', label:'Dewey Decimal #', type:'text', error:'', pattern:'.*'},
-    	{id:'tags', label:'Tags (comma sep)', type:'text', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-    	{id:'covurl', label:'Cover URL', type:'url', error:'www.example.com', pattern:'.*'},
-    	{id:'desc', label:'Description', type:'text', error:'', pattern:'.*'},
-    	{id:'libid', label:'Library ID', type:'text', error:'Numeric only', pattern:'[0-9]*'}];
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
 
-    	// Find a way to add these pages dynamically
-    	this.pages = [{num:'0'}, {num:'1'}, {num:'2'}, {num:'3'}, {num:'4'}];
-	},
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #autofillBtns {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+        </style>
 
-	validateForm: function() {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+        <div id='header'>Add Book to Library</div>
 
-		selectedForm.querySelector('#isbn13').setAttribute('required', ''); // set isbn13 required
-		// selectedForm.querySelector('#libid').setAttribute('required', ''); // set libid required
-		var papDecArr = selectedForm.querySelectorAll('#mainInput');
-		var papDecCount = papDecArr.length;
+        <iron-pages id='mainPage' selected='0'>
+            <template is='dom-repeat' items='{{pages}}' as='page'>
+                <div class='mainForm' id='mainForm{{page.num}}'>
+                    <template is='dom-repeat' items='{{inputs}}' as='input'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        </paper-input>
+                    </template>
+                </div>
+            </template>
+        </iron-pages>
 
-		var validCount = 0;
-		for (var i = 0; i < papDecCount; i++) {
-			// This should be the input within the paper-decorator
-			var inp = papDecArr[i].firstElementChild;
-			papDecArr[i].isInvalid = !inp.validity.valid; // Validate the input
+        <div id='buttons'>
+            <div id='autofillButns'>
+                <paper-icon-button id='autoFillLeft' icon='chevron-left' on-tap='autoFillLeft' hidden></paper-icon-button>
 
-			if (!papDecArr[i].isInvalid) {
-				validCount++;
-			}
-		}
+                <paper-button id='autoFillButt' raised role='button' on-tap='validateISBN13'>Auto Fill Form</paper-button>
+                <paper-tooltip id='tooltip_autoFillButt' for='autoFillButt' position='bottom'><span id='tooltiptext_autoFillButt'></span></paper-tooltip>
 
-		if (validCount == papDecCount) {
-			req = '{"title":"' + selectedForm.querySelector('#title').value + 
-				'","author":"' + selectedForm.querySelector('#author').value + 
-				'","pub":"' + selectedForm.querySelector('#pub').value + 
-				'","year":"' + selectedForm.querySelector('#year').value + 
-				'","isbn13":"' + selectedForm.querySelector('#isbn13').value + 
-				'","loc":"' + selectedForm.querySelector('#loc').value + 
-				'","dcc":"' + selectedForm.querySelector('#dcc').value + 
-				'","tags":"' + selectedForm.querySelector('#tags').value + 
-				'","covurl":"' + selectedForm.querySelector('#covurl').value + 
-				'","desc":"' + selectedForm.querySelector('#desc').value + 
-				'","libid":"' + selectedForm.querySelector('#libid').value + '"}';
-			this.ajaxAddRequest(req);
-		}
-	},
+                <paper-icon-button id='autoFillRight' icon='chevron-right' on-tap='autoFillRight' hidden></paper-icon-button>
+            </div>
 
-	validateISBN13: function() {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+            <paper-button id='addBookButt' raised role='button' on-tap='validateForm'>Add Book to Library</paper-button>
+            <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'><span id='tooltiptext_addBookButt'></span></paper-tooltip>
+        </div>
 
-		var isbn13Inp = selectedForm.querySelector('#isbn13');
-		isbn13Inp.setAttribute('required', '');
-		isbn13Inp.parentElement.isInvalid = !isbn13Inp.validity.valid;
+        <iron-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' content-type='application/json' handle-as='json' method='POST' on-response='ajaxAutoFillResponse'></iron-ajax>
+        <iron-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' handle-as='json' method='GET' on-response='ajaxAddResponse'></iron-ajax>
+    </template>
 
-		// Clear the form, reset isbn13
-		var isbn13 = isbn13Inp.value;
-		this.clearForm();
-		isbn13Inp.value = isbn13;
+    <script>
+    Polymer( {
+        is: 'custom-dialog-addBook', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
 
-		if (!isbn13Inp.parentElement.isInvalid) {
-			// this.ajaxAutoFillRequest(isbn13);
-			this.ajaxAutoFillRequest('{"isbn13":"' + isbn13 + '"}');
-		}
-	},
+        ready: function() {
+            this.inputs = [
+            {id:'title', label:'Title', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'author', label:'Author(s)', minlength:'', maxlength:'', type:'text', required:'false', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'pub', label:'Publisher', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'year', label:'Year', minlength:'4', maxlength:'4', type:'text', required:'false', error:'4 digits', pattern:'[0-9]{4}'},
+            {id:'isbn13', label:'ISBN13', minlength:'13', maxlength:'16', type:'text', required:'true', error:'13 digits', pattern:'[0-9]{13}'},
+            {id:'loc', label:'Library of Congress #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'dcc', label:'Dewey Decimal #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'tags', label:'Tags (comma sep)', minlength:'', maxlength:'', type:'text', required:'false', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'covurl', label:'Cover URL', minlength:'', maxlength:'', type:'url', required:'false', error:'www.example.com', pattern:'.*'},
+            {id:'desc', label:'Description', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
+            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', type:'text', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            ];
 
-	autoFillForm: function(jsonObject) {
-		// console.log(jsonObject);
+            // TODO: Find a way to add these pages dynamically
+            this.pages = [{num:'0'}, {num:'1'}, {num:'2'}, {num:'3'}, {num:'4'}];
+        },
 
-		var mainPage = this.$.mainPage;
-		var resultsCount = jsonObject.bookData.length;
-		var pageCount = this.pages.length;
+        validateForm: function() {
+            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
 
-		if (resultsCount > pageCount) {
-			resultsCount = pageCount;
-		}
+            var formInputArr = selectedForm.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-		var button1 = this.$.autoFillRight;
-		var button2 = this.$.autoFillLeft;
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
 
-		if (resultsCount > 1) {
-			button1.removeAttribute('hidden');
-			button2.removeAttribute('hidden');
-		}
-		else {
-			button1.setAttribute('hidden', '');
-			button2.setAttribute('hidden', '');
-		}
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
 
-		for (var i = 0; i < resultsCount; i++) {
-			var bookData = jsonObject.bookData[i];
-			// console.log(bookData);
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
 
-			var form = mainPage.querySelector('#mainForm' + i);
-			form.querySelector('#title').value = bookData.title;		
-			form.querySelector('#author').value = bookData.author;
-			form.querySelector('#pub').value = bookData.publisher;
-			form.querySelector('#year').value = bookData.year;
-			form.querySelector('#isbn13').value = bookData.isbn13;
-			form.querySelector('#loc').value = bookData.loc;
-			form.querySelector('#dcc').value = bookData.dcc;
-			form.querySelector('#tags').value = bookData.tag;
-			form.querySelector('#covurl').value = bookData.covurl;
-			form.querySelector('#desc').value = bookData.desc;	
-		}
+            if (validCount == formInputCount) {
+                req = '{"title":"' + formInputArr[0].value + 
+                    '","author":"' + formInputArr[1].value + 
+                    '","pub":"' + formInputArr[2].value + 
+                    '","year":"' + formInputArr[3].value + 
+                    '","isbn13":"' + formInputArr[4].value + 
+                    '","loc":"' + formInputArr[5].value + 
+                    '","dcc":"' + formInputArr[6].value + 
+                    '","tags":"' + formInputArr[7].value + 
+                    '","covurl":"' + formInputArr[8].value + 
+                    '","desc":"' + formInputArr[9].value + 
+                    '","libid":"' + formInputArr[10].value + '"}';
+                this.ajaxAddRequest(req);
+            }
+        },
 
-		mainPage.selected = 0;
-	},
+        validateISBN13: function() {
+            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
 
-	autoFillRight: function() {
-		var mainPage = this.$.mainPage;
+            var isbn13Inp = selectedForm.querySelector('#isbn13');
+ 
+            // Clear the form, reset isbn13
+            var isbn13 = isbn13Inp.value;
 
-		var sIndex = mainPage.selected + 1;
-		if (sIndex >= this.pages.length) {
-			mainPage.selected = 0;
-		}
-		else {
-			mainPage.selected = sIndex;
-		}
-	},
+            if (isbn13 && isbn13.length == 13) {
+                this.clearForm();
+                this.ajaxAutoFillRequest('{"isbn13":"' + isbn13 + '"}');
+            }
+            else {
+                isbn13Inp.invalid = true;
+            }
+        },
 
-	autoFillLeft: function() {
-		var mainPage = this.$.mainPage;
+        autoFillForm: function(jsonObject) {
+            // console.log(jsonObject);
 
-		var sIndex = mainPage.selected - 1;
-		if (sIndex < 0) {
-			mainPage.selected = this.pages.length - 1;
-		}
-		else {
-			mainPage.selected = sIndex;
-		}
-	},
+            var mainPage = this.$.mainPage;
+            var resultsCount = jsonObject.bookData.length;
+            var pageCount = this.pages.length;
 
-	clearForm: function() {
-		var mainPage = this.$.mainPage;
+            if (resultsCount > pageCount) {
+                resultsCount = pageCount;
+            }
 
-		var button1 = this.$.autoFillRight;
-		var button2 = this.$.autoFillLeft;
-		button1.setAttribute('hidden', '');
-		button2.setAttribute('hidden', '');
+            var button1 = this.$.autoFillRight;
+            var button2 = this.$.autoFillLeft;
 
-		for (var i = 0; i < this.pages.length; i++) {
-			var selectedForm = mainPage.querySelector('#mainForm' + i);
-			var papDec = selectedForm.querySelectorAll('#mainInput');
-			var papDecCount = papDec.length;
+            if (resultsCount > 1) {
+                button1.removeAttribute('hidden');
+                button2.removeAttribute('hidden');
+            }
+            else {
+                button1.setAttribute('hidden', '');
+                button2.setAttribute('hidden', '');
+            }
 
-			for (var j = 0; j < papDecCount; j++) {
-				papDec[j].firstElementChild.value = '';
-			}
-		}
-	},
+            for (var i = 0; i < resultsCount; i++) {
+                var bookData = jsonObject.bookData[i];
+                // console.log(bookData);
 
-	disableForm: function(val) {
-		var mainPage = this.$.mainPage;
-		var selectedForm = mainPage.querySelector('.mainForm.core-selected');
+                var form = mainPage.querySelector('#mainForm' + i);
+                form.querySelector('#title').value = bookData.title;
+                form.querySelector('#author').value = bookData.author;
+                form.querySelector('#pub').value = bookData.publisher;
+                form.querySelector('#year').value = bookData.year;
+                form.querySelector('#isbn13').value = bookData.isbn13;
+                form.querySelector('#loc').value = bookData.loc;
+                form.querySelector('#dcc').value = bookData.dcc;
+                form.querySelector('#tags').value = bookData.tag;
+                form.querySelector('#covurl').value = bookData.covurl;
+                form.querySelector('#desc').value = bookData.desc;
+                form.querySelector('#libid').value = bookData.libid;
+                form.querySelector('#libid').disabled = true;
+            }
 
-		var papDec = selectedForm.querySelectorAll('#mainInput');
-		var papDecCount = papDec.length;
+            mainPage.select('0');
+        },
 
-		var button1 = this.$.autoFillButt;
-		var button2 = this.$.addBookButt;
-		var button3 = this.$.autoFillRight;
-		var button4 = this.$.autoFillLeft;
+        autoFillRight: function() {
+            this.$.mainPage.selectNext();
+        },
 
-		if (val) {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.setAttribute('disabled', '');
-			}
+        autoFillLeft: function() {
+            this.$.mainPage.selectPrevious();
+        },
 
-			button1.setAttribute('disabled', '');
-			button2.setAttribute('disabled', '');
-			button3.setAttribute('hidden', '');
-			button4.setAttribute('hidden', '');
-		}
-		else {
-			for (var i = 0; i < papDecCount; i++) {
-				papDec[i].disabled = val;
-				papDec[i].firstElementChild.removeAttribute('disabled');
-			}
+        clearForm: function() {
+            var mainPage = this.$.mainPage;
 
-			button1.removeAttribute('disabled');
-			button2.removeAttribute('disabled');
-			button3.removeAttribute('hidden');
-			button4.removeAttribute('hidden');
-		}
-	},
+            var button1 = this.$.autoFillRight;
+            var button2 = this.$.autoFillLeft;
+            button1.setAttribute('hidden', '');
+            button2.setAttribute('hidden', '');
 
-	clearAutoFillButt: function() {
-		var tip1 = this.$.tooltipAutoFillButt;
-		tip1.label = '';
-		tip1.querySelector('paper-button#autoFillButt').style.backgroundColor = "white";
-	},
+            for (var i = 0; i < this.pages.length; i++) {
+                var selectedForm = mainPage.querySelector('#mainForm' + i);
+                var formInputArr = selectedForm.getElementsByClassName('formInput');
+                var formInputCount = formInputArr.length;
 
-	clearAddButt: function() {
-		var tip2 = this.$.tooltipAddBookButt;
-		tip2.label = '';
-		tip2.querySelector('paper-button#addBookButt').style.backgroundColor = "white";
-	},
+                for (var j = 0; j < formInputCount; j++) {
+                    formInputArr[j].value = '';
+                    formInputArr[j].invalid = false;
+                }
+            }
+        },
 
-	ajaxAutoFillRequest: function(isbn13) {
-		this.clearAddButt();
-		this.clearAutoFillButt();
-		this.disableForm(true);
+        disableForm: function(val) {
+            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
 
-		var aj = this.$.ajaxAutoFill;
-		aj.params = isbn13;
-		//aj.url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn13;
-		aj.go();
-	},
+            var formInputArr = selectedForm.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
 
-	ajaxAutoFillResponse: function(e) {
-		// console.log(e.detail.response);
-		this.disableForm(false);
-		var resp = JSON.parse(e.detail.response);
-		var tip = this.$.tooltipAutoFillButt;
-		var button = tip.querySelector('paper-button#autoFillButt');
+            var button1 = this.$.autoFillButt;
+            var button2 = this.$.addBookButt;
+            var button3 = this.$.autoFillRight;
+            var button4 = this.$.autoFillLeft;
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.autoFillForm(resp);
-		}
-		else {
-			button.style.backgroundColor = "red";
-			tip.label = resp.message;
-			this.clearAddButt();
-		}
+            if (val) {
+                for (var i = 0; i < formInputCount; i++) {
+                    formInputArr[i].disabled = val;
+                }
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+                button1.disabled = val;
+                button2.disabled = val;
+                button3.setAttribute('hidden', '');
+                button4.setAttribute('hidden', '');
+            }
+            else {
+                for (var i = 0; i < formInputCount; i++) {
+                    formInputArr[i].disabled = val;
+                }
 
-	ajaxAddRequest: function(request) {
-		this.clearAddButt();
-		this.clearAutoFillButt();
-		this.disableForm(true);
+                button1.disabled = val;
+                button2.disabled = val;
+                button3.removeAttribute('hidden');
+                button4.removeAttribute('hidden');
+            }
+        },
 
-		var aj = this.$.ajaxAdd;
-		aj.params = request;
-		// Find a way to use auto attribute without it making requests on startup calling the go method.
-		aj.go();
-	},
+        clearAutoFillButt: function() {
+            var ttip = this.$.tooltip_autoFillButt;
+            ttip.hide();
+            ttip.querySelector('#tooltiptext_autoFillButt').innerHTML = '';
 
-	ajaxAddResponse: function(e) {
-		// console.log('Message: ' + e.detail.response);
-		this.disableForm(false);
-		var resp = JSON.parse(e.detail.response);
-		var tip = this.$.tooltipAddBookButt;
-		var button = tip.querySelector('paper-button#addBookButt');
+            this.$.autoFillButt.style.backgroundColor = "white";
+        },
 
-		if (resp.responseCode == 1) {
-			button.style.backgroundColor = "green";
-			this.clearForm();
-		}
-		else {
-			button.style.backgroundColor = "red";
-		}
+        clearAddButt: function() {
+            var ttip = this.$.tooltip_addBookButt;
+            ttip.hide();
+            ttip.querySelector('#tooltiptext_addBookButt').innerHTML = '';
 
-		tip.label = resp.message;
-		tip.show = true;
-	},
+            this.$.addBookButt.style.backgroundColor = "white";
+        },
 
+        ajaxAutoFillRequest: function(request) {
+            this.clearAddButt();
+            this.clearAutoFillButt();
+            this.disableForm(true);
+
+            var aj = this.$.ajaxAutoFill;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxAutoFillResponse: function(e) {
+            console.log(e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_autoFillButt;
+            var ttiptext = ttip.querySelector('#tooltiptext_autoFillButt');
+            var button = this.$.autoFillButt;
+
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+                this.autoFillForm(resp);
+            }
+            else {
+                button.style.backgroundColor = "red";
+                this.clearAddButt();
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
+
+        ajaxAddRequest: function(request) {
+            this.clearAddButt();
+            this.clearAutoFillButt();
+            this.disableForm(true);
+
+            var aj = this.$.ajaxAdd;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxAddResponse: function(e) {
+            // console.log('Message: ' + e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip_addBookButt;
+            var ttiptext = ttip.querySelector('#tooltiptext_addBookButt');
+            var button = this.$.addBookButt;
+
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+                this.clearForm();
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
     });
   </script>
 
-</polymer-element>
+</dom-module>

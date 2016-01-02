@@ -1,72 +1,83 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
 <link rel="import" href="../custom-dialog/custom-dialog.html">
 
-<polymer-element name="custom-tile" attributes="label" layout horizontal center center-justified>
+<dom-module id="custom-tile" attributes="label">
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 25px;
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 25px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: red;*/
-			}
-			.card {
-				display: inline-block;
-				text-align: center;
-				color: gray;
-				background: white;
-				box-sizing: border-box;
-				padding: 2.5px;
-				margin: 5px;
-				width: 150px;
-				height: 150px;
-				border-radius: 2px;
-			}		
-		</style>
-		<paper-shadow tile class='card' z='1' animated layout horizontal center center-justified 
-		on-mouseover='{{mouseOver}}' on-mouseout='{{mouseOut}}' on-tap='{{tapHandler}}'>{{label}}</paper-shadow>
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-		<!-- <core-overlay id='overlay' layered backdrop>
-			<div id='overlayContent'><content></content></div>
-		</core-overlay> -->
+                border-style: solid;
+                border-width: 1px;
+                border-color: red;
+            }
+            .card {
+                /*display: inline-block;*/
+                text-align: center;
 
-		<custom-dialog id='dialog'><content></content></custom-dialog>
+                color: gray;
+                background: white;
 
-	</template>
+                /*box-sizing: border-box;*/
+                padding: 2.5px;
+                margin: 5px;
+                width: 150px;
+                height: 150px;
+                border-radius: 2px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }       
+        </style>
+        <paper-material tile class='card' animated elevation='1' 
+        on-mouseover='mouseOver' on-mouseout='mouseOut' on-tap='tapHandler'>{{label}}</paper-material>
+
+        <custom-dialog id='dialog'><content></content></custom-dialog>
+    </template>
 
   <script>
-    Polymer( 'custom-tile', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+    Polymer( {
+        is: 'custom-tile', 
+        properties: {},
 
-    ready: function() {
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
 
-	},
+        ready: function() {
 
-	mouseOver: function(e) {
-		var obj = e.target;
-		obj.setZ(5);
-	},
+        },
 
-	mouseOut: function(e) {
-		var obj = e.target;
-		obj.setZ(1);
-	},
+        mouseOver: function(e) {
+            e.target.elevation = 5;
+        },
 
-	tapHandler: function(e) {
-		this.$.dialog.toggle();
-	},
+        mouseOut: function(e) {
+            e.target.elevation = 1;
+        },
+
+        tapHandler: function(e) {
+            this.$.dialog.tap();
+        },
 
     });
   </script>
+
+</dom-module>

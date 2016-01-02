@@ -1,0 +1,175 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../../bower_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="custom-dialog-deleteAdmin">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                min-width: 400px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            .radioGroup {
+                @apply(--layout-vertical);
+                @apply(--layout-wrap);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+            paper-radio-button.radioBtn {
+                --paper-radio-button-checked-color: #800000;
+                --paper-radio-button-checked-ink-color: #800000;
+                --paper-radio-button-unchecked-ink-color: #800000;
+            }
+        </style>
+
+        <div id='header'>Delete Administrator</div>
+        <div id='mainForm'>
+            <paper-radio-group class='radioGroup' id='rgrp'>
+                <template id='radioBtnTemplate' is='dom-repeat' items='{{admins}}' as='admin'>
+                    <paper-radio-button class='radioBtn' name='{{admin.pid}}'>{{admin.firstname}} {{admin.lastname}} ({{admin.pid}})</paper-radio-button>
+                </template>
+            </paper-radio-group>
+        </div>
+
+        <paper-button id='deleteAdminBtn' raised role='button' on-tap='ajaxDeleteRequest'>Delete Admin</paper-button>
+        <paper-tooltip id='tooltip' for='deleteAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+
+        <iron-ajax id='ajaxGet' url='../../phpcommands/getAdmin.php' handleAs='json' method='GET' on-response='ajaxGetResponse'></iron-ajax>
+
+        <iron-ajax id='ajaxDelete' url='../../phpcommands/deleteAdmin.php' handleAs='json' method='GET' on-response='ajaxDeleteResponse'></iron-ajax>
+    </template>
+
+    <script>
+    Polymer({
+        is: 'custom-dialog-deleteAdmin', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+            this.admins = new Array(0);
+            this.ajaxGetRequest();
+        },
+
+        resetAdmins: function() {
+            var adminsLength = this.admins.length;
+            for (var i = 0; i < adminsLength; i++) {
+                this.pop('admins');
+            }
+        },
+
+        loadAdmins: function(admins) {
+            // console.log(resp);
+            var adminsLength = admins.length;
+            for (var i = 0; i < adminsLength; i++) {
+                // console.log(admins[i]);
+                this.push('admins', {firstname: admins[i].firstname, lastname: admins[i].lastname, pid: admins[i].pid});
+            }
+        },
+
+        disableForm: function(val) {
+            var formInputArr = this.getElementsByClassName('radioBtn');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
+
+            this.$.deleteAdminBtn.disabled = val;
+        },
+
+        clearForm: function() {
+            this.$.tooltip.hide();
+            this.$.tooltiptext.innerHTML = '';
+            this.$.deleteAdminBtn.style.backgroundColor = "white";
+        },
+
+        ajaxGetRequest: function() {
+            var request = '{"pid":"all"}';
+            var aj = this.$.ajaxGet;
+            aj.params = request;
+            this.disableForm(true);
+            aj.generateRequest();
+        },
+
+        ajaxGetResponse: function(e) {
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+
+            this.resetAdmins()
+
+            if (resp.responseCode == 1) {
+                this.loadAdmins(resp.admins);
+            }
+        },
+
+        ajaxDeleteRequest: function() {
+            var selectedMember = this.$.mainForm.querySelector('#rgrp').selected;
+            var request = '{"pid":"' + selectedMember + '"}';
+            var aj = this.$.ajaxDelete;
+            aj.params = request;
+            this.disableForm(true);
+            aj.generateRequest();
+        },
+
+        ajaxDeleteResponse: function(e) {
+            //console.log('Response: ' + e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+            var ttip = this.$.tooltip;
+            var ttiptext = this.$.tooltiptext;
+            var button = this.$.deleteAdminBtn;
+
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+                // this.ajaxGetRequest(); // Is there a more efficient way to update the radio group?
+                var removedItem = this.$.rgrp.selectedItem;
+                var removedIndex = this.$.rgrp.indexOf(removedItem);
+                this.splice('admins', removedIndex, 1);
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
+
+    });
+  </script>
+
+</dom-module>

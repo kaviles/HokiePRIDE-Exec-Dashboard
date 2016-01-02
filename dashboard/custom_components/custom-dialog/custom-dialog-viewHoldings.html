@@ -1,164 +1,408 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-input-decorator.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../../bower_components/core-item/core-item.html">
-<link rel="import" href="../../../bower_components/core-label/core-label.html">
-<link rel="import" href="../../../bower_components/core-tooltip/core-tooltip.html">
-<link rel="import" href="../../../bower_components/core-dropdown/core-dropdown.html">
-<link rel="import" href="../../../bower_components/core-dropdown-menu/core-dropdown-menu.html">
-<link rel="import" href="../../../bower_components/core-icon/core-icon.html">
-<link rel="import" href="../../../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-checkbox/paper-checkbox.html">\
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../../bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<polymer-element name="custom-dialog-viewHoldings" layout vertical center center-justified>
+<link rel="import" href="../../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
-	<template>
-		<style>    
-			:host {
-				background-color: white;
-				padding: 5px;
-				margin: 5px;
 
-				/*border-style: solid;
-				border-width: 1px;
-				border-color: orange;*/
-			}
-			#header {
-				margin: 0px 0px 0px 0px;
-			}
-			#section_menu {
-				max-width: 400px;
-				max-height: 800px;
-			}
-			paper-button {
-				margin: 10px 0px 0px 0px;
-			}
-			core-dropdown-menu {
-				margin: 10px 0px 10px 0px;
-			}
-			core-dropdown {
-				width: 100px;
-			}
-			core-label {
-				width: 75px;
-				vertical-align: center;
-				text-align: center;
-			}
-		</style>
+<dom-module id="custom-dialog-viewHoldings">
 
-		<div id='header'>View Library Holdings</div>
-		<section id='section_menu' layout vertical wrap>
-			<core-dropdown-menu label='Select Status'>
-				<core-dropdown class='dropdown'>
-					<core-selector>
-						<template repeat='{{status in statuses}}'>
-							<core-item label='{{status.stat}}'></core-item>
-						</template>
-					</core-selector>
-				</core-dropdown>
-		    </core-dropdown-menu>
-    	</section>
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
 
-    	<section id='section_holdings' layout vertical>
-    		<template id='template_holdings' repeat='{{holdings}}'>
-    			<div id='holdings_view' layout horizontal>
-	    			<core-label>{{libid}}</core-label>
-	    			<core-label>{{title}}</core-label>
-	    			<core-label>{{author}}</core-label>
-	    			<core-label>{{publisher}}</core-label>
-	    			<core-label>{{year}}</core-label>
-	    			<core-label>{{isbn13}}</core-label>
-	    			<core-label>{{loc}}</core-label>
-	    			<core-label>{{dcc}}</core-label>
-	    			<core-label>{{tags}}</core-label>
-	    			<core-label>{{status}}</core-label>
-	    			<core-label>{{patron_firstname}}</core-label>
-	    			<core-label>{{patron_lastname}}</core-label>
-	    			<core-label>{{patron_email}}</core-label>
-	    		</div>
-    		</template>
-    	</section>
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-	    <!-- <core-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' params='' handleAs='json' method='POST' on-core-response='{{ajaxResponse}}'></core-ajax> -->	
-	</template>
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                max-width: 1000px;
+                max-height: 800px;
 
-	<script>
-    Polymer( 'custom-dialog-viewHoldings', {
-    /**
-     * Specifies the label of the individual tile.
-     *
-     * @attribute label
-     * @type string
-     * @default ''
-     */
+                @apply(--layout-vertical);
+                @apply(--layout-wrap);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #menu {
+                margin: 5px 5px 5px 5px;
 
-    ready: function() {
-    	this.statuses = [
-    	{stat:'IN'}, {stat:'OUT'}, {stat:'REMOVED'}];
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #errorMessage {
+                font-size: 12px; 
+                color: red;
+            }
+            #holdings {
+                margin: 5px 5px 5px 5px;
+                padding: 10px 0px 10px 0px;
+                min-width: 800px;
+                min-height: 400px;
+                max-height: 400px;
 
-    	var template_holdings = this.$.section_holdings.querySelector('#template_holdings');
-    	var model_holdings = {'holdings':[{libid:'Library ID', title:'Title', author:'Author', publisher:'Publisher', year:'Year', isbn13:'ISBN13', loc:'LOC', dcc:'DCC', tags:'Tags', status:'Status', patron_firstname:'First', patron_lastname:'Last', patron_email:'Email'}]};
+                @apply(--layout-scroll);
+                @apply(--paper-dialog-scrollable);
 
-    	template_holdings.model = model_holdings;
-	},
+                border-style: solid;
+                border-width: 1px;
+                border-color: black;
+            }
+            #data {
+                margin: 10px 10px 10px 10px;
+                padding: 2px 2px 2px 2px;
+                @apply(--layout-vertical);
+            }
+            .holdingData {
+                margin: 2px 2px 2px 2px;
+                @apply(--layout-horizontal);
+            }
+            #bookCoverData {
+                margin: 2px 2px 2px 2px;
+                padding: 2px 2px 2px 2px;
 
-	// validateForm: function() {
-	// 	var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-	// 	var papDecCount = papDec.length;
+                @apply(--layout-vertical);
 
-	// 	this.$.mainForm.querySelector('#mainInput > #libid').setAttribute('required', '');
+                border-style: solid;
+                border-width: 1px;
+                border-color: purple;
+            }
+            #metaData {
+                margin: 2px 2px 2px 2px;
+                padding: 2px 2px 2px 2px;
 
-	// 	var validCount = 0;
-	// 	var valueArray = new Array(papDecCount);
-	// 	for (var i = 0; i < papDecCount; i++) {
-	// 		var inp = papDec[i].firstElementChild;
-	// 		valueArray[i] = inp.value;
-	// 		papDec[i].isInvalid = !inp.validity.valid;
+                @apply(--layout-vertical);
+                @apply(--layout-flex);
 
-	// 		if (!papDec[i].isInvalid) {
-	// 			validCount++;
-	// 		}
-	// 	}
+                border-style: solid;
+                border-width: 1px;
+                border-color: purple;
+            }
+            #metaData1, #metaData2, #metaData3 {
+                margin: 2px 2px 2px 2px;
+                padding: 1px 1px 1px 1px;
 
-	// 	if (validCount == papDecCount) {
-	// 		req = '{"libid":"' + valueArray[0] + '"}';
-	// 		this.ajaxRequest(req);
-	// 	}
-	// },
+                @apply(--layout-vertical);
+                @apply(--layout-flex);
 
-	// clearForm: function() {
-	// 	var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-	// 	var papDecCount = papDec.length;
-	// 	for (var i = 0; i < papDecCount; i++) {
-	// 		papDec[i].firstElementChild.value = '';
-	// 	}
-	// },
+                border-style: solid;
+                border-width: 1px;
+                border-color: orchid;
+            }
+            #descriptionData {
+                margin: 2px 2px 2px 2px;
+                padding: 2px 2px 2px 2px;
 
-	// ajaxRequest: function(request) {
-	// 	var aj = this.$.ajaxAdd;
-	// 	aj.params = request;
-	// 	// Find a way to use auto attribute without it making requests on startup calling the go method.
-	// 	aj.go();
-	// },
+                width: 250px;
+                /*height: 300px;*/
 
-	// ajaxResponse: function(e) {
-	// 	var resp = JSON.parse(e.detail.response);
-	// 	// console.log('Message: ' + resp.message);
-	// 	var tip = this.$.tooltip;
-	// 	var button = tip.querySelector('paper-button');
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
 
-	// 	if (resp.responseCode == 1) {
-	// 		button.style.backgroundColor = "green";
-	// 		this.clearForm();
-	// 	}
-	// 	else {
-	// 		button.style.backgroundColor = "red";
-	// 	}
+                border-style: solid;
+                border-width: 1px;
+                border-color: purple;
+            }
+            iron-label {
+               /* font-size: 12px;
+                @apply(--layout-horizontal);*/
+                /*@apply(--layout-center);*/
+                /*@apply(--paper-font-subhead);*/
+                @apply(--paper-item);
+            }
+            paper-checkbox {
+                margin: 2px 5px 2px 5px;
+            }
+            iron-label {
+                margin: 5px 5px 5px 5px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+            paper-checkbox.checkbox {
+                --paper-checkbox-checked-color: #800000;
+                --paper-checkbox-checked-ink-color: #800000;
+                --paper-checkbox-unchecked-ink-color: #800000;
+                --paper-checkbox-size: 18px;
+            }
+        </style>
 
-	// 	tip.label = resp.message;
-	// 	tip.show = true;
-	// },
+        <div id='header'>View Library Holdings</div>
 
+        <div id='mainForm'>
+            <div id='menu'>
+                <template is='dom-repeat' items='{{statuses}}' as='status'>
+                    <paper-checkbox class='checkbox' value='{{status.value}}' on-change='locknav'>{{status.status}}</paper-checkbox>
+                </template>
+                <paper-icon-button id='searchBtn' icon="search" on-tap='validateForm'></paper-icon-button>
+            </div>
+
+            <iron-label id='errorMessage'></iron-label>
+
+            <div id='mainForm_btns'>
+                <paper-icon-button id='backBtn' icon='chevron-left' on-tap='pageBack'></paper-icon-button>
+                <paper-button id='navBtn' raised role='button' on-tap='loadMoreHoldings'>Load More Holdings</paper-button>
+                <paper-icon-button id='forwBtn' icon='chevron-right' on-tap='pageForw'></paper-icon-button>
+            </div>
+
+            <iron-pages id='holdings' selected='0'>
+                <template is='dom-repeat' items='[[pages]]' as='page' index-as='ind'>
+                    <div id='page'>
+                        <template is='dom-repeat' items='[[page.holdings]]' as='holding'>
+                            <paper-material id='data' elevation='3'>
+                                <div class='holdingData' id='statusData'>
+                                    <iron-label>Admin: {{holding.statusby}}</iron-label>
+                                    <iron-label>Status: {{holding.status}}</iron-label>
+                                    <iron-label>Time: {{holding.time}}</iron-label>
+                                    <iron-label>Patron: {{holding.patron_firstname}} {{holding.patron_lastname}} {{holding.patron_email}}</iron-label>
+                                </div>
+
+                                <div class='holdingData' id='bookData'>
+                                    <div id='bookCoverData'>
+                                        <iron-image style='width:200px; height:300px;' sizing='cover' preload src="{{holding.covurl}}"></iron-image>
+                                        <iron-label>Library ID: {{holding.libid}}</iron-label>
+                                    </div>
+
+                                    <div id='metaData'>
+                                        <div id='metaData1'>
+                                            <iron-label>{{holding.title}}</iron-label>
+                                            <iron-label>{{holding.author}}</iron-label>
+                                            <iron-label>{{holding.publisher}} - {{holding.year}}</iron-label>
+                                        </div>
+                                        <div id='metaData2'>
+                                            <iron-label>loc: {{holding.loc}}</iron-label>
+                                            <iron-label>dcc: {{holding.dcc}}</iron-label>
+                                            <iron-label>isbn13: {{holding.isbn13}}</iron-label>
+                                        </div>
+                                        <div id='metaData3'>
+                                            <iron-label>tags: {{holding.tags}}</iron-label>
+                                        </div>
+                                    </div>
+
+                                    <div id='descriptionData'>
+                                        <iron-label>Description</iron-label>
+                                        <paper-textarea value='{{holding.desc}}' maxlength='1024' readonly></paper-textarea>
+                                    </div>
+                                </div>
+                            </paper-material>
+                        </template>
+                    </div>
+                </template>
+            </iron-pages>
+        </div>
+
+        <iron-ajax id='ajaxRetrieveHoldings' url='../../phpcommands/retrieveHoldingsAdmin.php' handleAs='json' method='GET' on-response='ajaxRetrieveHoldingsResponse'></iron-ajax>  
+    </template>
+
+    <script>
+    Polymer({
+        is: 'custom-dialog-viewHoldings', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+            this.statuses = [
+            {status:'Checked In', value:'IN'}, {status:'Checked Out', value:'OUT'}, {status:'Removed', value:'REMOVED'}
+            ];
+
+            this.pages = [];
+
+            this.holdingStatuses = [];
+
+            this.locknav();
+        },
+
+        validateForm: function() {
+            this.$.holdings.select('0');
+            this.locknav();
+
+            var pagesLength = this.pages.length;
+
+            // Find a way to make resetting more efficient
+            for (var i = 0; i < pagesLength; i++) {
+                this.pop('pages');
+            }
+
+            this.updateStatusesArray();
+
+            if (this.holdingStatuses.length < 1) {
+                this.$.errorMessage.innerHTML = 'Please select a status type';
+            }
+            else {
+                this.$.errorMessage.innerHTML = '';
+                this.ajaxRetrieveHoldings(this.holdingStatuses, 10, 0);
+            }
+        },
+
+        updateStatusesArray: function() {
+
+            var checkBoxes = this.$.mainForm.getElementsByClassName('checkbox');
+            var checkBoxesCount = checkBoxes.length;
+
+            this.holdingStatuses = new Array(0);
+            for (var i = 0; i < checkBoxesCount; i++) {
+                if (checkBoxes[i].checked) {
+                    this.holdingStatuses.push(checkBoxes[i].value);
+                }
+            }
+        },
+
+        loadHoldingData: function(holdingsData) {
+
+            var holdingsArray = new Array(0);
+
+            var dataLength = holdingsData.length;
+            for (var i = 0; i < dataLength; i++) {
+                holdingsArray.push({libid:holdingsData[i].libid, title:holdingsData[i].title, author:holdingsData[i].author, publisher:holdingsData[i].publisher, year:holdingsData[i].year, isbn13:holdingsData[i].isbn13, loc:holdingsData[i].loc, dcc:holdingsData[i].dcc, tags:holdingsData[i].tags, desc:holdingsData[i].comms, covurl: holdingsData[i].covurl, status:holdingsData[i].status, statusby:holdingsData[i].status_by, time:holdingsData[i].status_time, patron_firstname:holdingsData[i].fname, patron_lastname:holdingsData[i].lname, patron_email:holdingsData[i].email});
+            }
+
+            var selectedPage = this.$.holdings.selectedItem;
+            var selectedIndex = this.$.holdings.indexOf(selectedPage);
+
+            var pageCount = this.pages.length;
+
+            this.push('pages', {holdings:holdingsArray});
+
+            pageCount = this.pages.length;
+            
+            console.log('loadHoldingData(): Page Count: ' + pageCount);
+        },
+
+        loadMoreHoldings: function() {
+
+            this.ajaxRetrieveHoldings(this.holdingStatuses, 10, (this.pages.length) * 10);
+        },
+
+        pageForw: function() {
+
+            this.$.holdings.selectNext();
+            this.$.errorMessage.innerHTML = '';
+
+            this.setBtns();
+        },
+
+        pageBack: function() {
+
+            this.$.holdings.selectPrevious();
+            this.$.errorMessage.innerHTML = '';
+
+            this.setBtns();
+        },
+
+        setBtns: function() {
+
+            var selectedPage = this.$.holdings.selectedItem;
+            var selectedIndex = this.$.holdings.indexOf(selectedPage);
+
+            var pagesLength = this.pages.length;
+
+            if (pagesLength > 1) {                
+                if (selectedIndex + 1 < pagesLength) {
+                    this.$.forwBtn.disabled = false
+                }
+                else {
+                    this.$.forwBtn.disabled = true;
+                }
+
+                if (selectedIndex > 0) {
+                    this.$.backBtn.disabled = false;
+                }
+                else {
+                    this.$.backBtn.disabled = true;
+                }
+            }
+            else {
+                this.$.forwBtn.disabled = true;
+                this.$.backBtn.disabled = true;
+            }
+        },
+
+        locknav: function() {
+            this.disableBtns(true);
+        },
+
+        disableBtns: function(val) {
+            this.$.backBtn.disabled = val;
+            this.$.forwBtn.disabled = val;
+            this.$.navBtn.disabled = val;
+        },
+
+        ajaxRetrieveHoldings: function(holdingStatuses, requestCount, requestOffset) {
+
+            this.$.errorMessage.innerHTML = '';
+            var request = '{"holdingStatuses":[';
+
+            for (var i = 0; i < holdingStatuses.length; i++) {
+                if (i + 1 < holdingStatuses.length) {
+                    request = request + '{"type":"' + holdingStatuses[i] + '"}, ';
+                }
+                else {
+                    request = request + '{"type":"' + holdingStatuses[i] + '"}], ';
+                }
+            }
+
+            request = request + '"count":"' + requestCount + '", "offset":"' + requestOffset + '"}';
+
+            console.log('Request: ' + request);
+
+            var aj = this.$.ajaxRetrieveHoldings;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxRetrieveHoldingsResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Response: ' + e.detail.response);
+            var em = this.$.errorMessage;
+
+            em.innerHTML = resp.message;
+
+            if (resp.responseCode == 1) {
+                em.style.color = "green";
+                this.$.navBtn.disabled = false;
+                this.loadHoldingData(resp.holdingsData);
+            }
+            else if (resp.responseCode == 2) {
+                em.style.color = "red";
+                this.$.navBtn.disabled = true;
+            }
+            else {
+                em.style.color = "red";
+            }
+
+            this.setBtns();
+        }
     });
   </script>
 
-</polymer-element>
+</dom-module>

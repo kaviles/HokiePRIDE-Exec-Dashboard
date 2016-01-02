@@ -1,0 +1,158 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="custom-dialog-deleteLibPatron">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                max-width: 400px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-wrap);
+                @apply(--layout-center-justified);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+        </style>
+
+        <div id='header'>Delete Library Patron</div>
+        <div id='mainForm'>
+            <template is='dom-repeat' items='{{inputs}}' as='input'>
+                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
+                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                </paper-input>
+            </template>
+        </div>
+
+        <paper-button id='deleteLibPatBtn' raised role='button' on-tap='validateForm'>Delete Patron</paper-button>
+        <paper-tooltip id='tooltip' for='deleteLibPatBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+
+        <iron-ajax id='ajaxAdd' url='../../phpcommands/deleteLibPatron.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+    </template>
+
+    <script>
+    Polymer({
+        is: 'custom-dialog-deleteLibPatron', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+            this.inputs = [
+            {id:'email', label:'Email', minlength:'', maxlength:'', type:'email', required:'true', error:'example@example.com', pattern:'\.*'}
+            ];
+        },
+
+        validateForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
+
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
+
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
+
+            if (validCount == formInputCount) {
+                req = '{"email":"' + formInputArr[0].value + '"}';
+                this.disableForm(true);
+                this.ajaxRequest(req);
+            }
+        },
+
+        disableForm: function(val) {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
+
+            this.$.deleteLibPatBtn.disabled = val;
+        },
+
+        clearForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].value = '';
+                formInputArr[i].invalid = false;
+            }
+
+            this.$.tooltip.hide();
+            this.$.tooltiptext.innerHTML = '';
+            this.$.deleteLibPatBtn.style.backgroundColor = "white";
+        },
+
+        ajaxRequest: function(request) {
+            var aj = this.$.ajaxAdd;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+            this.disableForm(false);
+
+            var ttip = this.$.tooltip;
+            var ttiptext = this.$.tooltiptext;
+            var button = this.$.deleteLibPatBtn;
+
+            if (resp.responseCode == 1) {
+                this.clearForm();
+                button.style.backgroundColor = "green";
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
+    });
+  </script>
+
+</dom-module>

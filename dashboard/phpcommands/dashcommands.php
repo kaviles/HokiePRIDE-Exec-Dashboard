@@ -60,11 +60,123 @@ function escapeData($array) {
     return $array; // I don't like that this has to be returned...
 }
 
+function generateLibID() {
+
+    $libid = md5(uniqid(), false);
+
+    while (strlen($libid) > 13) {
+        $libid = substr_replace($libid, "", rand(0, strlen($libid) - 1), 1);
+    }
+
+    return $libid;
+}
+
 /*
 ************************************************
 * LIBRARY COMMANDS
 ************************************************
 */
+
+/**
+* Checks books back into the library.
+* Checks if book is checked out.
+* If checked out, clears check out information on book.
+* If not checked out, returns error about book not being checked out.
+*
+* @param $arr an array with the following values:
+* string the search string
+*
+* @return A JSON formatted response string with the following values.
+* responseCode the response code, 0 for failure, 1 for success
+* bookData data relevant to the library's books
+* videoData data relevant to the library's dvds or vhss (TODO: Implement this)
+*/
+function searchRequestAdmin($arr) {
+
+    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $mysqli = connectToDB();
+    
+    if ($mysqli) {
+        $strings = explode(" ", $arr['string']);
+        $stringsLength = count($strings);
+
+        $limit = 0;
+        if ($stringsLength > 3) {
+            $limit = 3;
+        }
+        else {
+            $limit = $stringsLength;
+        }
+
+        $q = "SELECT * FROM library WHERE";
+
+        for ($i = 0; $i < $limit; $i++) {
+            $q .= " title LIKE '%${strings[$i]}%' OR 
+            author LIKE '%${strings[$i]}%' OR 
+            tags LIKE '%${strings[$i]}%' OR 
+            libid = '{$strings[$i]}' OR 
+            patron_email = '{$strings[$i]}' OR 
+            status = '{$strings[$i]}' OR 
+            isbn13 = '{$strings[$i]}' OR 
+            comms LIKE '%${strings[$i]}%' OR 
+            publisher LIKE '%${strings[$i]}%' OR 
+            year = '{$strings[$i]}' OR
+            loc = '{$strings[$i]}' OR 
+            dcc = '{$strings[$i]}'";
+
+            if ($i + 1 < $limit) {
+                $q .= " OR";
+            }
+        }
+
+        $result = $mysqli->query($q);
+        $rowCount = $result->num_rows;
+
+        if ($rowCount > 0) {
+
+            $books = '"bookData":[';
+
+            for ($i = 0; $i < $rowCount; $i++) {
+                $row = $result->fetch_assoc();
+
+                $books .= '{"title":"'.$row['title'].'",
+                "author":"'.$row['author'].'",
+                "publisher":"'.$row['publisher'].'",
+                "isbn13":"'.$row['isbn13'].'",
+                "year":"'.$row['year'].'",
+                "loc":"'.$row['loc'].'",
+                "dcc":"'.$row['dcc'].'",
+                "tag":"'.$row['tags'].'",
+                "covurl":"'.$row['covurl'].'",
+                "comms":"'.$row['comms'].'",
+                "tags":"'.$row['tags'].'",
+                "libid":"'.$row['libid'].'",
+                "status":"'.$row['status'].'",
+                "status_by":"'.$row['status_by'].'",
+                "status_time":"'.$row['status_timestamp'].'",
+                "fname":"'.$row['patron_firstname'].'",
+                "lname":"'.$row['patron_lastname'].'",
+                "email":"'.$row['patron_email'].'"}';
+
+                if ($i + 1 < $rowCount) {
+                    $books .= ", ";
+                }
+                else {
+                    $books .= "]";
+                }
+            }
+
+            $response = '{"responseCode":"1","message":"'.$rowCount.' books(s) found",'.$books.'}';
+        }
+        else {
+            $response = '{"responseCode":"0","message":"No results"}';
+        }
+    }
+
+    disconnectFromDB($mysqli);
+
+    return $response;
+}
 
 /**
 * Checks books back into the library.
@@ -88,12 +200,12 @@ function checkInBook($libid) {
         if ($result_library->num_rows > 0) {
             $row_library = $result_library->fetch_assoc();
 
-            if ($row_library['status'] == 'OUT') {
+            if ($row_library['status'] == 'CHECKED_OUT') {
                 $testMember = 'testMember';
                 $timeStamp = getTimeStamp();
                 $l_libid = $row_library['libid'];
 
-                $q = "UPDATE library SET status='IN', status_by='$testMember', status_timestamp='$timeStamp', 
+                $q = "UPDATE library SET status='CHECKED_IN', status_by='$testMember', status_timestamp='$timeStamp', 
                 patron_firstname='', patron_lastname='', patron_email='' WHERE libid='$l_libid'";
                 $result = $mysqli->query($q);
 
@@ -104,7 +216,7 @@ function checkInBook($libid) {
                     $response = '{"responseCode":"0","message":"Error! Book not successfully checked IN"}';
                 }
             }
-            else if ($row_library['status'] == 'REMOVED') {
+            else if ($row_library['status'] == 'CHECKED_REMOVED') {
                 $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
             }
             else {
@@ -150,7 +262,7 @@ function checkOutBook($libid, $patronEmail) {
         if ($result_library->num_rows > 0) { // Library ID was found
             $bookRow = $result_library->fetch_assoc();
 
-            if ($bookRow['status'] == 'IN') { // Book of Library ID was found and is checked IN
+            if ($bookRow['status'] == 'CHECKED_IN') { // Book of Library ID was found and is checked IN
 
                 $q = "SELECT * FROM library_patron WHERE email = '$patronEmail'";
                 $result_patron = $mysqli->query($q);
@@ -165,7 +277,7 @@ function checkOutBook($libid, $patronEmail) {
                 $testMember = 'testMember';
 
                 if ($result_patron->num_rows > 0) { // Patron email was found
-                    $q = "UPDATE library SET status='OUT', status_by='$testMember', status_timestamp='$timestamp', 
+                    $q = "UPDATE library SET status='CHECKED_OUT', status_by='$testMember', status_timestamp='$timestamp', 
                     patron_firstname='$p_firstname', patron_lastname='$p_lastname',
                     patron_email='$p_email' WHERE libid='$l_libid'";
 
@@ -180,7 +292,7 @@ function checkOutBook($libid, $patronEmail) {
                         "message":"Error! Book not checked out to '.$p_firstname.' '.$p_lastname.'"}';
                     }
                 }
-                else if ($bookRow['status'] == 'REMOVED') {
+                else if ($bookRow['status'] == 'CHECKED_REMOVED') {
                     $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
                 }
                 else {
@@ -229,7 +341,7 @@ function addBook($bookData) {
         $bookData = escapeData($bookData);
         $timeStamp = getTimeStamp();
         // $libid = uniqid();
-        $status = 'IN';
+        $status = 'CHECKED_IN';
 
         $mysqli = connectToDB();
         if ($mysqli) {
@@ -339,13 +451,13 @@ function removeBook($libid, $reason) {
         if ($result_library->num_rows > 0) {
             $row_library = $result_library->fetch_assoc();
 
-            if ($row_library['status'] == 'IN') {
+            if ($row_library['status'] == 'CHECKED_IN') {
                 $testMember = 'testMember';
                 $timeStamp = getTimeStamp();
                 $l_libid = $row_library['libid'];
 
                 $q = "UPDATE library SET removed_by='$testMember', removed_timestamp='$timeStamp', removed_reason='$reason', 
-                status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
+                status='CHECKED_REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
                 $result = $mysqli->query($q);
 
                 if ($result) {
@@ -546,7 +658,7 @@ function retrieveBookData($isbn13) {
             $r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
             $r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
             $r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
-            $r_libid = uniqid();
+            $r_libid = generateLibID();
 
             $authorString = '';
 
@@ -804,7 +916,7 @@ function addLibPatron($patronData) {
         }
         else { // library patron already exists or was added but eventually removed
             $row = $result->fetch_assoc();
-            if ($row['status'] == 'REMOVED') {
+            if ($row['status'] == 'CHECKED_REMOVED') {
 
                 $timeStamp = getTimeStamp();
                 $testMember = 'testMember';
@@ -945,7 +1057,7 @@ function removeLibPatron($email, $reason) {
             $testMember = 'testMember';
             $timeStamp = getTimeStamp();
 
-            $q = "UPDATE library_patron SET status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
+            $q = "UPDATE library_patron SET status='CHECKED_REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
             removed_by='$testMember', removed_timeStamp='$timeStamp', removed_reason='$reason' 
             WHERE email='$email'";
 

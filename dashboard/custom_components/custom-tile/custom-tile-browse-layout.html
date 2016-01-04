@@ -1,0 +1,147 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/neon-animation/neon-animation.html">
+
+<link rel="import" href="custom-tile-browse.html">
+
+<dom-module id="custom-tile-browse-layout" attributes="label">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                height: 100%;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+                @apply(--layout-wrap);
+
+                border: 1px;
+                border-color: green;
+                border-style: solid;
+            }
+            .tile-container {
+                margin: 5px;
+                border: 1px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+            }
+            #searchBar {
+                margin: 5px;
+                padding: 5px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #searchResults {
+                margin: 5px;
+                padding: 5px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+                @apply(--layout-wrap);
+            }
+        </style>
+
+        <div class='tile-container'>
+
+            <div id='searchBar'>
+                <paper-input id='searchInput' placeholder='Search for item...' size='64'></paper-input>
+                <paper-icon-button icon='icons:search' on-tap='searchButtonPressed'></paper-icon-button>
+            </div>
+
+            <iron-label id='errorMessage'></iron-label>
+
+            <div id='searchResults'>
+                <template is='dom-repeat' items='{{books}}' as='book'>
+                    <custom-tile-browse libid='{{book.libid}}' title='{{book.title}}' author='{{book.author}}' publisher='{{book.publisher}}' year='{{book.year}}' loc='{{book.loc}}' dcc='{{book.dcc}}' isbn='{{book.isbn13}}' tags='{{book.tags}}' desc='{{book.desc}}' covurl='{{book.covurl}}' status='{{book.status}}' statusby='{{book.statusby}}' statustime='{{book.statustime}}' pfname='{{book.pfname}}' plname='{{book.plname}}' pemail='{{book.pemail}}'></custom-tile-browse>
+                </template>
+            </div>
+        </div>
+
+        <iron-ajax id='ajaxSearchRequest' url='../../phpcommands/searchRequestAdmin.php' handleAs='json' method='GET' on-response='ajaxSearchResponse'></iron-ajax>  
+    </template>
+
+    <script>
+
+    Polymer({
+        is: 'custom-tile-browse-layout',
+        properties: {},
+
+        /**
+         * Specifies the label for the set of tiles.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+
+            this.books = [
+            ];
+        },
+
+        searchButtonPressed: function() {
+
+            // TODO: Validate search query
+
+            this.ajaxSearchRequest('{"string":"' + this.$.searchInput.value + '"}');
+        },
+
+        resetBookData: function() {
+
+            var dataLength = this.books.length;
+            for (var i = 0; i < dataLength; i++) {
+                this.pop('books');
+            }
+        },
+
+        loadBookData: function(books) {
+            var dataLength = books.length;
+            for (var i = 0; i < dataLength; i++) {
+                this.push('books', {libid:books[i].libid, title:books[i].title, author:books[i].author, publisher:books[i].publisher, year:books[i].year, isbn13:books[i].isbn13, loc:books[i].loc, dcc:books[i].dcc, tags:books[i].tags, desc:books[i].comms, covurl: books[i].covurl, status:books[i].status, statusby:books[i].status_by, statustime:books[i].status_time, pfname:books[i].fname, plname:books[i].lname, pemail:books[i].email});
+            }
+        },
+
+        ajaxSearchRequest: function(str) {
+            // console.log('Request String: ' + str);
+
+            var aj = this.$.ajaxSearchRequest;
+            aj.params = str;
+            aj.generateRequest();
+        },
+
+        ajaxSearchResponse: function(e) {
+            // console.log('Response: ' + e.detail.response);
+            var resp = JSON.parse(e.detail.response);
+            
+            var em = this.$.errorMessage;
+            em.innerHTML = resp.message;
+
+            var search = this.$.searchInput;
+            if (resp.responseCode == 1) {
+                em.style.color = "green";
+                search.invalid = false;
+
+                this.resetBookData();
+                this.loadBookData(resp.bookData);
+            }
+            else {
+                em.style.color = "red";
+                search.invalid = true;
+            }
+        },
+    });
+
+    </script>
+
+</dom-module>

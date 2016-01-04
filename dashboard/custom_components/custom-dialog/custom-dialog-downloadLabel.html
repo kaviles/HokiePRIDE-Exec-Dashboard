@@ -1,0 +1,232 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="custom-dialog-downloadLabel">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: blue;
+            }
+            #header {
+                margin: 0px 0px 0px 0px;
+            }
+            #mainForm {
+                max-width: 400px;
+
+                @apply(--layout-wrap);
+            }
+            .formInput {
+                margin: 5px 5px 5px 5px;
+                padding: 0px 0px 0px 0px;
+            }
+            #labelcanvas {
+                margin: 5px 5px 5px 5px;
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: gray;
+            }
+            paper-button {
+                margin: 5px 5px 5px 5px;
+            }
+        </style>
+
+        <div id='header'>Download Label</div>
+        <div id='mainForm'>
+            <template is='dom-repeat' items='{{inputs}}' as='input'>
+                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
+                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
+                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                </paper-input>
+            </template>
+        </div>
+
+        <canvas id='labelcanvas' width='225px' height='160px'></canvas>
+
+        <paper-button id='generateLabelButton' raised role='button' on-tap='validateForm'>Generate Label</paper-button>
+        <paper-tooltip id='tooltip' for='generateLabelButton' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-button id='downloadLabelButton' raised role='button' on-tap='downloadLabel'>Download Label</paper-button>
+
+        <div id='dlcontainer'></div>
+
+        <iron-ajax id='ajaxAdd' url='../../phpcommands/retrieveDBBook.php' 
+        handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+    </template>
+
+    <script>
+    Polymer({
+        is: 'custom-dialog-downloadLabel', 
+        properties: {},
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+            this.inputs = [
+            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', required:'true', error:'Input 13 character Library ID', pattern:'^[a-zA-Z0-9]*$'}
+            ];
+
+            this.currlibid = '';
+        },
+
+        validateForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            var validCount = 0;
+            for (var i = 0; i < formInputCount; i++) {
+
+                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
+                    formInputArr[i].invalid = true;
+                }
+
+                if (!formInputArr[i].invalid) {
+                    // console.log('validCount incremented.');
+                    validCount++;
+                }
+                else {
+                    // console.log('validCount not incremented.');
+                }
+            }
+
+            if (validCount == formInputCount) {
+                req = '{"libid":"' + formInputArr[0].value + '"}';
+                // console.log(req);
+                this.disableForm(true);
+                this.ajaxRequest(req);
+            }
+        },
+
+        downloadLabel: function() {
+            console.log('Downloading label...');
+            var canvas = this.$.labelcanvas;
+            var img = canvas.toDataURL("image/png");
+
+            var newa = document.createElement('a');
+            newa.id = 'downloadlink';
+            newa.href = img;
+            newa.download = this.currlibid;
+            this.$.dlcontainer.appendChild(newa);
+
+            newa.click();
+            this.$.dlcontainer.removeChild(newa);
+        },
+
+        generateLabel: function(bookData) {
+            var libid = bookData[0].libid;
+            var title = bookData[0].title;
+            this.currlibid = libid;
+
+            var titlelength = title.length;
+            if (titlelength > 64) {
+                title = title.slice(0, 64);
+                title = title + '...';
+            }
+
+            var canvas = this.$.labelcanvas;
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            rasterizeHTML.drawHTML(
+                '<style>' +
+                    'html {width:100%; height:100%;' +
+                        'display: -ms-flexbox; display: -webkit-flex; display: flex;' +
+                        '-ms-flex-direction: column; -webkit-flex-direction: column; flex-direction: column;' +
+                        '-ms-flex-align: center; -webkit-align-items: center; align-items: center;' +
+                        '-ms-flex-pack: center; -webkit-justify-content: center; justify-content: center;}' +
+                    '#itemlabel {' +
+                        'margin: 5px; padding: 5px;' +
+                        'min-width: 200px; max-width: 200px;' +
+                        'min-height: 135px; max-width: 135px' +
+                        'display: -ms-flexbox; display: -webkit-flex; display: flex;' +
+                        '-ms-flex-direction: column; -webkit-flex-direction: column; flex-direction: column;' +
+                        '-ms-flex-align: center; -webkit-align-items: center; align-items: center;' +
+                        '-ms-flex-pack: center; -webkit-justify-content: center; justify-content: center;' +
+                        'border-style: dashed; border-width: 1px; border-color: black;}' +
+                    '#itemlabel > * {margin: 2px;}' +
+                    'label { display: block; text-align: center; font-size: xx-small;}' +
+                '</style>' +
+                '<div id="itemlabel">' +
+                    '<img id="logoicon" alt="logo icon" style="width: 75px; height: 65px;" ' +
+                    'src="images/HokiePRIDE_logo_b.svg"/>' +
+                    '<label id="itemtitle">' + title + '</label>' +
+                    '<img id="barcodeimage" alt="Barcode" ' +
+                    'src="php-barcode/barcode.php?codetype=code128&text=' + libid + '"/>' +
+                    '<label id="barcodenumber">' + libid + '</label>' +
+                '</div>',
+                canvas);
+        },
+
+        disableForm: function(val) {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
+            }
+
+            this.$.generateLabelButton.disabled = val;
+        },
+
+        clearForm: function() {
+            var formInputArr = this.getElementsByClassName('formInput');
+            var formInputCount = formInputArr.length;
+
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].value = '';
+                formInputArr[i].invalid = false;
+            }
+
+            this.$.tooltip.hide();
+            this.$.tooltiptext.innerHTML = '';
+            this.$.generateLabelButton.style.backgroundColor = "white";
+        },
+
+        ajaxRequest: function(request) {
+            var aj = this.$.ajaxAdd;
+            aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxResponse: function(e) {
+            var resp = JSON.parse(e.detail.response);
+            // console.log('Message: ' + resp.message);
+            this.disableForm(false);
+
+            var ttip = this.$.tooltip;
+            var ttiptext = this.$.tooltiptext;
+            var button = this.$.generateLabelButton;
+
+            if (resp.responseCode == 1) {
+                this.clearForm();
+                button.style.backgroundColor = "green";
+                this.generateLabel(resp.bookData);
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            ttiptext.innerHTML = resp.message;
+            ttip.show();
+        },
+    });
+  </script>
+
+</dom-module>

@@ -1,6 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../../bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<!-- <link rel="import" href="../../../bower_components/iron-overlay-behavior/iron-overlay-behavior.html"> -->
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 
 <dom-module id="custom-dialog" attributes="label">
@@ -12,7 +13,7 @@
                 padding: 5px;
                 margin: 25px;
 
-                @apply(--layout-horizontal);
+                @apply(--layout-vertical);
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
 
@@ -20,26 +21,37 @@
                 border-width: 1px;
                 border-color: orange;
             }
+            #overlay {
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
+            }
             #overlayContainer {
-                padding: 0px 40px 40px 40px;
+                margin: 25px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
             }
             h1 {
                 margin: 0px 0px 0px 0px;
             }
         </style>
 
-        <iron-overlay-behavior id='overlay'>
+        <!-- <iron-overlay-behavior id='overlay'> -->
+        <!-- <paper-dialog id='dialog'> -->
             <paper-icon-button icon='close' on-tap='tapHandler'></paper-icon-button>
             <div id='overlayContainer'>
                 <content></content>
             </div>
-        </iron-overlay-behavior>
+        <!-- </paper-dialog> -->
+        <!-- </iron-overlay-behavior> -->
     </template>
 
   <script>
     Polymer({ 
         is: 'custom-dialog', 
-        behaviors: [Polymer.IronOverlayBehavior],
+        // behaviors: [Polymer.IronOverlayBehavior],
         properties: {},
 
         /**
@@ -51,17 +63,23 @@
         */
 
         ready: function() {
-            this.withBackdrop = true;
-            this.noCancelOnOutsideClick = true;
+            this.$.dialog.withBackdrop = true;
+            this.$.dialog.noCancelOnOutsideClick = true;
         },
 
-        tap: function() {
-            this.toggle();
-        },
+        // tap: function() {
+        //     console.log('toggling dialog');
+        //     this.toggle();
+        // },
 
-        tapHandler: function(e) {
-            this.tap();
-        },
+        // open: function() {
+        //     this.$.dialog.open();
+        // },
+
+        // tapHandler: function(e) {
+        //     console.log('closing dialog');
+        //     this.$.dialog.close();
+        // },
 
     });
   </script>

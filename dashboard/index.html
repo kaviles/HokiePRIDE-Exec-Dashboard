@@ -5,11 +5,12 @@
         <title>Test_Library</title>
         <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-        <!-- Load webcomponents.min.js for polyfill support. -->
-        <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
-
         <!-- Load jQuery -->
         <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+        <!-- Load rasterizehtml -->
+        <script src="../node_modules/rasterizehtml/dist/rasterizeHTML.allinone.js"></script>
+        <!-- Load webcomponents.min.js for polyfill support. -->
+        <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
 
         <!-- Load standard Polymer Project library. -->
         <link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
@@ -24,6 +25,7 @@
         <!-- Load custom components -->
         <link rel="import" href="custom_components/custom-tile/custom-tile-layout.html">
         <link rel="import" href="custom_components/custom-tile/custom-tile.html">
+        <link rel="import" href="custom_components/custom-tile/custom-tile-browse-layout.html">
 
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
@@ -38,6 +40,7 @@
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteLibPatron.html">
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-addAdmin.html">
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-deleteAdmin.html">
+        <link rel="import" href="custom_components/custom-dialog/custom-dialog-downloadLabel.html">
 
         <style>
             html, body {
@@ -72,6 +75,7 @@
 
                 <paper-menu id='mainMenu' selected='0'>
                     <paper-item icon='dashboard'>Dashboard</paper-item>
+                    <paper-item icon='browse'>Browse</paper-item>
                     <paper-item icon='library'>Library</paper-item>
                     <paper-item icon='patron'>Patron</paper-item>
                     <paper-item icon='admin'>Admin</paper-item>
@@ -89,15 +93,16 @@
                         <custom-tile tile label='Login'></custom-tile>
                     </custom-tile-layout>
 
+
+                    <custom-tile-browse-layout>
+                    </custom-tile-browse-layout>
+
                     <custom-tile-layout>
                         <custom-tile tile label='Check In Book'>
                             <custom-dialog-checkInBook></custom-dialog-checkInBook>
                         </custom-tile>
                         <custom-tile tile label='Check Out Book'>
                             <custom-dialog-checkOutBook></custom-dialog-checkOutBook>
-                        </custom-tile>
-                        <custom-tile tile label='View Holdings'>
-                            <custom-dialog-viewHoldings></custom-dialog-viewHoldings>
                         </custom-tile>
                         <custom-tile tile label='Add Book'>
                             <custom-dialog-addBook></custom-dialog-addBook>
@@ -134,6 +139,9 @@
                         </custom-tile>
                         <custom-tile tile label='Delete Admin'>
                             <custom-dialog-deleteAdmin></custom-dialog-deleteAdmin>
+                        </custom-tile>
+                        <custom-tile tile label='Download Label'>
+                            <custom-dialog-downloadLabel></custom-dialog-downloadLabel>
                         </custom-tile>
                     </custom-tile-layout>
                 </iron-pages>

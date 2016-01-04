@@ -29,13 +29,10 @@
                 @apply(--layout-center-justified);
                 @apply(--layout-wrap);
             }
-            polyfill-next-selector { content: '.tile-container [tile]'; }
-            .tile-container ::content [tile] {
-            }
         </style>
 
         <div class='tile-container'>
-            <content select="[tile]"></content>
+            <content></content>
             <!-- <shadow></shadow> -->
         </div>
     </template>

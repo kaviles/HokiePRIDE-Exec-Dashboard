@@ -31,11 +31,11 @@
                 margin: 5px 5px 5px 5px;
                 padding: 0px 0px 0px 0px;
 
-                min-width: 400px;
-                min-height: 350px;
+                /*min-width: 400px;*/
+                /*min-height: 350px;*/
             }
             .mainForm {
-                max-width: 400px;
+                max-width: 600px;
 
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
@@ -91,11 +91,15 @@
                 <paper-icon-button id='autoFillRight' icon='chevron-right' on-tap='autoFillRight' hidden></paper-icon-button>
             </div>
 
+            <paper-button id='genLibIDButt' raised role='button' on-tap='ajaxGenLibIDRequest'>Generate LibID</paper-button>
+
             <paper-button id='addBookButt' raised role='button' on-tap='validateForm'>Add Book to Library</paper-button>
             <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'><span id='tooltiptext_addBookButt'></span></paper-tooltip>
         </div>
 
-        <iron-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' content-type='application/json' handle-as='json' method='POST' on-response='ajaxAutoFillResponse'></iron-ajax>
+        <iron-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' content-type='application/json' handle-as='json' method='POST' on-response='ajaxAutoFillResponse'>
+        </iron-ajax>
+        <iron-ajax id='ajaxGenLibID' url='../../phpcommands/generateLibID.php' handle-as='json' method='GET' on-response='ajaxGenLibIDResponse'></iron-ajax>
         <iron-ajax id='ajaxAdd' url='../../phpcommands/addBook.php' handle-as='json' method='GET' on-response='ajaxAddResponse'></iron-ajax>
     </template>
 
@@ -127,7 +131,7 @@
             ];
 
             // TODO: Find a way to add these pages dynamically
-            this.pages = [{num:'0'}, {num:'1'}, {num:'2'}, {num:'3'}, {num:'4'}];
+            this.pages = [{num:'0'}];
         },
 
         validateForm: function() {
@@ -185,8 +189,16 @@
             }
         },
 
+        resetPages: function() {
+            for (var i = 0; i < this.pages.length - 1; i++) {
+                this.pop('pages');
+            }
+        },
+
         autoFillForm: function(jsonObject) {
             // console.log(jsonObject);
+
+            this.resetPages();
 
             var mainPage = this.$.mainPage;
             var resultsCount = jsonObject.bookData.length;
@@ -212,6 +224,8 @@
                 var bookData = jsonObject.bookData[i];
                 // console.log(bookData);
 
+                this.push('pages', {num:resultsCount.toString()});
+
                 var form = mainPage.querySelector('#mainForm' + i);
                 form.querySelector('#title').value = bookData.title;
                 form.querySelector('#author').value = bookData.author;
@@ -224,6 +238,8 @@
                 form.querySelector('#covurl').value = bookData.covurl;
                 form.querySelector('#desc').value = bookData.desc;
                 form.querySelector('#libid').value = bookData.libid;
+
+                form.querySelector('#isbn13').disabled = true;
                 form.querySelector('#libid').disabled = true;
             }
 
@@ -268,26 +284,23 @@
             var button2 = this.$.addBookButt;
             var button3 = this.$.autoFillRight;
             var button4 = this.$.autoFillLeft;
+            var button5 = this.$.genLibIDButt;
 
-            if (val) {
-                for (var i = 0; i < formInputCount; i++) {
-                    formInputArr[i].disabled = val;
-                }
+            button1.disabled = val;
+            button2.disabled = val;
+            button5.disabled = val;
 
-                button1.disabled = val;
-                button2.disabled = val;
-                button3.setAttribute('hidden', '');
-                button4.setAttribute('hidden', '');
+            for (var i = 0; i < formInputCount; i++) {
+                formInputArr[i].disabled = val;
             }
-            else {
-                for (var i = 0; i < formInputCount; i++) {
-                    formInputArr[i].disabled = val;
-                }
 
-                button1.disabled = val;
-                button2.disabled = val;
+            if (!val && this.pages.length > 1) {
                 button3.removeAttribute('hidden');
                 button4.removeAttribute('hidden');
+            }
+            else {
+                button3.setAttribute('hidden', '');
+                button4.setAttribute('hidden', '');
             }
         },
 
@@ -297,6 +310,10 @@
             ttip.querySelector('#tooltiptext_autoFillButt').innerHTML = '';
 
             this.$.autoFillButt.style.backgroundColor = "white";
+        },
+
+        clearGenLibIDButt: function() {
+            this.$.genLibIDButt.style.backgroundColor = "white";
         },
 
         clearAddButt: function() {
@@ -318,7 +335,7 @@
         },
 
         ajaxAutoFillResponse: function(e) {
-            console.log(e.detail.response);
+            // console.log(e.detail.response);
             this.disableForm(false);
             var resp = JSON.parse(e.detail.response);
             var ttip = this.$.tooltip_autoFillButt;
@@ -331,11 +348,48 @@
             }
             else {
                 button.style.backgroundColor = "red";
-                this.clearAddButt();
             }
+
+            this.clearAddButt();
+            this.clearGenLibIDButt();
 
             ttiptext.innerHTML = resp.message;
             ttip.show();
+        },
+
+        ajaxGenLibIDRequest: function() {
+            this.clearAddButt();
+            this.clearAutoFillButt();
+            this.disableForm(true);
+
+            var aj = this.$.ajaxGenLibID;
+            // aj.params = request;
+            aj.generateRequest();
+        },
+
+        ajaxGenLibIDResponse: function(e) {
+            // console.log('Message: ' + e.detail.response);
+            this.disableForm(false);
+            var resp = JSON.parse(e.detail.response);
+
+            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
+            var libidInp = selectedForm.querySelector('#libid');
+            var isbn13Inp = selectedForm.querySelector('#isbn13');
+
+            var button = this.$.genLibIDButt;
+
+            if (resp.responseCode == 1) {
+                button.style.backgroundColor = "green";
+
+                libidInp.value = resp.libid;
+                libidInp.disabled = true;
+                isbn13Inp.disabled = true;
+            }
+            else {
+                button.style.backgroundColor = "red";
+            }
+
+            this.clearAddButt();
         },
 
         ajaxAddRequest: function(request) {
@@ -359,6 +413,8 @@
             if (resp.responseCode == 1) {
                 button.style.backgroundColor = "green";
                 this.clearForm();
+                this.clearGenLibIDButt();
+                this.clearAutoFillButt();
             }
             else {
                 button.style.backgroundColor = "red";

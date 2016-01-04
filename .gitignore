@@ -1,7 +1,10 @@
 ### libraries ###
 **/bower_components/
+**/node_modules/
 **/bower.json
 **/CAS-1.3.3/
+**/php-barcode/
+**/images/
 
 ### config files ###
 **/dbconfig.php

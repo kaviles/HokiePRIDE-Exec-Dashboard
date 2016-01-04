@@ -1,10 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
-
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-
-<link rel="import" href="../custom-dialog/custom-dialog.html">
 
 <dom-module id="custom-tile" attributes="label">
 
@@ -23,7 +21,7 @@
                 border-width: 1px;
                 border-color: red;
             }
-            .card {
+            #tile {
                 /*display: inline-block;*/
                 text-align: center;
 
@@ -40,12 +38,22 @@
                 @apply(--layout-horizontal);
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
-            }       
+            }
+            #dialog {
+                @apply(--layout-vertical);
+                @apply(--layout-end);
+                @apply(--layout-end-justified);
+            }  
         </style>
-        <paper-material tile class='card' animated elevation='1' 
+        <paper-material id='tile' animated elevation='1' 
         on-mouseover='mouseOver' on-mouseout='mouseOut' on-tap='tapHandler'>{{label}}</paper-material>
 
-        <custom-dialog id='dialog'><content></content></custom-dialog>
+        <paper-dialog id='dialog' entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <content></content>
+            <div class='buttons'>
+                <paper-button id='closeButton' on-tap='tapHandler'>Close</paper-button>
+            </div>
+        </paper-dialog>
     </template>
 
   <script>
@@ -74,7 +82,8 @@
         },
 
         tapHandler: function(e) {
-            this.$.dialog.tap();
+            var dialog = this.$.dialog;
+            dialog.toggle()
         },
 
     });

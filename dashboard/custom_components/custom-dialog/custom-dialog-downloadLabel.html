@@ -49,8 +49,8 @@
         <div id='mainForm'>
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
-                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required 
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </div>
@@ -81,7 +81,7 @@
 
         ready: function() {
             this.inputs = [
-            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', required:'true', error:'Input 13 character Library ID', pattern:'^[a-zA-Z0-9]*$'}
+            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', error:'Input 13 character Library ID', pattern:'^[a-zA-Z0-9]*$'}
             ];
 
             this.currlibid = '';
@@ -94,8 +94,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -112,6 +115,9 @@
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearGenerateLabelButton();
             }
         },
 
@@ -193,6 +199,11 @@
                 formInputArr[i].value = '';
                 formInputArr[i].invalid = false;
             }
+
+            this.clearGenerateLabelButton();
+        },
+
+        clearGenerateLabelButton: function() {
 
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';

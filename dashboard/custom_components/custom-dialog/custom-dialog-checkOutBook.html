@@ -44,13 +44,15 @@
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
                 minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </div>
 
         <paper-button id='checkOutBtn' raised role='button' on-tap='validateForm'>Check Out Book</paper-button>
-        <paper-tooltip id='tooltip' for='checkOutBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='checkOutBtn' position='bottom'>
+            <span id='tooltiptext'></span>
+        </paper-tooltip>
 
         <iron-ajax id='ajaxAdd' url='../../phpcommands/checkOutBook.php'
         handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
@@ -70,8 +72,8 @@
 
         ready: function() {
             this.inputs = [
-            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', type:'text', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'},
-            {id:'email', label:'Patron Email', minlength:'', maxlength:'', type:'email', required:'true', error:'example@example.com', pattern:'\.*'}
+            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', type:'text', required:true, error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'},
+            {id:'email', label:'Patron Email', minlength:'', maxlength:'', type:'email', required:true, error:'example@example.com', pattern:'\.*'}
             ];
         },
 
@@ -82,8 +84,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -100,6 +105,9 @@
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearCheckOutBtn();
             }
         },
 
@@ -123,6 +131,10 @@
                 formInputArr[i].invalid = false;
             }
 
+            this.clearCheckOutBtn();
+        },
+
+        clearCheckOutBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
             this.$.checkOutBtn.style.backgroundColor = "white";

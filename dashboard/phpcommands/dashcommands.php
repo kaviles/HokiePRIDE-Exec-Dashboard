@@ -264,7 +264,7 @@ function checkOutBook($libid, $patronEmail) {
 
             if ($bookRow['status'] == 'CHECKED_IN') { // Book of Library ID was found and is checked IN
 
-                $q = "SELECT * FROM library_patron WHERE email = '$patronEmail'";
+                $q = "SELECT * FROM library_patron WHERE email = '$patronEmail' AND status = 'ADDED'";
                 $result_patron = $mysqli->query($q);
                 
                 $patronRow = $result_patron->fetch_assoc();
@@ -916,7 +916,7 @@ function addLibPatron($patronData) {
         }
         else { // library patron already exists or was added but eventually removed
             $row = $result->fetch_assoc();
-            if ($row['status'] == 'CHECKED_REMOVED') {
+            if ($row['status'] == 'REMOVED') {
 
                 $timeStamp = getTimeStamp();
                 $testMember = 'testMember';
@@ -1057,7 +1057,7 @@ function removeLibPatron($email, $reason) {
             $testMember = 'testMember';
             $timeStamp = getTimeStamp();
 
-            $q = "UPDATE library_patron SET status='CHECKED_REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
+            $q = "UPDATE library_patron SET status='REMOVED', status_by='$testMember', status_timestamp='$timeStamp', 
             removed_by='$testMember', removed_timeStamp='$timeStamp', removed_reason='$reason' 
             WHERE email='$email'";
 

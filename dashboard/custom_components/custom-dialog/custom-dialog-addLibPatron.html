@@ -48,7 +48,7 @@
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
                 minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </section>
@@ -73,10 +73,10 @@
 
         ready: function() {
             this.inputs = [
-            {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-            {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-            {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:'false', error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
-            {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:'true', error:'email@example.com', pattern:'\.*'}
+            {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:true, error:'', pattern:'\.*'},
+            {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:true, error:'', pattern:'\.*'},
+            {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:false, error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
+            {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:true, error:'email@example.com', pattern:'\.*'}
             ];
         },
 
@@ -88,8 +88,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -106,6 +109,9 @@
                 '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearAddLibPatronBtn();
             }
         },
 
@@ -129,6 +135,10 @@
                 formInputArr[i].invalid = false;
             }
 
+            this.clearAddLibPatronBtn();
+        },
+
+        clearAddLibPatronBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
             this.$.addLibPatronBtn.style.backgroundColor = "white";

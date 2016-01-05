@@ -49,14 +49,13 @@
                 <div class='mainFormSub' id='mainForm0_sub0'>
                     <template is='dom-repeat' items='{{libpats_inputs}}' as='input'>
                         <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
-                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' type='{{input.type}}' pattern='{{input.pattern}}' error-message='{{input.error}}'>
                         </paper-input>
                     </template>
                 </div>
 
                 <div class='mainFormBtns' id='mainForm0_btns'>
-                    <paper-button id='editLibPatBtn' raised role='button' on-tap='validateLibPat'>Edit Book</paper-button>
+                    <paper-button id='editLibPatBtn' raised role='button' on-tap='validateLibPat'>Edit Patron</paper-button>
                     <paper-tooltip id='tooltip_editLibPatBtn' for='editLibPatBtn' position='bottom'><span id='tooltiptext_editLibPatBtn'></span></paper-tooltip>
                     <paper-icon-button id='editRight' icon='chevron-right' on-tap='editRight'></paper-icon-button>
                 </div>
@@ -75,7 +74,7 @@
 
                 <div class='mainFormBtns' id='mainForm1_btns'>
                     <paper-icon-button id='editLeft' icon='chevron-left' on-tap='editLeft'></paper-icon-button>
-                    <paper-button id='submitLibPatEditBtn' raised role='button' on-tap='validateEdit'>Submit Book Edit</paper-button>
+                    <paper-button id='submitLibPatEditBtn' raised role='button' on-tap='validateEdit'>Submit Patron Edit</paper-button>
                     <paper-tooltip id='tooltip_submitLibPatEditBtn' for='submitLibPatEditBtn' position='bottom'><span id='tooltiptext_submitLibPatEditBtn'></span></paper-tooltip>
                 </div>
             </div>
@@ -99,30 +98,32 @@
 
         ready: function() {
             this.libpats_inputs = [
-            {id:'email', label:'E-Mail Address', minlength:'', maxlength:'', type:'email', error:'email@example.com', pattern:'\.*'}
+            {id:'email', label:'E-Mail Address', minlength:'', maxlength:'', type:'email', required:'true', error:'email@example.com', pattern:'\.*'}
             ];
 
             this.edit_inputs = [
-                {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-                {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:'true', error:'', pattern:'\.*'},
-                {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:'false', error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
-                {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:'true', error:'email@example.com', pattern:'\.*'}
+                {id:'firstname', label:'First Name',  minlength:'', maxlength:'', type:'text', required:true, error:'', pattern:'\.*'},
+                {id:'lastname', label:'Last Name',  minlength:'', maxlength:'', type:'text', required:true, error:'', pattern:'\.*'},
+                {id:'phone', label:'Phone Number',  minlength:'', maxlength:'', type:'tel', required:false, error:'123-456-7890', pattern:'[0-9]{3}-[0-9]{3}-[0-9]{4}'},
+                {id:'email', label:'E-Mail Address',  minlength:'', maxlength:'', type:'email', required:true, error:'email@example.com', pattern:'\.*'}
             ];
 
             this.$.submitLibPatEditBtn.disabled = true;
         },
 
         validateLibPat: function() {
-            var mainForm0 = this.$.mainPage.querySelector('#mainForm0');
-
+            var mainForm0 = this.$.mainForm0;
             var formInputArr = mainForm0.getElementsByClassName('formInput');
             var formInputCount = formInputArr.length;
 
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -139,19 +140,24 @@
                 var email = mainForm0.querySelector('#email').value;
                 this.ajaxRetrieveLibPatronRequest('{"email":"' + email + '"}');
             }
+            else {
+                this.clearEditLibPatBtn();
+            }
         },
 
         validateEdit: function() {
-            var mainForm1 = this.$.mainPage.querySelector('#mainForm1');
-
+            var mainForm1 = this.$.mainForm1;
             var formInputArr = mainForm1.getElementsByClassName('formInput');
             var formInputCount = formInputArr.length;
 
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -168,6 +174,9 @@
                 '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
                 this.ajaxEditLibPatronRequest(req);
             }
+            else {
+                this.clearSubmitLibPatEditBtn();
+            }
         },
 
         fillPatronForm: function(jsonObject) {
@@ -183,14 +192,6 @@
             mainForm1.querySelector('#lastname').value = libPatData.lastname;
             mainForm1.querySelector('#phone').value = libPatData.phone;
             mainForm1.querySelector('#email').value = libPatData.email;
-        },
-
-        clearForm: function() {
-            var papDec = this.$.mainForm.getElementsByTagName('paper-input-decorator');
-            var papDecCount = papDec.length;
-            for (var i = 0; i < papDecCount; i++) {
-                papDec[i].firstElementChild.value = '';
-            }
         },
 
         editRight: function() {
@@ -286,6 +287,8 @@
                 button.style.backgroundColor = "red";
                 this.disableSubmitLibPatEditForm(true);
             }
+            
+            this.clearSubmitLibPatEditBtn();
         },
 
         ajaxEditLibPatronRequest: function(params) {

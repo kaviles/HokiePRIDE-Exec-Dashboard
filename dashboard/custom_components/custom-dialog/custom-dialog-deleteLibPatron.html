@@ -45,7 +45,7 @@
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
                 minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </div>
@@ -70,7 +70,7 @@
 
         ready: function() {
             this.inputs = [
-            {id:'email', label:'Email', minlength:'', maxlength:'', type:'email', required:'true', error:'example@example.com', pattern:'\.*'}
+            {id:'email', label:'Email', minlength:'', maxlength:'', type:'email', required:true, error:'example@example.com', pattern:'\.*'}
             ];
         },
 
@@ -81,8 +81,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -98,6 +101,9 @@
                 req = '{"email":"' + formInputArr[0].value + '"}';
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearDeleteLibPatBtn();
             }
         },
 
@@ -121,6 +127,10 @@
                 formInputArr[i].invalid = false;
             }
 
+            this.clearDeleteLibPatBtn();
+        },
+
+        clearDeleteLibPatBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
             this.$.deleteLibPatBtn.style.backgroundColor = "white";

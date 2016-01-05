@@ -45,13 +45,15 @@
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
                 minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </div>
 
         <paper-button id='deleteBookBtn' raised role='button' on-tap='validateForm'>Delete Book</paper-button>
-        <paper-tooltip id='tooltip' for='deleteBookBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='deleteBookBtn' position='bottom'>
+            <span id='tooltiptext'></span>
+        </paper-tooltip>
 
         <iron-ajax id='ajaxDelete' url='../../phpcommands/deleteBook.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
@@ -81,8 +83,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -98,6 +103,9 @@
                 req = '{"libid":"' + formInputArr[0].value + '"}';
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearDeleteBookBtn();
             }
         },
 
@@ -121,6 +129,10 @@
                 formInputArr[i].invalid = false;
             }
 
+            this.clearDeleteBookBtn();
+        },
+
+        clearDeleteBookBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
             this.$.deleteBookBtn.style.backgroundColor = "white";

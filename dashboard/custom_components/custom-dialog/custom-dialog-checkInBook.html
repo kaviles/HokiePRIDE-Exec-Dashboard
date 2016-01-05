@@ -44,13 +44,15 @@
             <template is='dom-repeat' items='{{inputs}}' as='input'>
                 <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' 
                 minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                pattern='{{input.pattern}}' error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </div>
 
         <paper-button id='checkInBtn' raised role='button' on-tap='validateForm'>Check In Book</paper-button>
-        <paper-tooltip id='tooltip' for='checkInBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='checkInBtn' position='bottom'>
+            <span id='tooltiptext'></span>
+        </paper-tooltip>
 
         <iron-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' 
         handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
@@ -70,7 +72,7 @@
 
         ready: function() {
             this.inputs = [
-            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            {id:'libid', label:'Book ID', minlength:'13', maxlength:'13', required:true, error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
             ];
         },
 
@@ -81,8 +83,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -99,6 +104,9 @@
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);
+            }
+            else {
+                this.clearCheckInBtn();
             }
         },
 
@@ -122,6 +130,10 @@
                 formInputArr[i].invalid = false;
             }
 
+            this.clearCheckInBtn();
+        },
+
+        clearCheckInBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
             this.$.checkInBtn.style.backgroundColor = "white";

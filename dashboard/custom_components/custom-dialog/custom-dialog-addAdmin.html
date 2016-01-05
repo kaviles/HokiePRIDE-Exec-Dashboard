@@ -42,8 +42,7 @@
         <div id='header'>Add Administrator</div>
         <section id='mainForm'>
             <template is='dom-repeat' items='{{inputs}}' as='input'>
-                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' required 
-                preventInvalidInput auto-validate error-message='{{input.error}}'>
+                <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' minlength='{{input.minlength}}' required error-message='{{input.error}}'>
                 </paper-input>
             </template>
         </section>
@@ -55,104 +54,115 @@
     </template>
 
     <script>
-    Polymer( {
-        is: 'custom-dialog-addAdmin', 
-        properties: {},
-        /**
-         * Specifies the label of the individual tile.
-         *
-         * @attribute label
-         * @type string
-         * @default ''
-         */
+        Polymer( {
+            is: 'custom-dialog-addAdmin', 
+            properties: {},
+            /**
+             * Specifies the label of the individual tile.
+             *
+             * @attribute label
+             * @type string
+             * @default ''
+             */
 
-        ready: function() {
-            this.inputs = [
-            {id:'firstname', label:'First Name', error:''},
-            {id:'lastname', label:'Last Name', error:''},
-            {id:'position', label:'Position', error:''},
-            {id:'pid', label:'VT PID', error:''}];
-        },
+            ready: function() {
+                this.inputs = [
+                {id:'firstname', label:'First Name', minlength:'1', error:''},
+                {id:'lastname', label:'Last Name', minlength:'1', error:''},
+                {id:'position', label:'Position', minlength:'1', error:''},
+                {id:'pid', label:'VT PID', minlength:'1', error:''}];
+            },
 
-        validateForm: function() {
-            var formInputArr = this.getElementsByClassName('formInput');
-            var formInputCount = formInputArr.length;
+            validateForm: function() {
 
-            var validCount = 0;
-            for (var i = 0; i < formInputCount; i++) {
+                var formInputArr = this.$.mainForm.getElementsByClassName('formInput');
+                var formInputCount = formInputArr.length;
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                var validCount = 0;
+                for (var i = 0; i < formInputCount; i++) {
+
+                    if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                        formInputArr[i].validate();
+                    }
+                    else {
+                        formInputArr[i].invalid = false;
+                    }
+
+                    if (!formInputArr[i].invalid) {
+                        // console.log('validCount incremented.');
+                        validCount++;
+                    }
+                    else {
+                        // console.log('validCount not incremented.');
+                    }
                 }
 
-                if (!formInputArr[i].invalid) {
-                    // console.log('validCount incremented.');
-                    validCount++;
+                if (validCount == formInputCount) {
+                    req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + '","position":"' + formInputArr[2].value + '","pid":"' + formInputArr[3].value + '"}';
+                    this.ajaxRequest(req);
                 }
                 else {
-                    // console.log('validCount not incremented.');
+                    this.clearAddAdminBtn();
                 }
-            }
+            },
 
-            if (validCount == formInputCount) {
-                req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + '","position":"' + formInputArr[2].value + '","pid":"' + formInputArr[3].value + '"}';
-                this.ajaxRequest(req);
-            }
-        },
+            disableForm: function(val) {
+                var formInputArr = this.getElementsByClassName('formInput');
+                var formInputCount = formInputArr.length;
 
-        disableForm: function(val) {
-            var formInputArr = this.getElementsByClassName('formInput');
-            var formInputCount = formInputArr.length;
+                for (var i = 0; i < formInputCount; i++) {
+                    formInputArr[i].disabled = val;
+                }
 
-            for (var i = 0; i < formInputCount; i++) {
-                formInputArr[i].disabled = val;
-            }
+                this.$.addAdminBtn.disabled = val;
+            },
 
-            this.$.addAdminBtn.disabled = val;
-        },
+            clearForm: function() {
+                var formInputArr = this.getElementsByClassName('formInput');
+                var formInputCount = formInputArr.length;
 
-        clearForm: function() {
-            var formInputArr = this.getElementsByClassName('formInput');
-            var formInputCount = formInputArr.length;
+                for (var i = 0; i < formInputCount; i++) {
+                    formInputArr[i].value = '';
+                    formInputArr[i].invalid = false;
+                }
 
-            for (var i = 0; i < formInputCount; i++) {
-                formInputArr[i].value = '';
-                formInputArr[i].invalid = false;
-            }
+                this.clearAddAdminBtn();
+            },
 
-            this.$.tooltip.hide();
-            this.$.tooltiptext.innerHTML = '';
-            this.$.addAdminBtn.style.backgroundColor = "white";
-        },
+            clearAddAdminBtn: function() {
+                this.$.tooltip.hide();
+                this.$.tooltiptext.innerHTML = '';
+                this.$.addAdminBtn.style.backgroundColor = "white";
+            },
 
-        ajaxRequest: function(request) {
-            var aj = this.$.ajaxAdd;
-            aj.params = request;
-            aj.generateRequest();
-        },
+            ajaxRequest: function(request) {
+                var aj = this.$.ajaxAdd;
+                aj.params = request;
+                aj.generateRequest();
+            },
 
-        ajaxResponse: function(e) {
-            var resp = JSON.parse(e.detail.response);
-            // console.log('Message: ' + resp.message);
-            this.disableForm(false);
+            ajaxResponse: function(e) {
+                var resp = JSON.parse(e.detail.response);
+                // console.log('Message: ' + resp.message);
+                this.disableForm(false);
 
-            var ttip = this.$.tooltip;
-            var ttiptext = this.$.tooltiptext;
-            var button = this.$.addAdminBtn;
+                var ttip = this.$.tooltip;
+                var ttiptext = this.$.tooltiptext;
+                var button = this.$.addAdminBtn;
 
-            if (resp.responseCode == 1) {
-                this.clearForm();
-                button.style.backgroundColor = "green";
-            }
-            else {
-                button.style.backgroundColor = "red";
-            }
+                if (resp.responseCode == 1) {
+                    this.clearForm();
+                    button.style.backgroundColor = "green";
+                }
+                else {
+                    button.style.backgroundColor = "red";
+                }
 
-            ttiptext.innerHTML = resp.message;
-            ttip.show();
-        },
+                ttiptext.innerHTML = resp.message;
+                ttip.show();
+            },
 
-    });
-  </script>
+        });
+    </script>
 
 </dom-module>

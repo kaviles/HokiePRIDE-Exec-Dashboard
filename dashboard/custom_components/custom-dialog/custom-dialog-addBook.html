@@ -72,9 +72,7 @@
             <template is='dom-repeat' items='{{pages}}' as='page'>
                 <div class='mainForm' id='mainForm{{page.num}}'>
                     <template is='dom-repeat' items='{{inputs}}' as='input'>
-                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}'
-                        minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' 
-                        preventInvalidInput auto-validate pattern='{{input.pattern}}' error-message='{{input.error}}'>
+                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}' minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' pattern='{{input.pattern}}' error-message='{{input.error}}'>
                         </paper-input>
                     </template>
                 </div>
@@ -86,7 +84,9 @@
                 <paper-icon-button id='autoFillLeft' icon='chevron-left' on-tap='autoFillLeft' hidden></paper-icon-button>
 
                 <paper-button id='autoFillButt' raised role='button' on-tap='validateISBN13'>Auto Fill Form</paper-button>
-                <paper-tooltip id='tooltip_autoFillButt' for='autoFillButt' position='bottom'><span id='tooltiptext_autoFillButt'></span></paper-tooltip>
+                <paper-tooltip id='tooltip_autoFillButt' for='autoFillButt' position='bottom'>
+                    <span id='tooltiptext_autoFillButt'></span>
+                </paper-tooltip>
 
                 <paper-icon-button id='autoFillRight' icon='chevron-right' on-tap='autoFillRight' hidden></paper-icon-button>
             </div>
@@ -94,7 +94,9 @@
             <paper-button id='genLibIDButt' raised role='button' on-tap='ajaxGenLibIDRequest'>Generate LibID</paper-button>
 
             <paper-button id='addBookButt' raised role='button' on-tap='validateForm'>Add Book to Library</paper-button>
-            <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'><span id='tooltiptext_addBookButt'></span></paper-tooltip>
+            <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'>
+                <span id='tooltiptext_addBookButt'></span>
+            </paper-tooltip>
         </div>
 
         <iron-ajax id='ajaxAutoFill' url='../../phpcommands/retrieveBookData.php' content-type='application/json' handle-as='json' method='POST' on-response='ajaxAutoFillResponse'>
@@ -117,20 +119,19 @@
 
         ready: function() {
             this.inputs = [
-            {id:'title', label:'Title', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
-            {id:'author', label:'Author(s)', minlength:'', maxlength:'', type:'text', required:'false', error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-            {id:'pub', label:'Publisher', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
-            {id:'year', label:'Year', minlength:'4', maxlength:'4', type:'text', required:'false', error:'4 digits', pattern:'[0-9]{4}'},
-            {id:'isbn13', label:'ISBN13', minlength:'13', maxlength:'16', type:'text', required:'true', error:'13 digits', pattern:'[0-9]{13}'},
-            {id:'loc', label:'Library of Congress #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
-            {id:'dcc', label:'Dewey Decimal #', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
-            {id:'tags', label:'Tags (comma sep)', minlength:'', maxlength:'', type:'text', required:'false', error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-            {id:'covurl', label:'Cover URL', minlength:'', maxlength:'', type:'url', required:'false', error:'www.example.com', pattern:'.*'},
-            {id:'desc', label:'Description', minlength:'', maxlength:'', type:'text', required:'false', error:'', pattern:'.*'},
-            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', type:'text', required:'true', error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
+            {id:'title', label:'Title', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
+            {id:'author', label:'Author(s)', minlength:'', maxlength:'', type:'text', required:false, error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'pub', label:'Publisher', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
+            {id:'year', label:'Year', minlength:'4', maxlength:'4', type:'text', required:false, error:'4 digits', pattern:'[0-9]{4}'},
+            {id:'isbn13', label:'ISBN13', minlength:'13', maxlength:'16', type:'text', required:true, error:'13 digits', pattern:'[0-9]{13}'},
+            {id:'loc', label:'Library of Congress #', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
+            {id:'dcc', label:'Dewey Decimal #', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
+            {id:'tags', label:'Tags (comma sep)', minlength:'', maxlength:'', type:'text', required:false, error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
+            {id:'covurl', label:'Cover URL', minlength:'', maxlength:'', type:'url', required:false, error:'www.example.com', pattern:'.*'},
+            {id:'desc', label:'Description', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
+            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', type:'text', required:true, error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
             ];
 
-            // TODO: Find a way to add these pages dynamically
             this.pages = [{num:'0'}];
         },
 
@@ -143,8 +144,11 @@
             var validCount = 0;
             for (var i = 0; i < formInputCount; i++) {
 
-                if (formInputArr[i].required == 'true' && formInputArr[i].value.length == 0) {
-                    formInputArr[i].invalid = true;
+                if (formInputArr[i].required || formInputArr[i].value.length > 0) {
+                    formInputArr[i].validate();
+                }
+                else {
+                    formInputArr[i].invalid = false;
                 }
 
                 if (!formInputArr[i].invalid) {
@@ -170,6 +174,11 @@
                     '","libid":"' + formInputArr[10].value + '"}';
                 this.ajaxAddRequest(req);
             }
+            else {
+                this.clearAutoFillButt();
+                this.clearGenLibIDButt()
+                this.clearAddButt();
+            }
         },
 
         validateISBN13: function() {
@@ -190,7 +199,7 @@
         },
 
         resetPages: function() {
-            for (var i = 0; i < this.pages.length - 1; i++) {
+            for (var i = 0; i < this.pages.length; i++) {
                 this.pop('pages');
             }
         },
@@ -204,9 +213,9 @@
             var resultsCount = jsonObject.bookData.length;
             var pageCount = this.pages.length;
 
-            if (resultsCount > pageCount) {
-                resultsCount = pageCount;
-            }
+            // if (resultsCount > pageCount) {
+            //     resultsCount = pageCount;
+            // }
 
             var button1 = this.$.autoFillRight;
             var button2 = this.$.autoFillLeft;
@@ -224,7 +233,7 @@
                 var bookData = jsonObject.bookData[i];
                 // console.log(bookData);
 
-                this.push('pages', {num:resultsCount.toString()});
+                this.push('pages', {num:i.toString()});
 
                 var form = mainPage.querySelector('#mainForm' + i);
                 form.querySelector('#title').value = bookData.title;
@@ -252,26 +261,6 @@
 
         autoFillLeft: function() {
             this.$.mainPage.selectPrevious();
-        },
-
-        clearForm: function() {
-            var mainPage = this.$.mainPage;
-
-            var button1 = this.$.autoFillRight;
-            var button2 = this.$.autoFillLeft;
-            button1.setAttribute('hidden', '');
-            button2.setAttribute('hidden', '');
-
-            for (var i = 0; i < this.pages.length; i++) {
-                var selectedForm = mainPage.querySelector('#mainForm' + i);
-                var formInputArr = selectedForm.getElementsByClassName('formInput');
-                var formInputCount = formInputArr.length;
-
-                for (var j = 0; j < formInputCount; j++) {
-                    formInputArr[j].value = '';
-                    formInputArr[j].invalid = false;
-                }
-            }
         },
 
         disableForm: function(val) {
@@ -302,6 +291,32 @@
                 button3.setAttribute('hidden', '');
                 button4.setAttribute('hidden', '');
             }
+        },
+
+        clearForm: function() {
+            var mainPage = this.$.mainPage;
+
+            var button1 = this.$.autoFillRight;
+            var button2 = this.$.autoFillLeft;
+            button1.setAttribute('hidden', '');
+            button2.setAttribute('hidden', '');
+
+            var pagesLength = this.pages.length;
+
+            for (var i = 0; i < pagesLength; i++) {
+                var selectedForm = mainPage.querySelector('#mainForm' + i);
+                var formInputArr = selectedForm.getElementsByClassName('formInput');
+                var formInputCount = formInputArr.length;
+
+                for (var j = 0; j < formInputCount; j++) {
+                    formInputArr[j].value = '';
+                    formInputArr[j].invalid = false;
+                }
+            }
+
+            this.clearAutoFillButt();
+            this.clearGenLibIDButt();
+            this.clearAddButt();
         },
 
         clearAutoFillButt: function() {
@@ -411,10 +426,8 @@
             var button = this.$.addBookButt;
 
             if (resp.responseCode == 1) {
-                button.style.backgroundColor = "green";
                 this.clearForm();
-                this.clearGenLibIDButt();
-                this.clearAutoFillButt();
+                button.style.backgroundColor = "green";
             }
             else {
                 button.style.backgroundColor = "red";

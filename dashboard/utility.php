@@ -25,16 +25,16 @@ function authorizeUser($user = '')
     if ($result->num_rows == 0) 
     {
         // Row not found meaning user not found
-        $message = date("Y-m-d H:i:s").' failed to authorize user '.$user.' as a HokiePRIDE exec board member.'."\n";
-        error_log($message, 3, 'logs/general.log');
+        $message = getTimeStamp().' failed to authorize user '.$user.' as an Admin.'."\n";
+        error_log($message, 3, 'logs/authorize.log');
         disconnectFromDB($mysqli);
         return NULL;
     } 
     else 
     {
         // Row found meaning user was found
-        $message = date("Y-m-d H:i:s").' authorized user '.$user.' as a HokiePRIDE exec board member.'."\n";
-        error_log($message, 3, 'logs/general.log');
+        $message = getTimeStamp().' authorized user '.$user.' as an Admin.'."\n";
+        error_log($message, 3, 'logs/authorize.log');
         disconnectFromDB($mysqli);
         return $result;
     }
@@ -89,7 +89,7 @@ function escapeData($array) {
 
     disconnectFromDB($mysqli);
 
-    return $array; // I don't like that this has to be returned...
+    return $array;
 }
 
 function generateLibID() {

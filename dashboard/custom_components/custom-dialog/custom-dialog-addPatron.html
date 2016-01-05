@@ -4,7 +4,7 @@
 <link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<dom-module id="custom-dialog-addLibPatron" layout vertical center center-justified>>
+<dom-module id="custom-dialog-addPatron">
 
     <template>
         <style>    
@@ -53,15 +53,15 @@
             </template>
         </section>
 
-        <paper-button id='addLibPatronBtn' raised role='button' on-tap='validateForm'>Add Library Patron</paper-button>
-        <paper-tooltip id='tooltip' for='addLibPatronBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-button id='addPatronBtn' raised role='button' on-tap='validateForm'>Add Library Patron</paper-button>
+        <paper-tooltip id='tooltip' for='addPatronBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
 
-        <iron-ajax id='ajaxAdd' url='../../phpcommands/addLibPatron.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+        <iron-ajax id='ajaxAdd' url='../../request.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
 
     <script>
     Polymer( {
-        is: 'custom-dialog-addLibPatron', 
+        is: 'custom-dialog-addPatron', 
         properties: {},
         /**
          * Specifies the label of the individual tile.
@@ -105,13 +105,17 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + 
-                '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
+                req = '{"requestType":"addPatron", "requestData":{"firstname":"' + 
+                formInputArr[0].value + '","lastname":"' + 
+                formInputArr[1].value + '","phone":"' + 
+                formInputArr[2].value + '","email":"' + 
+                formInputArr[3].value + '"}}';
+
                 this.disableForm(true);
                 this.ajaxRequest(req);
             }
             else {
-                this.clearAddLibPatronBtn();
+                this.clearAddPatronBtn();
             }
         },
 
@@ -123,7 +127,7 @@
                 formInputArr[i].disabled = val;
             }
 
-            this.$.addLibPatronBtn.disabled = val;
+            this.$.addPatronBtn.disabled = val;
         },
 
         clearForm: function() {
@@ -135,13 +139,13 @@
                 formInputArr[i].invalid = false;
             }
 
-            this.clearAddLibPatronBtn();
+            this.clearAddPatronBtn();
         },
 
-        clearAddLibPatronBtn: function() {
+        clearAddPatronBtn: function() {
             this.$.tooltip.hide();
             this.$.tooltiptext.innerHTML = '';
-            this.$.addLibPatronBtn.style.backgroundColor = "white";
+            this.$.addPatronBtn.style.backgroundColor = "white";
         },
 
         ajaxRequest: function(request) {
@@ -158,7 +162,7 @@
 
             var ttip = this.$.tooltip;
             var ttiptext = this.$.tooltiptext
-            var button = this.$.addLibPatronBtn;
+            var button = this.$.addPatronBtn;
 
             if (resp.responseCode == 1) {
                 this.clearForm();

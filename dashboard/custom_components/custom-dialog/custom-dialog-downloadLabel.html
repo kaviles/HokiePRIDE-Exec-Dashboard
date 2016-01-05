@@ -63,8 +63,7 @@
 
         <div id='dlcontainer'></div>
 
-        <iron-ajax id='ajaxAdd' url='../../phpcommands/retrieveDBBook.php' 
-        handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+        <iron-ajax id='ajaxAdd' url='../../request.php' handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
 
     <script>
@@ -111,7 +110,7 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"libid":"' + formInputArr[0].value + '"}';
+                req = '{"requestType":"retrieveDBBook", "requestData":{"libid":"' + formInputArr[0].value + '"}}';
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);
@@ -122,7 +121,7 @@
         },
 
         downloadLabel: function() {
-            console.log('Downloading label...');
+            // console.log('Downloading label...');
             var canvas = this.$.labelcanvas;
             var img = canvas.toDataURL("image/png");
 

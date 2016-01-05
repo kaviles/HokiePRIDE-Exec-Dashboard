@@ -54,7 +54,7 @@
             <span id='tooltiptext'></span>
         </paper-tooltip>
 
-        <iron-ajax id='ajaxAdd' url='../../phpcommands/checkInBook.php' 
+        <iron-ajax id='ajaxAdd' url='../../request.php' 
         handle-as='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
 
@@ -100,7 +100,7 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"libid":"' + formInputArr[0].value + '"}';
+                req = '{"requestType":"checkInBook", "requestData":{"libid":"' + formInputArr[0].value + '"}}';
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);

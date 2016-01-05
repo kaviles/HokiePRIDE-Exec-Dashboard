@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <iron-ajax id='ajaxSearchRequest' url='../../phpcommands/searchRequestAdmin.php' handleAs='json' method='GET' on-response='ajaxSearchResponse'></iron-ajax>  
+        <iron-ajax id='ajaxSearchRequest' url='../../request.php' handleAs='json' method='GET' on-response='ajaxSearchResponse'></iron-ajax>  
     </template>
 
     <script>
@@ -95,7 +95,8 @@
             this.$.searchInput.validate();
 
             if (!this.$.searchInput.invalid) {
-                this.ajaxSearchRequest('{"string":"' + this.$.searchInput.value + '"}');
+                this.ajaxSearchRequest('{"requestType":"searchRequestAdmin", "requestData":{"string":"' + 
+                    this.$.searchInput.value + '"}}');
             }
         },
 
@@ -115,7 +116,7 @@
         },
 
         ajaxSearchRequest: function(str) {
-            // console.log('Request String: ' + str);
+            console.log('Request String: ' + str);
 
             var aj = this.$.ajaxSearchRequest;
             aj.params = str;
@@ -123,7 +124,7 @@
         },
 
         ajaxSearchResponse: function(e) {
-            // console.log('Response: ' + e.detail.response);
+            console.log('Response: ' + e.detail.response);
             var resp = JSON.parse(e.detail.response);
             
             var em = this.$.errorMessage;

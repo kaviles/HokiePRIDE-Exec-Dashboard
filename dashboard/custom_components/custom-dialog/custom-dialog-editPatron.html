@@ -7,7 +7,7 @@
 <link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<dom-module id="custom-dialog-editLibPatron" layout vertical center center-justified>>
+<dom-module id="custom-dialog-editPatron">
 
     <template>
         <style>    
@@ -80,13 +80,13 @@
             </div>
         </iron-pages>
 
-        <iron-ajax id='ajaxRetrieveLibPatron' url='../../phpcommands/retrieveLibPatron.php' handleAs='json' method='POST' on-response='ajaxRetrieveLibPatronResponse'></iron-ajax>
-        <iron-ajax id='ajaxEditLibPatron' url='../../phpcommands/editLibPatron.php' handleAs='json' method='POST' on-response='ajaxEditLibPatronResponse'></iron-ajax>
+        <iron-ajax id='ajaxRetrieveLibPatron' url='../../request.php' handleAs='json' method='POST' on-response='ajaxRetrieveLibPatronResponse'></iron-ajax>
+        <iron-ajax id='ajaxEditPatron' url='../../request.php' handleAs='json' method='POST' on-response='ajaxEditPatronResponse'></iron-ajax>
     </template>
 
     <script>
     Polymer({
-        is: 'custom-dialog-editLibPatron', 
+        is: 'custom-dialog-editPatron', 
         properties: {},
         /**
          * Specifies the label of the individual tile.
@@ -138,7 +138,8 @@
             if (validCount == formInputCount) {
 
                 var email = mainForm0.querySelector('#email').value;
-                this.ajaxRetrieveLibPatronRequest('{"email":"' + email + '"}');
+                this.ajaxRetrieveLibPatronRequest('{"requestType":"retrievePatron", "requestData":{"email":"' + 
+                    email + '"}}');
             }
             else {
                 this.clearEditLibPatBtn();
@@ -170,9 +171,13 @@
             }
 
             if (validCount == formInputCount) {
-                var req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + 
-                '","phone":"' + formInputArr[2].value + '","email":"' + formInputArr[3].value + '"}';
-                this.ajaxEditLibPatronRequest(req);
+                var req = '{"requestType":"editPatron", "requestData":{"firstname":"' + 
+                formInputArr[0].value + '","lastname":"' + 
+                formInputArr[1].value + '","phone":"' + 
+                formInputArr[2].value + '","email":"' + 
+                formInputArr[3].value + '"}}';
+
+                this.ajaxEditPatronRequest(req);
             }
             else {
                 this.clearSubmitLibPatEditBtn();
@@ -291,13 +296,13 @@
             this.clearSubmitLibPatEditBtn();
         },
 
-        ajaxEditLibPatronRequest: function(params) {
-            var aj = this.$.ajaxEditLibPatron;
+        ajaxEditPatronRequest: function(params) {
+            var aj = this.$.ajaxEditPatron;
             aj.params = params;
             aj.generateRequest();
         },
 
-        ajaxEditLibPatronResponse: function(e) {
+        ajaxEditPatronResponse: function(e) {
             var resp = JSON.parse(e.detail.response);
             // console.log('Message: ' + resp.message);
             this.disableForm(false);

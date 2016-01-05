@@ -4,7 +4,7 @@
 <link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
-<dom-module id="custom-dialog-addAdmin" layout vertical center center-justified>>
+<dom-module id="custom-dialog-addAdmin">
 
     <template>
         <style>    
@@ -50,7 +50,7 @@
         <paper-button id='addAdminBtn' raised role='button' on-tap='validateForm'>Add Admin</paper-button>
         <paper-tooltip id='tooltip' for='addAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
 
-        <iron-ajax id='ajaxAdd' url='../../phpcommands/addAdmin.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
+        <iron-ajax id='ajaxAdd' url='../../request.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>
 
     <script>
@@ -98,7 +98,12 @@
                 }
 
                 if (validCount == formInputCount) {
-                    req = '{"firstname":"' + formInputArr[0].value + '","lastname":"' + formInputArr[1].value + '","position":"' + formInputArr[2].value + '","pid":"' + formInputArr[3].value + '"}';
+                    req = '{"requestType":"addAdmin", "requestData":{"firstname":"' + 
+                    formInputArr[0].value + '","lastname":"' + 
+                    formInputArr[1].value + '","position":"' + 
+                    formInputArr[2].value + '","pid":"' + 
+                    formInputArr[3].value + '"}}';
+                    
                     this.ajaxRequest(req);
                 }
                 else {

@@ -103,8 +103,8 @@
             </div>
         </iron-pages>
 
-        <iron-ajax id='ajaxRetrieveDBBook' url='../../phpcommands/retrieveDBBook.php' handleAs='json' method='GET' on-response='ajaxRetrieveDBBookResponse'></iron-ajax>
-        <iron-ajax id='ajaxEdit' url='../../phpcommands/editBook.php' handleAs='json' method='GET' on-response='ajaxEditResponse'></iron-ajax>
+        <iron-ajax id='ajaxRetrieveDBBook' url='../../request.php' handleAs='json' method='GET' on-response='ajaxRetrieveDBBookResponse'></iron-ajax>
+        <iron-ajax id='ajaxEdit' url='../../request.php' handleAs='json' method='GET' on-response='ajaxEditResponse'></iron-ajax>
     </template>
 
     <script>
@@ -169,7 +169,8 @@
 
                 if (validCount == formInputCount) {
                     var libid = mainForm0.querySelector('#libid').value;
-                    this.ajaxRetrieveDBBookRequest('{"libid":"' + libid + '"}');
+                    this.ajaxRetrieveDBBookRequest('{"requestType":"retrieveDBBook", "requestData":{"libid":"' + 
+                        libid + '"}}');
                 }
                 else {
                     this.clearEditBookBtn();
@@ -203,7 +204,7 @@
 
                 if (validCount == formInputCount) {
 
-                    req = '{"title":"' + formInputArr[0].value + 
+                    req = '{"requestType":"editBook", "requestData":{"title":"' + formInputArr[0].value + 
                             '","author":"' + formInputArr[1].value + 
                             '","pub":"' + formInputArr[2].value + 
                             '","year":"' + formInputArr[3].value + 
@@ -213,11 +214,13 @@
                             '","tags":"' + formInputArr[7].value + 
                             '","covurl":"' + formInputArr[8].value + 
                             '","desc":"' + formInputArr[9].value + 
-                            '","libid":"' + formInputArr[10].value + '"}';
+                            '","libid":"' + formInputArr[10].value + '"}}';
+
                     this.ajaxEditRequest(req);
                 }
                 else {
                     this.clearSubmitBookEditBtn();
+                    this.clearEditBookBtn();
                 }
             },
 

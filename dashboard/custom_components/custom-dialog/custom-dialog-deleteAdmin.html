@@ -62,9 +62,9 @@
         <paper-button id='deleteAdminBtn' raised role='button' on-tap='ajaxDeleteRequest'>Delete Admin</paper-button>
         <paper-tooltip id='tooltip' for='deleteAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
 
-        <iron-ajax id='ajaxGet' url='../../phpcommands/getAdmin.php' handleAs='json' method='GET' on-response='ajaxGetResponse'></iron-ajax>
+        <iron-ajax id='ajaxGet' url='../../request.php' handleAs='json' method='GET' on-response='ajaxGetResponse'></iron-ajax>
 
-        <iron-ajax id='ajaxDelete' url='../../phpcommands/deleteAdmin.php' handleAs='json' method='GET' on-response='ajaxDeleteResponse'></iron-ajax>
+        <iron-ajax id='ajaxDelete' url='../../request.php' handleAs='json' method='GET' on-response='ajaxDeleteResponse'></iron-ajax>
     </template>
 
     <script>
@@ -118,7 +118,7 @@
         },
 
         ajaxGetRequest: function() {
-            var request = '{"pid":"all"}';
+            var request = '{"requestType":"getAdmin", "requestData":{"pid":"all"}}';
             var aj = this.$.ajaxGet;
             aj.params = request;
             this.disableForm(true);
@@ -139,7 +139,7 @@
 
         ajaxDeleteRequest: function() {
             var selectedMember = this.$.mainForm.querySelector('#rgrp').selected;
-            var request = '{"pid":"' + selectedMember + '"}';
+            var request = '{"requestType":"deleteAdmin", "requestData":{"pid":"' + selectedMember + '"}}';
             var aj = this.$.ajaxDelete;
             aj.params = request;
             this.disableForm(true);

@@ -1,6 +1,6 @@
 <?php
 
-include_once('utility.php');
+include_once('../utility.php');
 
 function handleRequestData($requestData) {
 	$libid = $requestData['libid'];

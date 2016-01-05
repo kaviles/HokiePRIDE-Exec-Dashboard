@@ -1,12 +1,12 @@
 <?php
 
-include_once('../utility.php');
+include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
     $patronData = array('firstname'=>$requestData['firstname'], 'lastname'=>$requestData['lastname'], 
         'phone'=>$requestData['phone'], 'email'=>$requestData['email']);
 
-    return addLibPatron($patronData);
+    return addPatron($patronData);
 }
 
 /**
@@ -24,7 +24,7 @@ function handleRequestData($requestData) {
 *
 * @return A JSON formatted response string.
 */
-function addLibPatron($patronData) {
+function addPatron($patronData) {
 
     $response = '{"responseCode":"0","message":"Could not connect to database"}';
     

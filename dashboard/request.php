@@ -13,11 +13,13 @@ $file = "api/".$requestTypeSafe.".php";
 $response = '';
 if (file_exists($file))
 {
-    include_once($requestType.".php");
+    include_once($file);
     $requestData = $req_params['requestData'];
     $response = handleRequestData($requestData);
 }
 else {
-    echo json_encode('{"responseCode":"0","message":"Invalid request command"}');
+    $response = '{"responseCode":"0","message":"Invalid request command"}';
 }
+
+echo json_encode($response);
 ?>

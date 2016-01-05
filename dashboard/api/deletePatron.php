@@ -1,11 +1,11 @@
 <?php
 
-include_once('../utility.php');
+include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
     $email = $requestData['email'];
 
-    return deleteLibPatron($email);
+    return deletePatron($email);
 }
 
 /**
@@ -15,7 +15,7 @@ function handleRequestData($requestData) {
 *
 * @return A JSON formatted response string.
 */
-function deleteLibPatron($email) {
+function deletePatron($email) {
 
     $response = '{"responseCode":"0","message":"Could not connect to database"}';
     $mysqli = connectToDB();

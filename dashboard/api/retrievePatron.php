@@ -1,11 +1,11 @@
 <?php
 
-include_once('../utility.php');
+include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
     $email = $requestData['email'];
 
-    return retrieveLibPatron($email);
+    return retrievePatron($email);
 }
 
 /**
@@ -16,7 +16,7 @@ function handleRequestData($requestData) {
 *
 * @return A JSON formatted response string.
 */
-function retrieveLibPatron($email) {
+function retrievePatron($email) {
 
     $response = '{"responseCode":"0","message":"Could not connect to database"}';
     

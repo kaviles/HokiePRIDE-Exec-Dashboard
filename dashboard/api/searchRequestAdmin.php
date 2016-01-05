@@ -1,6 +1,6 @@
 <?php
 
-include_once('../utility.php');
+include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
     $searchData = array("string"=>$requestData['string']);

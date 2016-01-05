@@ -54,7 +54,7 @@
         <div class='tile-container'>
 
             <div id='searchBar'>
-                <paper-input id='searchInput' placeholder='Search for item...' size='64'></paper-input>
+                <paper-input id='searchInput' type='text' placeholder='Search for item...' size='64' error-message='Enter 1-3 five character search words' pattern="(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,} ){0,2}(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,})"></paper-input>
                 <paper-icon-button icon='icons:search' on-tap='searchButtonPressed'></paper-icon-button>
             </div>
 
@@ -92,9 +92,11 @@
 
         searchButtonPressed: function() {
 
-            // TODO: Validate search query
+            this.$.searchInput.validate();
 
-            this.ajaxSearchRequest('{"string":"' + this.$.searchInput.value + '"}');
+            if (!this.$.searchInput.invalid) {
+                this.ajaxSearchRequest('{"string":"' + this.$.searchInput.value + '"}');
+            }
         },
 
         resetBookData: function() {

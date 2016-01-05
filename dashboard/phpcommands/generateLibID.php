@@ -1,8 +1,9 @@
 <?php
-include_once('dashcommands.php');
 
-header('Content-Type: application/json');
+include_once('utility.php');
 
-$response = '{"responseCode":"1","message":"Successfully generated Library ID","libid":"'.generateLibID().'"}';
-echo json_encode($response);
+function handleRequestData($requestData) {
+	return '{"responseCode":"1","message":"Successfully generated Library ID","libid":"'.generateLibID().'"}';
+}
+
 ?>

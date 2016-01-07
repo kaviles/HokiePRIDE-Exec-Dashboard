@@ -161,8 +161,11 @@
                 var removedIndex = this.$.rgrp.indexOf(removedItem);
                 this.splice('admins', removedIndex, 1);
             }
-            else {
+            else if (resp.responseCode == 0) {
                 button.style.backgroundColor = "red";
+            }
+            else {
+                button.style.backgroundColor = "yellow";
             }
 
             ttiptext.innerHTML = resp.message;

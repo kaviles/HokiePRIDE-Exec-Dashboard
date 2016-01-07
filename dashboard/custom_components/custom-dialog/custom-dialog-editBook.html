@@ -103,7 +103,7 @@
             </div>
         </iron-pages>
 
-        <iron-ajax id='ajaxRetrieveDBBook' url='../../request.php' handleAs='json' method='GET' on-response='ajaxRetrieveDBBookResponse'></iron-ajax>
+        <iron-ajax id='ajaxGetBook' url='../../request.php' handleAs='json' method='GET' on-response='ajaxGetBookResponse'></iron-ajax>
         <iron-ajax id='ajaxEdit' url='../../request.php' handleAs='json' method='GET' on-response='ajaxEditResponse'></iron-ajax>
     </template>
 
@@ -169,7 +169,7 @@
 
                 if (validCount == formInputCount) {
                     var libid = mainForm0.querySelector('#libid').value;
-                    this.ajaxRetrieveDBBookRequest('{"requestType":"retrieveDBBook", "requestData":{"libid":"' + 
+                    this.ajaxGetBookRequest('{"requestType":"getBook", "requestData":{"libid":"' + 
                         libid + '"}}');
                 }
                 else {
@@ -313,17 +313,17 @@
                 this.$.submitBookEditBtn.style.backgroundColor = "white";
             },
 
-            ajaxRetrieveDBBookRequest: function(request) {
+            ajaxGetBookRequest: function(request) {
                 this.clearForm();
                 this.disableForm(true);
 
-                var aj = this.$.ajaxRetrieveDBBook;
+                var aj = this.$.ajaxGetBook;
                 aj.params = request;
                 // console.log(request);
                 aj.generateRequest();
             },
 
-            ajaxRetrieveDBBookResponse: function(e) {
+            ajaxGetBookResponse: function(e) {
                 // console.log(e.detail.response);
                 this.disableForm(false);
                 var resp = JSON.parse(e.detail.response);
@@ -339,8 +339,12 @@
                     // console.log(resp);
                     this.fillBookForm(resp);
                 }
-                else {
+                else if (resp.responseCode == 0) {
                     button.style.backgroundColor = "red";
+                    this.disableSubmitBookEditForm(true);
+                }
+                else {
+                    button.style.backgroundColor = "yellow";
                     this.disableSubmitBookEditForm(true);
                 }
             },
@@ -368,8 +372,11 @@
                     button.style.backgroundColor = "green";
                     this.disableSubmitBookEditForm(true);
                 }
-                else {
+                else if (resp.responseCode == 0) {
                     button.style.backgroundColor = "red";
+                }
+                else {
+                    button.style.backgroundColor = "yellow";
                 }
 
                 ttiptext.innerHTML = resp.message;

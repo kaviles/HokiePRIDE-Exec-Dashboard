@@ -156,8 +156,11 @@
                 this.clearForm();
                 button.style.backgroundColor = "green";
             }
-            else {
+            else if (resp.responseCode == 0) {
                 button.style.backgroundColor = "red";
+            }
+            else {
+                button.style.backgroundColor = "yellow";
             }
 
             ttiptext.innerHTML = resp.message;

@@ -1,6 +1,7 @@
 <?php
 
   // NOTE: As of Jan 4th 2015, Virginia Tech Web Hosting uses PHP Version: 5.2.16
+  // NOTE: As of Jan 6th 2016, Virginia Tech Web Hosting uses PHP Version: 5.5.22
   
   date_default_timezone_set('America/New_York');
 

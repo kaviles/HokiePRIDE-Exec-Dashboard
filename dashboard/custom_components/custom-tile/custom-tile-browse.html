@@ -79,8 +79,8 @@
                         <iron-icon icon='icons:book'></iron-icon>
                     </div>
                     <div id='itemInfo2'>
-                        <iron-label>{{title}}</iron-label>
-                        <iron-label>{{author}}</iron-label> 
+                        <iron-label>{{titleS}}</iron-label>
+                        <iron-label>{{authorS}}</iron-label> 
                     <div>
                 </div>
             </div>
@@ -101,7 +101,9 @@
         properties: {
             libid: String,
             title: String,
+            titleS: String,
             author: String,
+            authorS: String,
             publisher: String,
             year: String,
             loc: String,

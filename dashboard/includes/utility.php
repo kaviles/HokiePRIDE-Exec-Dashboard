@@ -9,7 +9,7 @@ include_once('dbconnect.php');
 */
 
 /**
-* Authorizes a user by checking $user with the usernames in the to the HokiePRIDE database.
+* Authorizes a user by checking $user with the usernames in the to the database.
 *
 * @param $user the username to authorize.
 *

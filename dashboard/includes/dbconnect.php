@@ -1,12 +1,9 @@
 <?php
-
-  // NOTE: As of Jan 4th 2015, Virginia Tech Web Hosting uses PHP Version: 5.2.16
-  // NOTE: As of Jan 6th 2016, Virginia Tech Web Hosting uses PHP Version: 5.5.22
   
   date_default_timezone_set('America/New_York');
 
   /**
-   * Connects to HokiePRIDE's database.
+   * Connects to database.
    *
    * @return The connection to the database if successful. Null otherwise.
    */
@@ -16,7 +13,7 @@
     include('dbconfig.php');
 
     // create connection
-    $mysqli = new mysqli($dbhost, $dbuser, $dbpassword, $dbname);
+    $mysqli = new mysqli($db_host, $db_user, $db_password, $db_name);
 
     // PHP Website says OO version of connect_error is broken until PHP Version 5.3.0. 
     // Use procedural version instead.
@@ -36,7 +33,7 @@
   }
 
   /**
-   * Disconnects from HokiePRIDE's database. This function may not be necessary since
+   * Disconnects from database. This function may not be necessary since
    * connectToDB returns its connection to the database or null but perhaps this would be helpful for 
    * syntax and readability purposes.
    *

@@ -55,7 +55,7 @@ function checkOutBook($libData) {
             if ($r_lb_status == 'CHECKED_IN') { // Book of Library ID was found and is checked IN
 
                 $qs_lp = $mysqli->prepare("SELECT firstname, lastname, email, status FROM 
-                    library_patrons WHERE email = ? AND status = 'ADDED' OR status = 'REMOVED'");
+                    library_patrons WHERE email = ?");
                 $qs_lp->bind_param("s", $q_patronEmail);
                 $qs_lp->bind_result($r_lp_pFname, $r_lp_pLname, $r_lp_pEmail, $r_lp_status);
                 $qs_lp->execute();

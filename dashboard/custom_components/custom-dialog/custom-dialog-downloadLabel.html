@@ -43,6 +43,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Download Label</div>
@@ -58,7 +61,7 @@
         <canvas id='labelcanvas' width='225px' height='160px'></canvas>
 
         <paper-button id='generateLabelButton' raised role='button' on-tap='validateForm'>Generate Label</paper-button>
-        <paper-tooltip id='tooltip' for='generateLabelButton' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='generateLabelButton' position='bottom'><div id='tooltiptext'></div></paper-tooltip>
         <paper-button id='downloadLabelButton' raised role='button' on-tap='downloadLabel'>Download Label</paper-button>
 
         <div id='dlcontainer'></div>

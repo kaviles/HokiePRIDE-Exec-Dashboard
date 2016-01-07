@@ -37,6 +37,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Add Administrator</div>
@@ -48,7 +51,7 @@
         </section>
 
         <paper-button id='addAdminBtn' raised role='button' on-tap='validateForm'>Add Admin</paper-button>
-        <paper-tooltip id='tooltip' for='addAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='addAdminBtn' position='bottom'><div id='tooltiptext'></div></paper-tooltip>
 
         <iron-ajax id='ajaxAdd' url='../../request.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>

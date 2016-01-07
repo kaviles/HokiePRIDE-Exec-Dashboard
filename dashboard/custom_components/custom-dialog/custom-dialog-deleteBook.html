@@ -38,6 +38,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Delete Book From Library</div>
@@ -52,7 +55,7 @@
 
         <paper-button id='deleteBookBtn' raised role='button' on-tap='validateForm'>Delete Book</paper-button>
         <paper-tooltip id='tooltip' for='deleteBookBtn' position='bottom'>
-            <span id='tooltiptext'></span>
+            <div id='tooltiptext'></div>
         </paper-tooltip>
 
         <iron-ajax id='ajaxDelete' url='../../request.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>

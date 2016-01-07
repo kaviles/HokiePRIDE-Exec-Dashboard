@@ -37,6 +37,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Check Book Back Into Library</div>
@@ -51,7 +54,7 @@
 
         <paper-button id='checkInBtn' raised role='button' on-tap='validateForm'>Check In Book</paper-button>
         <paper-tooltip id='tooltip' for='checkInBtn' position='bottom'>
-            <span id='tooltiptext'></span>
+            <div id='tooltiptext'></div>
         </paper-tooltip>
 
         <iron-ajax id='ajaxAdd' url='../../request.php' 

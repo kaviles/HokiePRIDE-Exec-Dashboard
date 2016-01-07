@@ -64,6 +64,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext_autoFillButt, #tooltiptext_addBookButt {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Add Book to Library</div>
@@ -85,7 +88,7 @@
 
                 <paper-button id='autoFillButt' raised role='button' on-tap='validateISBN13'>Auto Fill Form</paper-button>
                 <paper-tooltip id='tooltip_autoFillButt' for='autoFillButt' position='bottom'>
-                    <span id='tooltiptext_autoFillButt'></span>
+                    <div id='tooltiptext_autoFillButt'></div>
                 </paper-tooltip>
 
                 <paper-icon-button id='autoFillRight' icon='chevron-right' on-tap='autoFillRight' hidden></paper-icon-button>
@@ -95,7 +98,7 @@
 
             <paper-button id='addBookButt' raised role='button' on-tap='validateForm'>Add Book to Library</paper-button>
             <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'>
-                <span id='tooltiptext_addBookButt'></span>
+                <div id='tooltiptext_addBookButt'></div>
             </paper-tooltip>
         </div>
 

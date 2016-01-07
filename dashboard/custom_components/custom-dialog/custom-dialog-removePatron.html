@@ -38,6 +38,9 @@
             paper-button {
                 margin: 5px 5px 5px 5px;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Remove Library Patron</div>
@@ -51,7 +54,7 @@
         </div>
 
         <paper-button id='removeLibPatBtn' raised role='button' on-tap='validateForm'>Remove Patron</paper-button>
-        <paper-tooltip id='tooltip' for='removeLibPatBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='removeLibPatBtn' position='bottom'><div id='tooltiptext'></div></paper-tooltip>
 
         <iron-ajax id='ajaxAdd' url='../../request.php' handleAs='json' method='GET' on-response='ajaxResponse'></iron-ajax>
     </template>

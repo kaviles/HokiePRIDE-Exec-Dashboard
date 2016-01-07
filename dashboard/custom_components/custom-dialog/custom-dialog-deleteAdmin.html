@@ -48,6 +48,9 @@
                 --paper-radio-button-checked-ink-color: #800000;
                 --paper-radio-button-unchecked-ink-color: #800000;
             }
+            #tooltiptext {
+                text-align: center;
+            }
         </style>
 
         <div id='header'>Delete Administrator</div>
@@ -60,7 +63,7 @@
         </div>
 
         <paper-button id='deleteAdminBtn' raised role='button' on-tap='ajaxDeleteRequest'>Delete Admin</paper-button>
-        <paper-tooltip id='tooltip' for='deleteAdminBtn' position='bottom'><span id='tooltiptext'></span></paper-tooltip>
+        <paper-tooltip id='tooltip' for='deleteAdminBtn' position='bottom'><div id='tooltiptext'></div></paper-tooltip>
 
         <iron-ajax id='ajaxGet' url='../../request.php' handleAs='json' method='GET' on-response='ajaxGetResponse'></iron-ajax>
 

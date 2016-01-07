@@ -7,7 +7,8 @@
 **/images/
 
 ### config files ###
-
+**/dbconfig.php
+**/dbtables.php
 
 ### pem files ###
 **/vt-global-ca-chain.pem

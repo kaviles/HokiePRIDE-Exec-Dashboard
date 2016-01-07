@@ -7,7 +7,7 @@ function handleRequestData($requestData) {
 
     $libidCount = strlen($bookData['libid']);
     if ($libidCount == 13) {
-        $bookData = escapeData($bookData);
+        // $bookData = escapeData($bookData);
 
         return deleteBook($bookData);
     }

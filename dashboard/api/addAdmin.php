@@ -7,7 +7,7 @@ function handleRequestData($requestData) {
     "position"=>$requestData['position'], "pid"=>$requestData['pid']);
 
     if (!empty($adminData['pid']) && strpos($adminData['pid'], "@") === false) {
-        $adminData = escapeData($adminData);
+        // $adminData = escapeData($adminData);
 
         return addAdmin($adminData);
     }

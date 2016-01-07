@@ -7,7 +7,7 @@ function handleRequestData($requestData) {
         'phone'=>$requestData['phone'], 'email'=>$requestData['email']);
 
     if (filter_var($patronData['email'], FILTER_VALIDATE_EMAIL))  {
-        $patronData = escapeData($patronData);
+        // $patronData = escapeData($patronData);
 
         return addPatron($patronData);
     }

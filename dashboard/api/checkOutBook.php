@@ -7,7 +7,7 @@ function handleRequestData($requestData) {
 
     $libidCount = strlen($libData['libid']);
     if ($libidCount == 13 && filter_var($libData['patronEmail'], FILTER_VALIDATE_EMAIL)) {
-        $libData = escapeData($libData);
+        // $libData = escapeData($libData);
 
         return checkOutBook($libData);
     }

@@ -9,7 +9,7 @@ function handleRequestData($requestData) {
     "covurl"=>$requestData['covurl'], "comms"=>$requestData['desc'], "libid"=>$requestData['libid']);
 
     if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13']) && count($bookData['libid']) == 13) {
-        $bookData = escapeData($bookData);
+        // $bookData = escapeData($bookData);
 
         return addBook($bookData);
     }

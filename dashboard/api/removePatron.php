@@ -6,7 +6,7 @@ function handleRequestData($requestData) {
     $patronData = array("email"=>$requestData['email'], "reason"=>$requestData['reason']);
 
     if (filter_var($patronData['email'], FILTER_VALIDATE_EMAIL) && !empty($patronData['reason'])) {
-        $patronData = escapeData($patronData);
+        // $patronData = escapeData($patronData);
 
         return removePatron($patronData);
     }

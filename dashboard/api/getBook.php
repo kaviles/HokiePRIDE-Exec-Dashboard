@@ -6,7 +6,7 @@ function handleRequestData($requestData) {
     $bookData = array("libid" => $requestData['libid']);
 
     if (strlen($bookData['libid']) == 13) {
-        $bookData = escapeData($bookData);
+        // $bookData = escapeData($bookData);
 
         return getBook($bookData);
     }

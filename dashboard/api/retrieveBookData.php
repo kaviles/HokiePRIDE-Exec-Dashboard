@@ -6,7 +6,7 @@ function handleRequestData($requestData) {
     $bookData = array("isbn13" => $requestData['isbn13']);
 
     if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13'])) {
-        $bookData = escapeData($bookData);
+        // $bookData = escapeData($bookData);
 
         return retrieveBookData($bookData);
     }

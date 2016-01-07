@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $adminData = array('pid'=>$requestData['pid']);
@@ -24,6 +24,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function deleteAdmin($adminData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -31,7 +33,7 @@ function deleteAdmin($adminData) {
     if ($mysqli) {
         $q_pid = $adminData['pid'];
 
-        $qs = $mysqli->prepare("SELECT pid FROM library_admins WHERE pid = ?");
+        $qs = $mysqli->prepare("SELECT pid FROM $db_table_library_admins WHERE pid = ?");
         $qs->bind_param("s", $q_pid);
         $qs->bind_result($r_pid);
         $qs->execute();
@@ -42,7 +44,7 @@ function deleteAdmin($adminData) {
         if ($qs_num_rows == 1) { // Specific admin exists, delete
             $qs->fetch();
 
-            $qd = $mysqli->prepare("DELETE FROM library_admins WHERE pid = ?");
+            $qd = $mysqli->prepare("DELETE FROM $db_table_library_admins WHERE pid = ?");
             $qd->bind_param("s", $r_pid);
             $qd_result = $qd->execute();
             $qd->store_result();

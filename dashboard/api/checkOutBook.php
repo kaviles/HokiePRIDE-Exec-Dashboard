@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $libData = array('libid'=>$requestData['libid'], 'patronEmail'=>$requestData['patronEmail']);
@@ -32,6 +32,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function checkOutBook($libData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -41,7 +43,7 @@ function checkOutBook($libData) {
         $q_libid = $libData['libid'];
         $q_patronEmail = $libData['patronEmail'];
 
-        $qs_lb = $mysqli->prepare("SELECT libid, status FROM library_books WHERE libid = ?");
+        $qs_lb = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
         $qs_lb->bind_param("s", $q_libid);
         $qs_lb->bind_result($r_lb_libid, $r_lb_status);
         $qs_lb->execute();
@@ -55,7 +57,7 @@ function checkOutBook($libData) {
             if ($r_lb_status == 'CHECKED_IN') { // Book of Library ID was found and is checked IN
 
                 $qs_lp = $mysqli->prepare("SELECT firstname, lastname, email, status FROM 
-                    library_patrons WHERE email = ?");
+                    $db_table_library_patrons WHERE email = ?");
                 $qs_lp->bind_param("s", $q_patronEmail);
                 $qs_lp->bind_result($r_lp_pFname, $r_lp_pLname, $r_lp_pEmail, $r_lp_status);
                 $qs_lp->execute();
@@ -68,7 +70,7 @@ function checkOutBook($libData) {
                     if ($r_lp_status == 'ADDED') { // Patron email was found
 
                         // No need for prepared statement, using safe data from database
-                        $q = "UPDATE library_patrons SET itemcount = itemcount + 1 WHERE email='$r_lp_pEmail'";
+                        $q = "UPDATE $db_table_library_patrons SET itemcount = itemcount + 1 WHERE email='$r_lp_pEmail'";
                         $request = $mysqli->query($q);
 
                         if ($request == true) {
@@ -76,7 +78,7 @@ function checkOutBook($libData) {
                             $admin = 'testMember';
                             $timeStamp = getTimeStamp();
 
-                            $qu = $mysqli->prepare("UPDATE library_books SET status=?, status_by=?, status_timestamp=?, 
+                            $qu = $mysqli->prepare("UPDATE $db_table_library_books SET status=?, status_by=?, status_timestamp=?, 
                                 patron_firstname=?, patron_lastname=?, patron_email=? WHERE libid=?");
                             $qu->bind_param("sssssss", $status, $admin, $timeStamp, $r_lp_pFname, $r_lp_pLname, $r_lp_pEmail, $r_lb_libid);
                             $qu_result = $qu->execute();

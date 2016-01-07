@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $patronData = array("firstname"=>$requestData['firstname'], "lastname"=>$requestData['lastname'],
@@ -28,6 +28,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function editPatron($patronData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
     
@@ -36,7 +38,7 @@ function editPatron($patronData) {
 
         $q_email = $patronData['email'];
 
-        $qs = $mysqli->prepare("SELECT email FROM library_patrons WHERE email=?");
+        $qs = $mysqli->prepare("SELECT email FROM $db_table_library_patrons WHERE email=?");
         $qs->bind_param("s", $q_email);
         $qs->bind_result($r_email);
         $qs->execute();
@@ -47,7 +49,7 @@ function editPatron($patronData) {
         if ($qs_num_rows == 1) {
             $qs->fetch();
 
-            $qu = $mysqli->prepare("UPDATE library_patrons SET firstname=?, lastname=?, phone=? WHERE email=?");
+            $qu = $mysqli->prepare("UPDATE $db_table_library_patrons SET firstname=?, lastname=?, phone=? WHERE email=?");
             $qu->bind_param("ssss", $patronData['firstname'], $patronData['lastname'], 
                 $patronData['phone'], $patronData['email']);
             $qu_result = $qu->execute();

@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("isbn13" => $requestData['isbn13']);

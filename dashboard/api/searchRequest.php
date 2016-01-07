@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $searchData = array("string"=>$requestData['string']);
@@ -43,7 +43,7 @@ function searchRequest($strings) {
         $qs = $mysqli->prepare("SELECT title, author, publisher, isbn13, year, loc, dcc, 
             covurl, comms, tags, libid, status, status_by, status_timestamp, 
             patron_firstname, patron_lastname, patron_email 
-            FROM library_books WHERE title LIKE ? OR author LIKE ? OR 
+            FROM $db_table_library_books WHERE title LIKE ? OR author LIKE ? OR 
             tags LIKE ? OR libid = ? OR patron_email = ? OR status = ? OR isbn13 = ? OR 
             comms LIKE ? OR publisher LIKE ? OR year = ? OR loc = ? OR dcc = ?");
 

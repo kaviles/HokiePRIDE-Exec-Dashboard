@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $patronData = array("email" => $requestData['email']);
@@ -24,6 +24,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function getPatron($patronData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
     
@@ -32,7 +34,7 @@ function getPatron($patronData) {
         $q_email = $patronData['email'];
 
         $qs = $mysqli->prepare("SELECT firstname, lastname, phone, email, itemcount, 
-            status, status_by, status_timestamp FROM library_patrons WHERE email=?");
+            status, status_by, status_timestamp FROM $db_table_library_patrons WHERE email=?");
         $qs->bind_param("s", $q_email);
         $qs->bind_result($r_firstname, $r_lastname, $r_phone, $r_email, 
             $r_itemcount, $r_status, $r_statusby, $r_statustime);

@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("title"=>$requestData['title'], "author"=>$requestData['author'],
@@ -33,6 +33,9 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function editBook($bookData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
+    
     $response = '{"responseCode":"2","message":"Could not connect to database"}';
 
     $mysqli = connectToDB();
@@ -40,7 +43,7 @@ function editBook($bookData) {
 
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid FROM library_books WHERE libid=?");
+        $qs = $mysqli->prepare("SELECT libid FROM $db_table_library_books WHERE libid=?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid);
         $qs->execute();
@@ -51,7 +54,7 @@ function editBook($bookData) {
         if ($qs_num_rows == 1) {
             $qs->fetch();
 
-            $qu = $mysqli->prepare("UPDATE library_books SET title=?, author=?, publisher=?, year=?, 
+            $qu = $mysqli->prepare("UPDATE $db_table_library_books SET title=?, author=?, publisher=?, year=?, 
             loc=?, dcc=?, tags=?, covurl=?, comms=? WHERE libid=?");
             $qu->bind_param("ssssssssss", $bookData['title'], $bookData['author'], $bookData['pub'], $bookData['year'], 
                 $bookData['loc'], $bookData['dcc'], $bookData['tags'], $bookData['covurl'], $bookData['comms'],

@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $patronData = array('firstname'=>$requestData['firstname'], 'lastname'=>$requestData['lastname'], 
@@ -32,6 +32,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function addPatron($patronData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
     
@@ -40,7 +42,7 @@ function addPatron($patronData) {
 
         $q_email = $patronData['email'];
 
-        $qs = $mysqli->prepare("SELECT email, status FROM library_patrons WHERE email = ?");
+        $qs = $mysqli->prepare("SELECT email, status FROM $db_table_library_patrons WHERE email = ?");
         $qs->bind_param("s", $q_email);
         $qs->bind_result($r_email, $r_status);
         $qs->execute();
@@ -54,7 +56,7 @@ function addPatron($patronData) {
             $admin = 'testMember';
             $status = 'ADDED';
 
-            $qi = $mysqli->prepare("INSERT INTO library_patrons (firstname, lastname, phone, email, 
+            $qi = $mysqli->prepare("INSERT INTO $db_table_library_patrons (firstname, lastname, phone, email, 
                 added_by, added_timestamp, status, status_by, status_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $qi->bind_param("sssssssss", $patronData['firstname'], $patronData['lastname'], $patronData['phone'], 
                 $q_email, $admin, $timeStamp, $status, $admin, $timeStamp);
@@ -81,7 +83,7 @@ function addPatron($patronData) {
                 $status = 'ADDED';
 
                 // TODO: Should removed info be updated here?
-                $qu = $mysqli->prepare("UPDATE library_patrons SET status=?, status_by=?, status_timestamp=? WHERE email=?");
+                $qu = $mysqli->prepare("UPDATE $db_table_library_patrons SET status=?, status_by=?, status_timestamp=? WHERE email=?");
                 $qu->bind_param("ssss", $status, $admin, $timeStamp, $r_email);
                 $qu_result = $qu->execute();
                 $qu->store_result();

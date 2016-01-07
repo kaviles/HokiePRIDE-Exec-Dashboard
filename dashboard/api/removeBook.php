@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("libid"=>$requestData['libid'], "reason"=>$requestData['reason']);
@@ -25,6 +25,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function removeBook($bookData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -33,7 +35,7 @@ function removeBook($bookData) {
 
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status FROM library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status);
         $qs->execute();
@@ -50,7 +52,7 @@ function removeBook($bookData) {
                 $status = "CHECKED_REMOVED";
                 $timeStamp = getTimeStamp();
 
-                $qu = $mysqli->prepare("UPDATE library_books SET removed_by=?, removed_timestamp=?, removed_reason=?, 
+                $qu = $mysqli->prepare("UPDATE $db_table_library_books SET removed_by=?, removed_timestamp=?, removed_reason=?, 
                     status=?, status_by=?, status_timestamp=? WHERE libid=?");
                 $qu->bind_param("sssssss", $admin, $timeStamp, $bookData['reason'], $status, $admin, $timeStamp, $r_libid);
                 $qu_result = $qu->execute();

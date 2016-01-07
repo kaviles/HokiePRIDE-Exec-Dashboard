@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $adminData = array("firstname"=>$requestData['firstname'], "lastname"=>$requestData['lastname'],
@@ -30,6 +30,8 @@ function handleRequestData($requestData) {
 */
 function addAdmin($adminData) {
 
+    include(__DIR__.'/../includes/dbtables.php');
+
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
     
     $mysqli = connectToDB();
@@ -37,7 +39,7 @@ function addAdmin($adminData) {
 
         $q_pid = $adminData['pid'];
 
-        $qs = $mysqli->prepare("SELECT pid FROM library_admins WHERE pid = ?");
+        $qs = $mysqli->prepare("SELECT pid FROM $db_table_library_admins WHERE pid = ?");
         $qs->bind_param("s", $q_pid);
         $qs->bind_result($r_pid);
         $qs->execute();
@@ -47,7 +49,7 @@ function addAdmin($adminData) {
 
         if ($qs_num_rows == 0) { // Add the new admin
 
-            $qi = $mysqli->prepare("INSERT INTO library_admins (pid, position, firstname, lastname) VALUES (?, ?, ?, ?)");
+            $qi = $mysqli->prepare("INSERT INTO $db_table_library_admins (pid, position, firstname, lastname) VALUES (?, ?, ?, ?)");
             $qi->bind_param("ssss", $q_pid, $adminData['position'], $adminData['firstname'], $adminData['lastname']);
             $qi_result = $qi->execute();
             $qi->store_result();

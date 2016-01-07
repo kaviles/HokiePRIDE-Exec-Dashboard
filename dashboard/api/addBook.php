@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("title"=>$requestData['title'], "author"=>$requestData['author'],
@@ -34,7 +34,9 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function addBook($bookData) {
-
+    
+    include(__DIR__.'/../includes/dbtables.php');
+    
     $admin = 'testAdmin';
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
@@ -45,7 +47,7 @@ function addBook($bookData) {
         $timeStamp = getTimeStamp();
         $status = 'CHECKED_IN';
 
-        $qi = $mysqli->prepare("INSERT INTO library_books (libid, title, author, publisher, year, isbn13, 
+        $qi = $mysqli->prepare("INSERT INTO $db_table_library_books (libid, title, author, publisher, year, isbn13, 
             loc, dcc, tags, covurl, comms, added_timestamp, added_by, status, status_by, status_timestamp) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $qi->bind_param("ssssssssssssssss", $bookData['libid'], $bookData['title'], $bookData['author'], 

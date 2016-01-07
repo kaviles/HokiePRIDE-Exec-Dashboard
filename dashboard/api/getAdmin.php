@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $adminData = array("pid" => $requestData['pid']);
@@ -24,7 +24,9 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function getAdmin($adminData) {
-
+    
+    include(__DIR__.'/../includes/dbtables.php');
+    
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
     $mysqli = connectToDB();
@@ -34,7 +36,7 @@ function getAdmin($adminData) {
         if ($q_pid == 'all') { // get all admins
 
             // No user input, no need for prepared statement
-            $q = "SELECT * FROM library_admins";
+            $q = "SELECT * FROM $db_table_library_admins";
             $result = $mysqli->query($q);
 
             $rowCount = $result->num_rows;
@@ -62,7 +64,7 @@ function getAdmin($adminData) {
         else { // look for specific admin
 
 
-            $qs = $mysqli->prepared("SELECT pid, firstname, lastname, postion FROM library_admins WHERE pid = ?");
+            $qs = $mysqli->prepared("SELECT pid, firstname, lastname, postion FROM $db_table_library_admins WHERE pid = ?");
             $qs->bind_param("s", $q_pid);
             $qs->bind_result($r_pid, $r_fname, $r_lname, $r_pos);
             $qs->execute();

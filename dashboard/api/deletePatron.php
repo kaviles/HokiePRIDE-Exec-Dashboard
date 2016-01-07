@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $patronData = array('email'=>$requestData['email']);
@@ -24,6 +24,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function deletePatron($patronData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -32,7 +34,7 @@ function deletePatron($patronData) {
 
         $q_email = $patronData['email'];
 
-        $qs = $mysqli->prepare("SELECT email, status FROM library_patrons WHERE email = ?");
+        $qs = $mysqli->prepare("SELECT email, status FROM $db_table_library_patrons WHERE email = ?");
         $qs->bind_param("s", $q_email);
         $qs->bind_result($r_email, $r_status);
         $qs->execute();
@@ -45,7 +47,7 @@ function deletePatron($patronData) {
 
             if ($r_status == 'REMOVED')
             {
-                $qd = $mysqli->prepare("DELETE FROM library_patrons WHERE email = ?");
+                $qd = $mysqli->prepare("DELETE FROM $db_table_library_patrons WHERE email = ?");
                 $qd->bind_param("s", $r_email);
                 $qd_result = $qd->execute();
                 $qd->store_result();

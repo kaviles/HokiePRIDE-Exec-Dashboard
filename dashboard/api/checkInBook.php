@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $libData = array('libid'=>$requestData['libid']);
@@ -29,6 +29,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function checkInBook($libData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -37,7 +39,7 @@ function checkInBook($libData) {
 
         $q_libid = $libData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status, patron_email FROM library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status, patron_email FROM $db_table_library_books WHERE libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status, $r_pemail);
         $qs->execute();
@@ -51,7 +53,7 @@ function checkInBook($libData) {
             if ($r_status == 'CHECKED_OUT') {
 
                 // No need for prepared statement, using safe data from database
-                $q = "UPDATE library_patrons SET itemcount = itemcount - 1 WHERE email='$r_pemail'";
+                $q = "UPDATE $db_table_library_patrons SET itemcount = itemcount - 1 WHERE email='$r_pemail'";
                 $request = $mysqli->query($q);
 
                 if ($request == true) {
@@ -60,7 +62,7 @@ function checkInBook($libData) {
                     $testMember = 'testMember';
                     $timeStamp = getTimeStamp();
 
-                    $qu = $mysqli->prepare("UPDATE library_books SET status=?, status_by=?, status_timestamp=?, 
+                    $qu = $mysqli->prepare("UPDATE $db_table_library_books SET status=?, status_by=?, status_timestamp=?, 
                     patron_firstname='', patron_lastname='', patron_email='' WHERE libid=?");
                     $qu->bind_param("ssss", $status, $admin, $timeStamp, $r_libid);
                     $qu_result = $qu->execute();

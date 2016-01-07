@@ -1,6 +1,6 @@
 <?php
 
-include_once(__DIR__.'/../utility.php');
+include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array('libid'=>$requestData['libid']);
@@ -25,6 +25,8 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function deleteBook($bookData) {
+    
+    include(__DIR__.'/../includes/dbtables.php');
 
     $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
@@ -32,7 +34,7 @@ function deleteBook($bookData) {
     if ($mysqli) {
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status FROM library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status);
         $qs->execute();
@@ -45,7 +47,7 @@ function deleteBook($bookData) {
 
             if ($r_status == 'CHECKED_REMOVED') {
 
-                $qd = $mysqli->prepare("DELETE FROM library_books WHERE libid = ?");
+                $qd = $mysqli->prepare("DELETE FROM $db_table_library_books WHERE libid = ?");
                 $qd->bind_param("s", $r_libid);
                 $qd_result = $qd->execute();
                 $qd->store_result();

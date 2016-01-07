@@ -5,7 +5,7 @@ $req_params = json_decode(implode("", $_GET), true);
 
 $requestType = $req_params['requestType'];
 
-$removeArray = array("*", "'", "\"", "\\", ".", ",");
+$removeArray = array("*", "'", "\"", "\\", "/", ".", ",");
 $requestTypeSafe = str_replace($removeArray, "", $requestType);
 
 $file = "api/".$requestTypeSafe.".php";

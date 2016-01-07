@@ -3,36 +3,42 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-    $pid = $requestData['pid'];
+    $adminData = array("pid" => $requestData['pid']);
 
-    return getAdmin($pid);
+    if (!empty($adminData['pid']) && strpos($adminData['pid'], "@") === false) {
+        $adminData = escapeData($adminData);
+
+        return getAdmin($adminData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid Admin pid is required."}';
+    }
 }
 
 /**
-* Gets a user from the database table.
-* All parameters except position should never be NULL.
+* Gets all the data on and admin from the database table.
 *
-* @param member the member to get from the database. Can be
-* all to get all the admins in the database.
+* @param adminData is an associative array that contains the following:
+* pid: The pid of the admin whose data is being requested.
 *
 * @return A JSON formatted response string.
 */
-function getAdmin($pid) {
+function getAdmin($adminData) {
 
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
 
     $mysqli = connectToDB();
     if ($mysqli) {
-        if ($pid == 'all') { // get all admins
+        $q_pid = $adminData['pid'];
 
-            $q = "SELECT * FROM admins";
+        if ($q_pid == 'all') { // get all admins
+
+            // No user input, no need for prepared statement
+            $q = "SELECT * FROM library_admins";
             $result = $mysqli->query($q);
 
             $rowCount = $result->num_rows;
-            if ($rowCount == 0) { // no admins
-                $response = '{"responseCode":"0","message":"Error! No admins found!","pid":"'.$pid.'"}';
-            }
-            else { // admins found
+            if ($rowCount > 0) {  // admins found
 
                 $admins = '"admins":[';
 
@@ -47,27 +53,39 @@ function getAdmin($pid) {
                 }
 
                 $admins .= ']';
-                $response = '{"responseCode":"1","message":"'.$rowCount.' admin(s) found!","adminCount":"'.$rowCount.'",'.$admins.'}';  
+                $response = '{"responseCode":"1","message":"'.$rowCount.' admin(s) found!",'.$admins.'}';
+            }
+            else {  // no admins
+                $response = '{"responseCode":"0","message":"No admins found!"}';
             }
         }
         else { // look for specific admin
-            $pid = $mysqli->real_escape_string($pid);
-            $q = "SELECT * FROM admins WHERE pid = '$pid'";
-            $result = $mysqli->query($q);
 
-            if ($result->num_rows == 0) { // Specific admin not found
-                $response = '{"responseCode":"0","message":"Admin '.$pid.' not found!"}';
+
+            $qs = $mysqli->prepared("SELECT pid, firstname, lastname, postion FROM library_admins WHERE pid = ?");
+            $qs->bind_param("s", $q_pid);
+            $qs->bind_result($r_pid, $r_fname, $r_lname, $r_pos);
+            $qs->execute();
+            $qs->store_result();
+
+            $qs_num_rows = $qs->num_rows;
+
+            if ($result->num_rows == 1) { // Specific admin found
+                $qs->fetch();
+
+                $response = '{"responseCode":"1","message":"Admin '.$r_pid.' found!",
+                "admin":["firstname":"'.$r_fname.'","lastname":"'.$r_lname.'","pid":"'.$r_pid.'"]}';
             }
-            else { // Specific admin exists
-                $rowGet = $result->fetch_assoc();
-                $response = '{"responseCode":"1","message":"Admin '.$pid.' found!",
-                "admin":["firstname":"'.$rowGet['firstname'].'","lastname":"'.$rowGet['lastname'].'","pid":"'.$rowGet['pid'].'"]}';
+            else { // Specific admin not found
+                $response = '{"responseCode":"0","message":"Admin '.$q_pid.' not found!"}';
             }
+
+            $qs->free_result();
+            $qs->close();
         }
     }
 
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

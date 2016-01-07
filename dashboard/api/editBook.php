@@ -6,9 +6,16 @@ function handleRequestData($requestData) {
     $bookData = array("title"=>$requestData['title'], "author"=>$requestData['author'],
     "pub"=>$requestData['pub'], "year"=>$requestData['year'], "isbn13"=>$requestData['isbn13'],
     "loc"=>$requestData['loc'], "dcc"=>$requestData['dcc'], "tags"=>$requestData['tags'],
-    "covurl"=>$requestData['covurl'], "comms"=>$requestData['comms'], "libid"=>$requestData['libid']);
+    "covurl"=>$requestData['covurl'], "comms"=>$requestData['desc'], "libid"=>$requestData['libid']);
 
-    return editBook($bookData);
+    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13']) && count($bookData['libid']) == 13) {
+        $bookData = escapeData($bookData);
+
+        return editBook($bookData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid ISBN and Library ID is required."}';
+    }
 }
 
 /**
@@ -26,46 +33,48 @@ function handleRequestData($requestData) {
 * @return A JSON formatted response string.
 */
 function editBook($bookData) {
-    $response = '';
-
-    $ebmem = 'testMember';
-
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database"}';
 
     $mysqli = connectToDB();
     if ($mysqli) {
 
-        $bookData = escapeData($bookData);
-        $q = "SELECT * FROM library WHERE libid='".$bookData['libid']."'";
-        $result = $mysqli->query($q);
-        if ($result) {
+        $q_libid = $bookData['libid'];
 
-            $libid = $bookData['libid'];
-            $title = $bookData['title'];
-            $author = $bookData['author'];
-            $publisher = $bookData['pub'];
-            $year = $bookData['year'];
-            $loc = $bookData['loc'];
-            $dcc = $bookData['dcc'];
-            $covurl = $bookData['covurl'];
-            $tags = $bookData['tags'];
-            $comms = $bookData['comms'];
+        $qs = $mysqli->prepare("SELECT libid FROM library_books WHERE libid=?");
+        $qs->bind_param("s", $q_libid);
+        $qs->bind_result($r_libid);
+        $qs->execute();
+        $qs->store_result();
 
-            $q = "UPDATE library SET title='$title', author='$author', publisher='$publisher', 
-            year='$year', loc='$loc', dcc='$dcc', tags='$tags', covurl='$covurl', comms='$comms'
-            WHERE libid='$libid'";
+        $qs_num_rows = $qs->num_rows;
 
-            $result = $mysqli->query($q);
-            if ($result == true) {
+        if ($qs_num_rows == 1) {
+            $qs->fetch();
+
+            $qu = $mysqli->prepare("UPDATE library_books SET title=?, author=?, publisher=?, year=?, 
+            loc=?, dcc=?, tags=?, covurl=?, comms=? WHERE libid=?");
+            $qu->bind_param("ssssssssss", $bookData['title'], $bookData['author'], $bookData['pub'], $bookData['year'], 
+                $bookData['loc'], $bookData['dcc'], $bookData['tags'], $bookData['covurl'], $bookData['comms'],
+                $r_libid);
+            $qu_result = $qu->execute();
+            $qu->store_result();
+
+            if ($qu_result === true) {
                 $response = '{"responseCode":"1","message":"Book edit accepted!"}';
             }
             else {
                 $response = '{"responseCode":"0","message":"Error! Book edit not accepted!"}';
             }
+
+            $qu->free_result();
+            $qu->close();
         }
         else {
-            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+            $response = '{"responseCode":"0","message":"Book not found."}';
         }
+
+        $qs->free_result();
+        $qs->close();
     }
 
     disconnectFromDB($mysqli);

@@ -3,22 +3,33 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-    $isbn13 = $requestData['isbn13'];
+    $bookData = array("isbn13" => $requestData['isbn13']);
 
-    return retrieveBookData($isbn13);
+    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13'])) {
+        $bookData = escapeData($bookData);
+
+        return retrieveBookData($bookData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid ISBN is required."}';
+    }
 }
 
 /**
 * Retrieves book data from the internet for autofilling 
 * with Google Books API and ISBNDB API.
 *
-* @param $isbn13 the 13 digit isbn number to query the databases for.
+* @param $bookData is an associative array with the following:
+* isbn13: the 13 digit isbn number to query the databases for.
 *
 * @return A JSON formatted response string.
 */
-function retrieveBookData($isbn13) {
+function retrieveBookData($bookData) {
 
     $response = '{"responseCode":"0","message":"No results"}';
+
+    $isbn13 = $bookData['isbn13'];
+
     $curl = curl_init();
 
     // Get Library of Congress and Dewey Decimal Numbers from Library of Congress database
@@ -144,7 +155,7 @@ function retrieveBookData($isbn13) {
             // $r_dcc = '';
             $r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
             $r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
-            $r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 255);
+            $r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 1024);
             $r_libid = generateLibID();
 
             $authorString = '';

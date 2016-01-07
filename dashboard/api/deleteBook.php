@@ -3,48 +3,76 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-    $libid = $requestData['libid'];
+    $bookData = array('libid'=>$requestData['libid']);
 
-    return deleteBook($libid);
+    $libidCount = strlen($bookData['libid']);
+    if ($libidCount == 13) {
+        $bookData = escapeData($bookData);
+
+        return deleteBook($bookData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid Library ID is required."}';
+    }
 }
 
 /**
 * Deletes books from library.
 *
-* @param $libid the library id of the book.
+* @param $bookData is an associative array with the following: 
+* $libid: The library id of the book to be deleted.
 *
 * @return A JSON formatted response string.
 */
-function deleteBook($libid) {
+function deleteBook($bookData) {
 
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
+
     $mysqli = connectToDB();
-
     if ($mysqli) {
-        $libid = $mysqli->real_escape_string($libid);
+        $q_libid = $bookData['libid'];
 
-        $q = "SELECT * FROM library WHERE libid = '$libid'";
-        $result = $mysqli->query($q);
+        $qs = $mysqli->prepare("SELECT libid, status FROM library_books WHERE libid = ?");
+        $qs->bind_param("s", $q_libid);
+        $qs->bind_result($r_libid, $r_status);
+        $qs->execute();
+        $qs->store_result();
 
-        if ($result->num_rows == 0) { // Board member not found, cannot delete
-            $response = '{"responseCode":"0","message":"Library Book not found!","libid":"'.$libid.'"}';
-        }
-        else { // Specific book exists, delete
-            $rowGet = $result->fetch_assoc();
-            $q = "DELETE FROM library WHERE libid = '".$rowGet['libid']."'";
-            $result = $mysqli->query($q);
+        $qs_num_rows = $qs->num_rows;
 
-            if ($result == true) {
-                $response = '{"responseCode":"1","message":"Library Book deleted!","libid":"'.$rowGet['libid'].'"}';
+        if ($qs_num_rows == 1) { // Specific book exists, delete
+            $qs->fetch();
+
+            if ($r_status == 'CHECKED_REMOVED') {
+
+                $qd = $mysqli->prepare("DELETE FROM library_books WHERE libid = ?");
+                $qd->bind_param("s", $r_libid);
+                $qd_result = $qd->execute();
+                $qd->store_result();
+
+                if ($qd_result === true) {
+                    $response = '{"responseCode":"1","message":"Book '.$r_libid.' deleted!"}';
+                }
+                else {
+                    $response = '{"responseCode":"2","message":"Error! Book '.$r_libid.' not deleted!"}';
+                }
+
+                $qd->free_result();
+                $qd->close();
             }
             else {
-                $response = '{"responseCode":"0","message":"Error! Library Book not deleted!","libid":"'.$rowGet['libid'].'"}';
+                $response = '{"responseCode":"0","message":"Remove Book before deleting."}';
             }
         }
+        else { // Specific book does not exist, cannot delete
+            $response = '{"responseCode":"0","message":"Book '.$q_libid.' not found!"}';
+        }
+
+        $qs->free_result();
+        $qs->close();
     }
 
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

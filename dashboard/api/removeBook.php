@@ -3,60 +3,82 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-    $libid = $requestData['libid'];
-    $reason = $requestData['reason'];
+    $bookData = array("libid"=>$requestData['libid'], "reason"=>$requestData['reason']);
 
-    return removeBook($libid, $reason);
+    if (strlen($bookData['libid']) == 13 && !empty($bookData['reason'])) {
+        $bookData = escapeData($bookData);
+
+        return removeBook($bookData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid Library ID and reason is required."}';
+    }
 }
 
 /**
 * Removes books from library.
 *
-* @param $libid the library id of the book.
-* @param $reason the reason the book was removed.
+* @param $bookData is an associative array that contains the following: 
+* $libid: the library id of the book to remove.
+* $reason: the reason the book was removed.
 *
 * @return A JSON formatted response string.
 */
-function removeBook($libid, $reason) {
+function removeBook($bookData) {
 
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
+
     $mysqli = connectToDB();
-    
     if ($mysqli) {
-        $q = "SELECT * FROM library WHERE libid = '$libid'";
 
-        $result_library = $mysqli->query($q);
+        $q_libid = $bookData['libid'];
 
-        if ($result_library->num_rows > 0) {
-            $row_library = $result_library->fetch_assoc();
+        $qs = $mysqli->prepare("SELECT libid, status FROM library_books WHERE libid = ?");
+        $qs->bind_param("s", $q_libid);
+        $qs->bind_result($r_libid, $r_status);
+        $qs->execute();
+        $qs->store_result();
 
-            if ($row_library['status'] == 'CHECKED_IN') {
-                $testMember = 'testMember';
+        $qs_num_rows = $qs->num_rows;
+
+        if ($qs_num_rows == 1) {
+            $qs->fetch();
+
+            if ($r_status == 'CHECKED_IN') {
+
+                $admin = 'testMember';
+                $status = "CHECKED_REMOVED";
                 $timeStamp = getTimeStamp();
-                $l_libid = $row_library['libid'];
 
-                $q = "UPDATE library SET removed_by='$testMember', removed_timestamp='$timeStamp', removed_reason='$reason', 
-                status='CHECKED_REMOVED', status_by='$testMember', status_timestamp='$timeStamp' WHERE libid='$l_libid'";
-                $result = $mysqli->query($q);
+                $qu = $mysqli->prepare("UPDATE library_books SET removed_by=?, removed_timestamp=?, removed_reason=?, 
+                    status=?, status_by=?, status_timestamp=? WHERE libid=?");
+                $qu->bind_param("sssssss", $admin, $timeStamp, $bookData['reason'], $status, $admin, $timeStamp, $r_libid);
+                $qu_result = $qu->execute();
+                $qu->store_result();
 
-                if ($result) {
-                    $response = '{"responseCode":"1","message":"Book successfully removed"}';
+                if ($qu_result === true) {
+                    $response = '{"responseCode":"1","message":"Book successfully removed."}';
                 }
                 else {
-                    $response = '{"responseCode":"0","message":"Error! Book not successfully removed"}';
+                    $response = '{"responseCode":"2","message":"Error! Book not successfully removed."}';
                 }
+
+                $qu->free_result();
+                $qu->close();
             }
             else {
-                $response = '{"responseCode":"0","message":"Book is not checked IN"}';
+                $response = '{"responseCode":"0","message":"Check Book IN before removing."}';
             }
         }
         else {
-            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+            $response = '{"responseCode":"0","message":"Book not found."}';
         }
+
+        $qs->free_result();
+        $qs->close();
     }
 
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

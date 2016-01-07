@@ -6,7 +6,14 @@ function handleRequestData($requestData) {
     $patronData = array('firstname'=>$requestData['firstname'], 'lastname'=>$requestData['lastname'], 
         'phone'=>$requestData['phone'], 'email'=>$requestData['email']);
 
-    return addPatron($patronData);
+    if (filter_var($patronData['email'], FILTER_VALIDATE_EMAIL))  {
+        $patronData = escapeData($patronData);
+
+        return addPatron($patronData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid email is required."}';
+    }
 }
 
 /**
@@ -20,66 +27,91 @@ function handleRequestData($requestData) {
 * firstname first name of library patron.
 * lastname last name of library patron.
 * phone phone number of library patron.
-* email email address of library patron. <- required
+* email email address of library patron. <-- required
 *
 * @return A JSON formatted response string.
 */
 function addPatron($patronData) {
 
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
     
     $mysqli = connectToDB();
     if ($mysqli) {
 
-        $patronData = escapeData($patronData);
+        $q_email = $patronData['email'];
 
-        $q = "SELECT * FROM library_patron WHERE email = '{$patronData['email']}'";
-        $result = $mysqli->query($q);
+        $qs = $mysqli->prepare("SELECT email, status FROM library_patrons WHERE email = ?");
+        $qs->bind_param("s", $q_email);
+        $qs->bind_result($r_email, $r_status);
+        $qs->execute();
+        $qs->store_result();
 
-        if ($result->num_rows == 0) { // Add the new board Member
+        $qs_num_rows = $qs->num_rows;
+
+        if ($qs_num_rows == 0) { // Add the new patron
 
             $timeStamp = getTimeStamp();
-            $testMember = 'testMember';
-            $q = "INSERT INTO `library_patron`(`firstname`, `lastname`, `phone`, `email`, 
-                `added_by`, `added_timestamp`, `status`, `status_timestamp`) 
-            VALUES ('{$patronData['firstname']}', '{$patronData['lastname']}', 
-                '{$patronData['phone']}', '{$patronData['email']}', 
-                '$testMember', '$timeStamp', 'ADDED', '$timeStamp')";
+            $admin = 'testMember';
+            $status = 'ADDED';
 
-            $result = $mysqli->query($q);
-            if ($result == true) {
-                $response = '{"responseCode":"1","message":"New library patron added!"}';
+            $qi = $mysqli->prepare("INSERT INTO library_patrons (firstname, lastname, phone, email, 
+                added_by, added_timestamp, status, status_by, status_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $qi->bind_param("sssssssss", $patronData['firstname'], $patronData['lastname'], $patronData['phone'], 
+                $q_email, $admin, $timeStamp, $status, $admin, $timeStamp);
+            $qi_result = $qi->execute();
+            $qi->store_result();
+
+            if ($qi_result === true) {
+                $response = '{"responseCode":"1","message":"New Patron '.$q_email.' added!"}';
             }
             else {
-                $response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+                $response = '{"responseCode":"2","message":"Error! New Patron '.$q_email.' not added!"}';
             }
+
+            $qi->free_result();
+            $qi->close();
         }
-        else { // library patron already exists or was added but eventually removed
-            $row = $result->fetch_assoc();
-            if ($row['status'] == 'REMOVED') {
+        else if ($qs_num_rows = 1) { // Patron already exists or was added but eventually removed
+            $qs->fetch();
+
+            if ($r_status == 'REMOVED') {
 
                 $timeStamp = getTimeStamp();
-                $testMember = 'testMember';
-                $q = "UPDATE library_patron 
-                SET status='ADDED', status_by='$testMember', status_timestamp='$timeStamp'
-                WHERE email='{$patronData['email']}'";
+                $admin = 'testMember';
+                $status = 'ADDED';
 
-                $result = $mysqli->query($q);
-                if ($result == true) {
-                    $response = '{"responseCode":"1","message":"New library patron added!"}';
+                // TODO: Should removed info be updated here?
+                $qu = $mysqli->prepare("UPDATE library_patrons SET status=?, status_by=?, status_timestamp=? WHERE email=?");
+                $qu->bind_param("ssss", $status, $admin, $timeStamp, $r_email);
+                $qu_result = $qu->execute();
+                $qu->store_result();
+
+                if ($qu_result === true) {
+                    $response = '{"responseCode":"1","message":"Patron '.$r_email.' re-added!"}';
                 }
                 else {
-                    $response = '{"responseCode":"0","message":"Error! Library patron not added!"}';
+                    $response = '{"responseCode":"2","message":"Error! Patron '.$r_email.' not re-added!"}';
                 }
+
+                $qu->free_result();
+                $qu->close();
+            }
+            else if ($r_status == 'ADDED') {
+                $response = '{"responseCode":"0","message":"Patron '.$r_email.' is already added!"}';
             }
             else {
-                $response = '{"responseCode":"0","message":"Library patron already exists!"}';
+                $response = '{"responseCode":"2","message":"Error! Patron status issue discovered!"}';
             }
         }
+        else {
+            $response = '{"responseCode":"2","message":"Error! Duplicate Patron emails discovered!"}';
+        }
+
+        $qs->free_result();
+        $qs->close();
     }
     
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

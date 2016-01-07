@@ -3,49 +3,69 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-    $pid = $requestData['pid'];
+    $adminData = array('pid'=>$requestData['pid']);
+    
+    if (!empty($adminData['pid']) && strpos($adminData['pid'], "@") === false) {
+        $adminData = escapeData($adminData);
 
-    return deleteAdmin($pid);
+        return deleteAdmin($adminData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid Admin pid is required."}';
+    }
 }
 
 /**
-* Adds a user to the database table.
-* All parameters except position should never be NULL.
+* Deletes an admin from the database.
 *
-* @param pid the pid of the admin to delete from the database.
+* @param adminData is an associative array with the following:
+* pid: the pid of the admin to delete from the database.
 *
 * @return A JSON formatted response string.
 */
-function deleteAdmin($pid) {
+function deleteAdmin($adminData) {
 
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
+
     $mysqli = connectToDB();
-
     if ($mysqli) {
-        $pid = $mysqli->real_escape_string($pid);
+        $q_pid = $adminData['pid'];
 
-        $q = "SELECT * FROM admins WHERE pid = '$pid'";
-        $result = $mysqli->query($q);
+        $qs = $mysqli->prepare("SELECT pid FROM library_admins WHERE pid = ?");
+        $qs->bind_param("s", $q_pid);
+        $qs->bind_result($r_pid);
+        $qs->execute();
+        $qs->store_result();
 
-        if ($result->num_rows == 0) { // Admin not found, cannot delete
-            $response = '{"responseCode":"0","message":"Admin not found!","admin":"'.$pid.'"}';
-        }
-        else { // Specific admin exists, delete
-            $rowGet = $result->fetch_assoc();
-            $q = "DELETE FROM admins WHERE pid = '".$rowGet['pid']."'";
-            $result = $mysqli->query($q);
+        $qs_num_rows = $qs->num_rows;
 
-            if ($result == true) {
-                $response = '{"responseCode":"1","message":"Admin deleted!","admin":"'.$rowGet['pid'].'"}';
+        if ($qs_num_rows == 1) { // Specific admin exists, delete
+            $qs->fetch();
+
+            $qd = $mysqli->prepare("DELETE FROM library_admins WHERE pid = ?");
+            $qd->bind_param("s", $r_pid);
+            $qd_result = $qd->execute();
+            $qd->store_result();
+
+            if ($qd_result === true) {
+                $response = '{"responseCode":"1","message":"Admin '.$r_pid.' deleted!"}';
             }
             else {
-                $response = '{"responseCode":"0","message":"Error! Admin not deleted!","admin":"'.$rowGet['pid'].'"}';
+                $response = '{"responseCode":"2","message":"Error! Admin '.$r_pid.' not deleted!"}';
             }
+
+            $qd->free_result();
+            $qd->close();
         }
+        else { // Admin not found, cannot delete
+            $response = '{"responseCode":"0","message":"Admin '.$q_pid.' not found!"}';
+        }
+
+        $qs->free_result();
+        $qs->close();
     }
 
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

@@ -3,9 +3,17 @@
 include_once(__DIR__.'/../utility.php');
 
 function handleRequestData($requestData) {
-	$libid = $requestData['libid'];
+    $libData = array('libid'=>$requestData['libid']);
 
-	return checkInBook($libid);
+    $libidCount = strlen($libData['libid']);
+    if ($libidCount == 13)  {
+        $libData = escapeData($libData);
+
+        return checkInBook($libData);
+    }
+    else {
+        return '{"responseCode":"0","message":"A valid Library ID is required."}';
+    }
 }
 
 /**
@@ -13,53 +21,87 @@ function handleRequestData($requestData) {
 * Checks if book is checked out.
 * If checked out, clears check out information on book.
 * If not checked out, returns error about book not being checked out.
+* TODO: Should book title be included in response messages?
 *
-* @param $libid the library id of the book.
+* @param $libData is an associative array that contains the following:
+* libid: The library id of the book to check in. <-- required
 *
 * @return A JSON formatted response string.
 */
-function checkInBook($libid) {
-    $response = '{"responseCode":"0","message":"Could not connect to database"}';
+function checkInBook($libData) {
+
+    $response = '{"responseCode":"2","message":"Could not connect to database."}';
+
     $mysqli = connectToDB();
-    
     if ($mysqli) {
-        $q = "SELECT * FROM library WHERE libid = '$libid'";
 
-        $result_library = $mysqli->query($q);
+        $q_libid = $libData['libid'];
 
-        if ($result_library->num_rows > 0) {
-            $row_library = $result_library->fetch_assoc();
+        $qs = $mysqli->prepare("SELECT libid, status, patron_email FROM library_books WHERE libid = ?");
+        $qs->bind_param("s", $q_libid);
+        $qs->bind_result($r_libid, $r_status, $r_pemail);
+        $qs->execute();
+        $qs->store_result();
 
-            if ($row_library['status'] == 'CHECKED_OUT') {
-                $testMember = 'testMember';
-                $timeStamp = getTimeStamp();
-                $l_libid = $row_library['libid'];
+        $qs_num_rows = $qs->num_rows;
 
-                $q = "UPDATE library SET status='CHECKED_IN', status_by='$testMember', status_timestamp='$timeStamp', 
-                patron_firstname='', patron_lastname='', patron_email='' WHERE libid='$l_libid'";
-                $result = $mysqli->query($q);
+        if ($qs_num_rows == 1) { // Book found
+            $qs->fetch();
 
-                if ($result) {
-                    $response = '{"responseCode":"1","message":"Book successfully checked IN"}';
+            if ($r_status == 'CHECKED_OUT') {
+
+                // No need for prepared statement, using safe data from database
+                $q = "UPDATE library_patrons SET itemcount = itemcount - 1 WHERE email='$r_pemail'";
+                $request = $mysqli->query($q);
+
+                if ($request == true) {
+                    
+                    $status = 'CHECKED_IN';
+                    $testMember = 'testMember';
+                    $timeStamp = getTimeStamp();
+
+                    $qu = $mysqli->prepare("UPDATE library_books SET status=?, status_by=?, status_timestamp=?, 
+                    patron_firstname='', patron_lastname='', patron_email='' WHERE libid=?");
+                    $qu->bind_param("ssss", $status, $admin, $timeStamp, $r_libid);
+                    $qu_result = $qu->execute();
+                    $qu->store_result();
+
+                    if ($qu_result === true) {
+                        $response = '{"responseCode":"1","message":"Book successfully checked IN."}';
+                    }
+                    else {
+                        $response = '{"responseCode":"2","message":"Error! Book not successfully checked IN."}';
+                    }
+
+                    $qu->free_result();
+                    $qu->close();
                 }
                 else {
-                    $response = '{"responseCode":"0","message":"Error! Book not successfully checked IN"}';
+                    $response = '{"responseCode":"2","message":"An error occurred with patron item count."}';
                 }
             }
-            else if ($row_library['status'] == 'CHECKED_REMOVED') {
-                $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+            else if ($r_status == 'CHECKED_IN') {
+                $response = '{"responseCode":"0","message":"Book is not checked OUT."}';
+            }
+            else if ($r_status == 'CHECKED_REMOVED') {
+                $response = '{"responseCode":"0","message":"Book is REMOVED."}';
             }
             else {
-                $response = '{"responseCode":"0","message":"Book is not checked OUT"}';
+                $response = '{"responseCode":"2","message":"Book status issue discovered."}';
             }
         }
-        else {
-            $response = '{"responseCode":"0","message":"Invalid Library Book ID"}';
+        else if ($qs_num_rows == 0) { // Book not found
+            $response = '{"responseCode":"0","message":"Book not found."}';
         }
+        else {
+            $response = '{"responseCode":"0","message":"Error! Duplicate Library Book ID discovered!"}';
+        }
+
+        $qs->free_result();
+        $qs->close();
     }
 
     disconnectFromDB($mysqli);
-
     return $response;
 }
 

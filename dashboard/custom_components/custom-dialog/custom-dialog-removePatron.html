@@ -102,9 +102,9 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"requestType":"removePatron", "requestData":{"email":"' + 
-                formInputArr[0].value + '","reason":"' + 
-                formInputArr[1].value + '"}}';
+                req = {"requestType":"removePatron",
+                    "requestData[email]": formInputArr[0].value,
+                    "requestData[reason]": formInputArr[1].value};
                 
                 this.disableForm(true);
                 this.ajaxRequest(req);

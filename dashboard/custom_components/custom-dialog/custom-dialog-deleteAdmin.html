@@ -121,7 +121,7 @@
         },
 
         ajaxGetRequest: function() {
-            var request = '{"requestType":"getAdmin", "requestData":{"pid":"all"}}';
+            var request = {"requestType":"getAdmin", "requestData[pid]":"all"};
             var aj = this.$.ajaxGet;
             aj.params = request;
             this.disableForm(true);
@@ -142,7 +142,7 @@
 
         ajaxDeleteRequest: function() {
             var selectedMember = this.$.mainForm.querySelector('#rgrp').selected;
-            var request = '{"requestType":"deleteAdmin", "requestData":{"pid":"' + selectedMember + '"}}';
+            var request = {"requestType": "deleteAdmin", "requestData[pid]": selectedMember};
             var aj = this.$.ajaxDelete;
             aj.params = request;
             this.disableForm(true);

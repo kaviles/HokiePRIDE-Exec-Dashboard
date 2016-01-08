@@ -104,9 +104,9 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"requestType":"removeBook", "requestData":{"libid":"' + 
-                formInputArr[0].value + '","reason":"' + 
-                formInputArr[1].value + '"}}';
+                req = {"requestType":"removeBook",
+                    "requestData[libid]": formInputArr[0].value,
+                    "requestData[reason]": formInputArr[1].value};
 
                 this.disableForm(true);
                 this.ajaxRequest(req);

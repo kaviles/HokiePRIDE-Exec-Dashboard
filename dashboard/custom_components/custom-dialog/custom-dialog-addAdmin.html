@@ -101,11 +101,11 @@
                 }
 
                 if (validCount == formInputCount) {
-                    req = '{"requestType":"addAdmin", "requestData":{"firstname":"' + 
-                    formInputArr[0].value + '","lastname":"' + 
-                    formInputArr[1].value + '","position":"' + 
-                    formInputArr[2].value + '","pid":"' + 
-                    formInputArr[3].value + '"}}';
+                    req = {"requestType":"addAdmin",
+                        "requestData[firstname]": formInputArr[0].value, 
+                        "requestData[lastname]": formInputArr[1].value, 
+                        "requestData[position]": formInputArr[2].value, 
+                        "requestData[pid]": formInputArr[3].value};
                     
                     this.ajaxRequest(req);
                 }

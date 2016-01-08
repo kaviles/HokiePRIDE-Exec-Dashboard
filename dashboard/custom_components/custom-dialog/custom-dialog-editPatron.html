@@ -141,8 +141,7 @@
             if (validCount == formInputCount) {
 
                 var email = mainForm0.querySelector('#email').value;
-                this.ajaxGetPatronRequest('{"requestType":"getPatron", "requestData":{"email":"' + 
-                    email + '"}}');
+                this.ajaxGetPatronRequest({"requestType": "getPatron", "requestData[email]": email});
             }
             else {
                 this.clearEditLibPatBtn();
@@ -174,11 +173,11 @@
             }
 
             if (validCount == formInputCount) {
-                var req = '{"requestType":"editPatron", "requestData":{"firstname":"' + 
-                formInputArr[0].value + '","lastname":"' + 
-                formInputArr[1].value + '","phone":"' + 
-                formInputArr[2].value + '","email":"' + 
-                formInputArr[3].value + '"}}';
+                var req = {"requestType":"editPatron", 
+                "requestData[firstname]": formInputArr[0].value,
+                "requestData[lastname]": formInputArr[1].value,
+                "requestData[phone]": formInputArr[2].value,
+                "requestData[email]": formInputArr[3].value};
 
                 this.ajaxEditPatronRequest(req);
             }

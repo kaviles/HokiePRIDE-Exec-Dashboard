@@ -103,7 +103,7 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"requestType":"checkInBook", "requestData":{"libid":"' + formInputArr[0].value + '"}}';
+                req = {"requestType":"checkInBook", "requestData[libid]": formInputArr[0].value};
                 // console.log(req);
                 this.disableForm(true);
                 this.ajaxRequest(req);

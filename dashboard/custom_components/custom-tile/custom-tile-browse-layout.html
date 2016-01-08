@@ -54,7 +54,7 @@
         <div class='tile-container'>
 
             <div id='searchBar'>
-                <paper-input id='searchInput' type='text' placeholder='Search for item...' size='64' error-message='Enter 1-3 five character search words' pattern="(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,} ){0,2}(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,})"></paper-input>
+                <paper-input id='searchInput' value='' type='text' placeholder='Search for item...' size='64' error-message='Enter 1-3 five character search words' pattern="(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,} ){0,2}(([a-zA-Z0-9\'!@#\$%\^\&\*\)\(+=._-]){5,})"></paper-input>
                 <paper-icon-button icon='icons:search' on-tap='searchButtonPressed'></paper-icon-button>
             </div>
 
@@ -62,12 +62,7 @@
 
             <div id='searchResults'>
                 <template is='dom-repeat' items='{{books}}' as='book'>
-                    <custom-tile-browse libid='{{book.libid}}' title='{{book.title}}' title-s='{{book.title_s}}' 
-                    author='{{book.author}}' author-s='{{book.author_s}}' publisher='{{book.publisher}}' 
-                    year='{{book.year}}' loc='{{book.loc}}' dcc='{{book.dcc}}' isbn='{{book.isbn13}}' 
-                    tags='{{book.tags}}' desc='{{book.desc}}' covurl='{{book.covurl}}' 
-                    status='{{book.status}}' statusby='{{book.statusby}}' statustime='{{book.statustime}}' 
-                    pfname='{{book.pfname}}' plname='{{book.plname}}' pemail='{{book.pemail}}'></custom-tile-browse>
+                    <custom-tile-browse libid='{{book.libid}}' title='{{book.title}}' title-s='{{book.title_s}}' author='{{book.author}}' author-s='{{book.author_s}}' publisher='{{book.publisher}}' year='{{book.year}}' loc='{{book.loc}}' dcc='{{book.dcc}}' isbn13='{{book.isbn13}}' isbn10='{{book.isbn10}}' tags='{{book.tags}}' desc='{{book.desc}}' covurl='{{book.covurl}}' status='{{book.status}}' statusby='{{book.statusby}}' statustime='{{book.statustime}}' pfname='{{book.pfname}}' plname='{{book.plname}}' pemail='{{book.pemail}}'></custom-tile-browse>
                 </template>
             </div>
         </div>
@@ -100,8 +95,8 @@
             this.$.searchInput.validate();
 
             if (!this.$.searchInput.invalid) {
-                this.ajaxSearchRequest('{"requestType":"searchRequest", "requestData":{"string":"' + 
-                    this.$.searchInput.value + '"}}');
+                this.ajaxSearchRequest({"requestType": "searchRequest", 
+                    "requestData[string]": this.$.searchInput.value});
             }
         },
 
@@ -114,7 +109,8 @@
             for (var i = 0; i < dataLength; i++) {
                 this.push('books', {libid:books[i].libid, title:books[i].title, title_s:books[i].title.substr(0, 64),
                     author:books[i].author, author_s:books[i].author.substr(0, 64), publisher:books[i].publisher, 
-                    year:books[i].year, isbn13:books[i].isbn13, loc:books[i].loc, dcc:books[i].dcc, 
+                    year:books[i].year, isbn13:books[i].isbn13, isbn10:books[i].isbn10, 
+                    loc:books[i].loc, dcc:books[i].dcc, 
                     tags:books[i].tags, desc:books[i].comms, covurl: books[i].covurl, 
                     status:books[i].status, statusby:books[i].status_by, statustime:books[i].status_time, 
                     pfname:books[i].fname, plname:books[i].lname, pemail:books[i].email});

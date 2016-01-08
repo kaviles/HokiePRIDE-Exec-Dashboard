@@ -138,6 +138,7 @@
                     <paper-input class='forminput' id='pub' value='' label='Publisher(s)' type='text'></paper-input>
                     <paper-input class='forminput' id='year' value='' label='Year' type='text' minlength='4' maxlength='4' pattern='[0-9]{4}' error-message='YYYY'></paper-input>
                     <paper-input id='isbn13' value='' label='ISBN13' type='text' minlength='13' maxlength='16' required disabled pattern='[0-9]{13}' error-message='13 digits'></paper-input>
+                    <paper-input id='isbn10' value='' label='ISBN10' type='text' minlength='10' maxlength='13' required disabled pattern='[0-9]{10}' error-message='10 digits'></paper-input>
                     <paper-input class='forminput' id='loc' value='' label='Library of Congress #' type='text'></paper-input>
                     <paper-input class='forminput' id='dcc' value='' label='Dewey Decimal #' type='text'></paper-input>
                     <paper-input class='forminput' id='tags' value='' label='Tags' type='text'></paper-input>
@@ -256,6 +257,7 @@
                 this.$.pub.value = bd.publisher;
                 this.$.year.value = bd.year;
                 this.$.isbn13.value = bd.isbn13;
+                this.$.isbn10.value = bd.isbn10;
                 this.$.loc.value = bd.loc;
                 this.$.dcc.value = bd.dcc;
                 this.$.tags.value = bd.tag;
@@ -307,6 +309,7 @@
                 }
 
                 this.$.isbn13.value = '';
+                this.$.isbn10.value = '';
                 this.$.libid_1.value = '';
 
                 this.clearEditBookBtn();

@@ -118,6 +118,7 @@
                         <paper-input class='forminput' id='pub' value='{{page.publisher}}' label='Publisher(s)' type='text'></paper-input>
                         <paper-input class='forminput' id='year' value='{{page.year}}' label='Year' type='text' minlength='4' maxlength='4' pattern='[0-9]{4}' error-message='YYYY'></paper-input>
                         <paper-input class='forminput' id='isbn13' value='{{page.isbn13}}' label='ISBN13' type='text' minlength='13' maxlength='16' required pattern='[0-9]{13}' error-message='13 digits'></paper-input>
+                        <paper-input class='forminput' id='isbn10' value='{{page.isbn10}}' label='ISBN10' type='text' minlength='10' maxlength='13' required pattern='[0-9]{10}' error-message='10 digits'></paper-input>
                         <paper-input class='forminput' id='loc' value='{{page.loc}}' label='Library of Congress #' type='text'></paper-input>
                         <paper-input class='forminput' id='dcc' value='{{page.dcc}}' label='Dewey Decimal #' type='text'></paper-input>
                         <paper-input class='forminput' id='tags' value='{{page.tags}}' label='Tags' type='text'></paper-input>
@@ -174,7 +175,7 @@
             // isbn13:'', loc:'', dcc:'', tags:'', desc:'', covurl:''}];
 
             this.pages = [{title:'', author:'', publisher:'', year:'', 
-            isbn13:'', loc:'', dcc:'', tags:'', desc:'', covurl:''}];
+            isbn13:'', isbn10:'', loc:'', dcc:'', tags:'', desc:'', covurl:''}];
         },
 
         validateForm: function() {
@@ -209,6 +210,7 @@
                     "requestData[pub]": selectedPage.querySelector('#pub').value, 
                     "requestData[year]": selectedPage.querySelector('#year').value, 
                     "requestData[isbn13]": selectedPage.querySelector('#isbn13').value, 
+                    "requestData[isbn10]": selectedPage.querySelector('#isbn10').value, 
                     "requestData[loc]": selectedPage.querySelector('#loc').value, 
                     "requestData[dcc]": selectedPage.querySelector('#dcc').value, 
                     "requestData[tags]": selectedPage.querySelector('#tags').value, 
@@ -230,18 +232,26 @@
             var selectedPage = this.$.pageSelector.selectedItem;
 
             var isbn13Inp = selectedPage.querySelector('#isbn13');
+            var isbn10Inp = selectedPage.querySelector('#isbn10');
  
             // Clear the form, reset isbn13
             var isbn13 = isbn13Inp.value;
+            var isbn10 = isbn10Inp.value
 
             if (isbn13 && isbn13.length == 13) {
                 this.clearForm();
-                this.ajaxAutoFillRequest(
-                    {"requestType":"retrieveBookData", "requestData[isbn13]":isbn13});
+                this.ajaxAutoFillRequest({"requestType":"retrieveBookData", "requestData[isbn13]":isbn13});
+                return;
             }
-            else {
-                isbn13Inp.invalid = true;
+
+            if (isbn10 && isbn10.length == 10) {
+                this.clearForm();
+                this.ajaxAutoFillRequest({"requestType":"retrieveBookData", "requestData[isbn10]":isbn10});
+                return;
             }
+
+            isbn10Inp.invalid = true;
+            isbn13Inp.invalid = true;
         },
 
         resetPages: function() {
@@ -280,7 +290,7 @@
                 //     tags:bd.tag, desc:bd.desc, covurl:bd.covurl};
 
                 var newpage = {title:bd.title, author:bd.author, publisher:bd.publisher, 
-                    year:bd.year, isbn13:bd.isbn13, loc:bd.loc, dcc:bd.dcc, 
+                    year:bd.year, isbn13:bd.isbn13, isbn10:bd.isbn10, loc:bd.loc, dcc:bd.dcc, 
                     tags:bd.tag, desc:bd.desc, covurl:bd.covurl};
 
                 this.push('pages', newpage);

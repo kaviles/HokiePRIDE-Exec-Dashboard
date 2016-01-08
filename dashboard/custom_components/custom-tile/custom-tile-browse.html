@@ -87,7 +87,7 @@
         </paper-material>
 
         <paper-dialog id='dialog' entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
-            <custom-dialog-browseBook libid='{{libid}}' title='{{title}}' author='{{author}}' publisher='{{publisher}}' year='{{year}}' loc='{{loc}}' dcc='{{dcc}}' isbn='{{isbn}}' tags='{{tags}}' desc='{{desc}}' covurl='{{covurl}}' status='{{status}}' statusby='{{statusby}}' statustime='{{statustime}}' pfname='{{pfname}}' plname='{{plname}}' pemail='{{pemail}}'></custom-dialog-browseBook>
+            <custom-dialog-browseBook libid='{{libid}}' title='{{title}}' author='{{author}}' publisher='{{publisher}}' year='{{year}}' loc='{{loc}}' dcc='{{dcc}}' isbn13='{{isbn13}}' isbn10='{{isbn10}}' tags='{{tags}}' desc='{{desc}}' covurl='{{covurl}}' status='{{status}}' statusby='{{statusby}}' statustime='{{statustime}}' pfname='{{pfname}}' plname='{{plname}}' pemail='{{pemail}}'></custom-dialog-browseBook>
 
             <div class='buttons'>
                 <paper-button id='closeButton' on-tap='tapHandler'>Close</paper-button>
@@ -108,7 +108,8 @@
             year: String,
             loc: String,
             dcc: String,
-            isbn: String,
+            isbn13: String,
+            isbn10: String,
             tags: String,
             desc: String,
             covurl: String,

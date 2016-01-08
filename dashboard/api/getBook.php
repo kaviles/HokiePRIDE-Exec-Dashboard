@@ -34,10 +34,10 @@ function getBook($bookData) {
 
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT title, author, publisher, isbn13, year, 
+        $qs = $mysqli->prepare("SELECT title, author, publisher, isbn13, isbn10, year, 
             loc, dcc, tags, covurl, comms, libid FROM $db_table_library_books WHERE BINARY libid=?");
         $qs->bind_param("s", $q_libid);
-        $qs->bind_result($r_title, $r_author, $r_publisher, $r_isbn13, $r_year, 
+        $qs->bind_result($r_title, $r_author, $r_publisher, $r_isbn13, $r_isbn10, $r_year, 
             $r_loc, $r_dcc, $r_tags, $r_covurl, $r_comms, $r_libid);
         $qs->execute();
         $qs->store_result();
@@ -50,8 +50,9 @@ function getBook($bookData) {
             $bookData = '"bookData":[';
 
             $bookData .=
-            '{"title":"'.$r_title.'", "author":"'.$r_author.'", "publisher":"'.$r_publisher.'", "isbn13":"'.$r_isbn13.'",
-            "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'", "tag":"'.$r_tags.'", "covurl":"'.$r_covurl.'",
+            '{"title":"'.$r_title.'", "author":"'.$r_author.'", "publisher":"'.$r_publisher.'", 
+            "isbn13":"'.$r_isbn13.'", "isbn10":"'.$r_isbn10.'", "year":"'.$r_year.'", 
+            "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'", "tag":"'.$r_tags.'", "covurl":"'.$r_covurl.'",
             "comms":"'.$r_comms.'", "libid":"'.$r_libid.'"}';
 
             $bookData .= ']';

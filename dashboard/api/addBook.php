@@ -4,17 +4,18 @@ include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("title"=>$requestData['title'], "author"=>$requestData['author'],
-    "pub"=>$requestData['pub'], "year"=>$requestData['year'], "isbn13"=>$requestData['isbn13'],
+    "pub"=>$requestData['pub'], "year"=>$requestData['year'], 
+    "isbn13"=>$requestData['isbn13'], "isbn10"=>$requestData['isbn10'],
     "loc"=>$requestData['loc'], "dcc"=>$requestData['dcc'], "tags"=>$requestData['tags'],
     "covurl"=>$requestData['covurl'], "comms"=>$requestData['desc']);
 
-    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13'])) {
+    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn10'])) {
         // $bookData = escapeData($bookData);
 
         return addBook($bookData);
     }
     else {
-        return '{"responseCode":"0","message":"A valid ISBN and Library ID is required."}';
+        return '{"responseCode":"0","message":"A valid ISBN13 or ISBN10 is required."}';
     }
 }
 
@@ -49,11 +50,11 @@ function addBook($bookData) {
         $libid = generateLibID();
 
         $qi = $mysqli->prepare("INSERT INTO $db_table_library_books (libid, title, author, publisher, year, isbn13, 
-            loc, dcc, tags, covurl, comms, added_timestamp, added_by, status, status_by, status_timestamp) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $qi->bind_param("ssssssssssssssss", $libid, $bookData['title'], $bookData['author'], 
-            $bookData['pub'], $bookData['year'], $bookData['isbn13'], $bookData['loc'], $bookData['dcc'],
-            $bookData['tags'], $bookData['covurl'], $bookData['comms'], 
+            isbn10, loc, dcc, tags, covurl, comms, added_timestamp, added_by, status, status_by, status_timestamp) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $qi->bind_param("sssssssssssssssss", $libid, $bookData['title'], $bookData['author'], 
+            $bookData['pub'], $bookData['year'], $bookData['isbn13'], $bookData['isbn10'], 
+            $bookData['loc'], $bookData['dcc'], $bookData['tags'], $bookData['covurl'], $bookData['comms'], 
             $timeStamp, $admin, $status, $admin, $timeStamp);
         $result = $qi->execute();
         $qi->store_result();

@@ -35,7 +35,7 @@ function removeBook($bookData) {
 
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE BINARY libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status);
         $qs->execute();
@@ -53,7 +53,7 @@ function removeBook($bookData) {
                 $timeStamp = getTimeStamp();
 
                 $qu = $mysqli->prepare("UPDATE $db_table_library_books SET removed_by=?, removed_timestamp=?, removed_reason=?, 
-                    status=?, status_by=?, status_timestamp=? WHERE libid=?");
+                    status=?, status_by=?, status_timestamp=? WHERE BINARY libid=?");
                 $qu->bind_param("sssssss", $admin, $timeStamp, $bookData['reason'], $status, $admin, $timeStamp, $r_libid);
                 $qu_result = $qu->execute();
                 $qu->store_result();

@@ -43,7 +43,7 @@ function editBook($bookData) {
 
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid FROM $db_table_library_books WHERE libid=?");
+        $qs = $mysqli->prepare("SELECT libid FROM $db_table_library_books WHERE BINARY libid=?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid);
         $qs->execute();
@@ -55,7 +55,7 @@ function editBook($bookData) {
             $qs->fetch();
 
             $qu = $mysqli->prepare("UPDATE $db_table_library_books SET title=?, author=?, publisher=?, year=?, 
-            loc=?, dcc=?, tags=?, covurl=?, comms=? WHERE libid=?");
+            loc=?, dcc=?, tags=?, covurl=?, comms=? WHERE BINARY libid=?");
             $qu->bind_param("ssssssssss", $bookData['title'], $bookData['author'], $bookData['pub'], $bookData['year'], 
                 $bookData['loc'], $bookData['dcc'], $bookData['tags'], $bookData['covurl'], $bookData['comms'],
                 $r_libid);
@@ -66,7 +66,7 @@ function editBook($bookData) {
                 $response = '{"responseCode":"1","message":"Book edit accepted!"}';
             }
             else {
-                $response = '{"responseCode":"0","message":"Error! Book edit not accepted!"}';
+                $response = '{"responseCode":"2","message":"Error! Book edit not accepted!"}';
             }
 
             $qu->free_result();

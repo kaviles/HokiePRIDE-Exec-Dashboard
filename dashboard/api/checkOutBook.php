@@ -43,7 +43,7 @@ function checkOutBook($libData) {
         $q_libid = $libData['libid'];
         $q_patronEmail = $libData['patronEmail'];
 
-        $qs_lb = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
+        $qs_lb = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE BINARY libid = ?");
         $qs_lb->bind_param("s", $q_libid);
         $qs_lb->bind_result($r_lb_libid, $r_lb_status);
         $qs_lb->execute();
@@ -79,7 +79,7 @@ function checkOutBook($libData) {
                             $timeStamp = getTimeStamp();
 
                             $qu = $mysqli->prepare("UPDATE $db_table_library_books SET status=?, status_by=?, status_timestamp=?, 
-                                patron_firstname=?, patron_lastname=?, patron_email=? WHERE libid=?");
+                                patron_firstname=?, patron_lastname=?, patron_email=? WHERE BINARY libid=?");
                             $qu->bind_param("sssssss", $status, $admin, $timeStamp, $r_lp_pFname, $r_lp_pLname, $r_lp_pEmail, $r_lb_libid);
                             $qu_result = $qu->execute();
                             $qu->store_result();

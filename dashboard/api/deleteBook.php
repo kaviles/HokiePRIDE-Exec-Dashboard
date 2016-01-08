@@ -34,7 +34,7 @@ function deleteBook($bookData) {
     if ($mysqli) {
         $q_libid = $bookData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status FROM $db_table_library_books WHERE BINARY libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status);
         $qs->execute();
@@ -47,16 +47,16 @@ function deleteBook($bookData) {
 
             if ($r_status == 'CHECKED_REMOVED') {
 
-                $qd = $mysqli->prepare("DELETE FROM $db_table_library_books WHERE libid = ?");
+                $qd = $mysqli->prepare("DELETE FROM $db_table_library_books WHERE BINARY libid = ?");
                 $qd->bind_param("s", $r_libid);
                 $qd_result = $qd->execute();
                 $qd->store_result();
 
                 if ($qd_result === true) {
-                    $response = '{"responseCode":"1","message":"Book '.$r_libid.' deleted!"}';
+                    $response = '{"responseCode":"1","message":"Book deleted!"}';
                 }
                 else {
-                    $response = '{"responseCode":"2","message":"Error! Book '.$r_libid.' not deleted!"}';
+                    $response = '{"responseCode":"2","message":"Error! Book not deleted!"}';
                 }
 
                 $qd->free_result();
@@ -67,7 +67,7 @@ function deleteBook($bookData) {
             }
         }
         else { // Specific book does not exist, cannot delete
-            $response = '{"responseCode":"0","message":"Book '.$q_libid.' not found!"}';
+            $response = '{"responseCode":"0","message":"Book not found!"}';
         }
 
         $qs->free_result();

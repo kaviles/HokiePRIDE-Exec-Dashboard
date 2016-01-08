@@ -35,7 +35,7 @@ function getBook($bookData) {
         $q_libid = $bookData['libid'];
 
         $qs = $mysqli->prepare("SELECT title, author, publisher, isbn13, year, 
-            loc, dcc, tags, covurl, comms, libid FROM $db_table_library_books WHERE libid=?");
+            loc, dcc, tags, covurl, comms, libid FROM $db_table_library_books WHERE BINARY libid=?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_title, $r_author, $r_publisher, $r_isbn13, $r_year, 
             $r_loc, $r_dcc, $r_tags, $r_covurl, $r_comms, $r_libid);
@@ -56,7 +56,7 @@ function getBook($bookData) {
 
             $bookData .= ']';
 
-            $response = '{"responseCode":"1","message":"Found Library Book",'.$bookData.'}';
+            $response = '{"responseCode":"1","message":"Found Book",'.$bookData.'}';
         }
         else {
             $response = '{"responseCode":"0","message":"Book not found."}';

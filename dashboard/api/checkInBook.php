@@ -39,7 +39,7 @@ function checkInBook($libData) {
 
         $q_libid = $libData['libid'];
 
-        $qs = $mysqli->prepare("SELECT libid, status, patron_email FROM $db_table_library_books WHERE libid = ?");
+        $qs = $mysqli->prepare("SELECT libid, status, patron_email FROM $db_table_library_books WHERE BINARY libid = ?");
         $qs->bind_param("s", $q_libid);
         $qs->bind_result($r_libid, $r_status, $r_pemail);
         $qs->execute();
@@ -63,7 +63,7 @@ function checkInBook($libData) {
                     $timeStamp = getTimeStamp();
 
                     $qu = $mysqli->prepare("UPDATE $db_table_library_books SET status=?, status_by=?, status_timestamp=?, 
-                    patron_firstname='', patron_lastname='', patron_email='' WHERE libid=?");
+                    patron_firstname='', patron_lastname='', patron_email='' WHERE BINARY libid=?");
                     $qu->bind_param("ssss", $status, $admin, $timeStamp, $r_libid);
                     $qu_result = $qu->execute();
                     $qu->store_result();
@@ -96,7 +96,7 @@ function checkInBook($libData) {
             $response = '{"responseCode":"0","message":"Book not found."}';
         }
         else {
-            $response = '{"responseCode":"0","message":"Error! Duplicate Library Book ID discovered!"}';
+            $response = '{"responseCode":"2","message":"Error! Duplicate Library Book ID discovered!"}';
         }
 
         $qs->free_result();

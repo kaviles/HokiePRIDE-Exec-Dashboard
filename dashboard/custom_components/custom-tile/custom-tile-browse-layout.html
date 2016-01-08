@@ -106,11 +106,7 @@
         },
 
         resetBookData: function() {
-
-            var dataLength = this.books.length;
-            for (var i = 0; i < dataLength; i++) {
-                this.pop('books');
-            }
+            while (this.pop('books'));
         },
 
         loadBookData: function(books) {

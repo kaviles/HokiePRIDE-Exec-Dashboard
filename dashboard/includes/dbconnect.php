@@ -21,13 +21,13 @@
     if (mysqli_connect_error($mysqli))
     {
       $message = date("Y-m-d H:i:s").' failed connect to database. '.$mysqli->connect_errno($mysqli).': '.mysqli_connect_error($mysqli);
-      error_log($message, 3, 'logs/dbconect.log');
+      error_log($message, 3, __DIR__.'/logs/dbconect.log');
       return NULL;
     }
     else
     {
       $message = date("Y-m-d H:i:s").' successful connect to database.'."\n";
-      error_log($message, 3, 'logs/dbconnect.log');
+      error_log($message, 3, __DIR__.'/logs/dbconnect.log');
       return $mysqli;
     }
   }
@@ -49,12 +49,12 @@
       //mysqli_close($mysqli);
       $mysqli->close();
       $message = date("Y-m-d H:i:s").' successful disconnect from database.'."\n";
-      error_log($message, 3, 'logs/dbconnect.log');
+      error_log($message, 3, __DIR__.'/logs/dbconnect.log');
     }
     else
     {
       $message = date("Y-m-d H:i:s").' attempting to disconnect from null database.'."\n";
-      error_log($message, 3, 'logs/dbconnect.log');
+      error_log($message, 3, __DIR__.'/logs/dbconnect.log');
     }
   }
 ?>

@@ -96,8 +96,22 @@ function generateLibID() {
 
     $libid = md5(uniqid(), false);
 
+    $characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    $findletters = array("a", "b", "c", "d", "e", "f");
+
     while (strlen($libid) > 13) {
         $libid = substr_replace($libid, "", rand(0, strlen($libid) - 1), 1);
+    }
+
+    for ($i = 0; $i < 13; $i++) {
+        if (!is_numeric($libid[$i])) {
+            for ($j = 0; $j < 6; $j++) {
+                if ($libid[$i] == $findletters[$j]) {
+                    $libid[$i] = $characters[rand(0, 51)];
+                    break;
+                }
+            }  
+        }
     }
 
     return $libid;

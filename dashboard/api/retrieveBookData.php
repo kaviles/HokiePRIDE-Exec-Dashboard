@@ -35,10 +35,7 @@ function retrieveBookData($bookData) {
     // Get Library of Congress and Dewey Decimal Numbers from Library of Congress database
     // SimpleXML also doesn't work for some reason...
     $url = "http://lx2.loc.gov:210/lcdb?version=2.0&operation=searchRetrieve&query=bath.isbn=".$isbn13."&maximumRecords=1";
-    curl_setopt_array($curl, array(
-        CURLOPT_RETURNTRANSFER => 1,
-        CURLOPT_HEADER => "Content-Type:application/xml",
-        CURLOPT_URL => $url));
+    curl_setopt_array($curl, array(CURLOPT_RETURNTRANSFER => 1, CURLOPT_HEADER => "Content-Type:application/xml", CURLOPT_URL => $url));
 
     $locResponse = curl_exec($curl);
 
@@ -126,16 +123,26 @@ function retrieveBookData($bookData) {
     }
     
     // Get all other information from Google Books API
-    $url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13;
-    curl_setopt_array($curl, array(
-    CURLOPT_RETURNTRANSFER => 1,
-    CURLOPT_URL => $url));
+    $url = "https://www.googleapis.com/books/v1/volumes?q=isbn:".$isbn13."&maxResults=10";
+    curl_setopt_array($curl, array(CURLOPT_RETURNTRANSFER => 1, CURLOPT_URL => $url));
 
     $googResponse = curl_exec($curl);
     $googJson = json_decode($googResponse);
 
     $items = $googJson->items;
     $itemCount = $googJson->totalItems;
+
+    if ($itemCount == 0) { // Try request again but expand search beyond just isbn
+
+        $url = "https://www.googleapis.com/books/v1/volumes?q=".$isbn13."&maxResults=10";
+        curl_setopt_array($curl, array(CURLOPT_RETURNTRANSFER => 1, CURLOPT_URL => $url));
+
+        $googResponse = curl_exec($curl);
+        $googJson = json_decode($googResponse);
+
+        $items = $googJson->items;
+        $itemCount = count($items);
+    }
 
     if ($itemCount > 0) {
 
@@ -146,17 +153,17 @@ function retrieveBookData($bookData) {
 
             // response variables
             // Some of these are too long and need to be cut off
-            $r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 255);
+            $r_title = substr(($volInfo->subtitle) ? $volInfo->title.': '.$volInfo->subtitle : $volInfo->title, 0, 256);
             $r_author = ($volInfo->authors) ? $volInfo->authors : ''; // This might be an array of authors
-            $r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 255);
+            $r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 256);
             $r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
             $r_isbn13 = $isbn13;
             // $r_loc = '';
             // $r_dcc = '';
             $r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
-            $r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 255);
+            $r_covurl = substr(($volInfo->imageLinks->thumbnail) ? $volInfo->imageLinks->thumbnail : '', 0, 512);
             $r_desc = substr(($volInfo->description) ? $volInfo->description : '', 0, 1024);
-            $r_libid = generateLibID();
+            // $r_libid = generateLibID();
 
             $authorString = '';
 
@@ -168,7 +175,7 @@ function retrieveBookData($bookData) {
                 }
             }
 
-            $authorString = substr($authorString , 0, 255);
+            $authorString = substr($authorString , 0, 256);
 
             $tagString = '';
 
@@ -194,17 +201,9 @@ function retrieveBookData($bookData) {
             $r_desc = str_replace('"', '', $r_desc);
 
             $bookData .=
-                '{"title":"'.$r_title.'",
-                "author":"'.$authorString.'",
-                "publisher":"'.$r_publisher.'",
-                "isbn13":"'.$r_isbn13.'",
-                "year":"'.$r_year.'",
-                "loc":"'.$r_loc.'",
-                "dcc":"'.$r_dcc.'",
-                "tag":"'.$tagString.'",
-                "covurl":"'.$r_covurl.'",
-                "desc":"'.$r_desc.'",
-                "libid":"'.$r_libid.'"}';
+                '{"title":"'.$r_title.'", "author":"'.$authorString.'", "publisher":"'.$r_publisher.'",
+                "isbn13":"'.$r_isbn13.'", "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'",
+                "tag":"'.$tagString.'", "covurl":"'.$r_covurl.'", "desc":"'.$r_desc.'"}';//, "libid":"'.$r_libid.'"}';
 
             if ($i < $itemCount - 1) {
                 $bookData .= ', ';
@@ -212,7 +211,7 @@ function retrieveBookData($bookData) {
         }
 
         $bookData .= ']';
-        $response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found",'.$bookData.'}';
+        $response = '{"responseCode":"1","message":"'.$itemCount.' item(s) found", "itemCount":'.$itemCount.','.$bookData.'}';
     }
 
     curl_close($curl);

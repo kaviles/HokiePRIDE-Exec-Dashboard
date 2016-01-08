@@ -1,6 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
@@ -27,27 +29,58 @@
             #header {
                 margin: 0px 0px 0px 0px;
             }
-            #mainPage {
+            #pageSelector {
                 margin: 5px 5px 5px 5px;
                 padding: 0px 0px 0px 0px;
-
-                /*min-width: 400px;*/
-                /*min-height: 350px;*/
             }
-            .mainForm {
-                max-width: 600px;
+            #page {
+                @apply(--layout-horizontal);
+                @apply(--layout-start);
+                @apply(--layout-center-justified);
+            }
+            #page > * {
+                margin: 5px;
+            }
+            #page > * > *{
+                margin: 5px;
+            }
+            #cover {
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: black;
+            }
+            #mainForm {
+                max-width: 400px;
 
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: black;
             }
-            .formInput {
-                margin: 5px 5px 5px 5px;
-                padding: 0px 0px 0px 0px;
+            #description {
+                min-height: 325px;
+                max-height: 325px;
+                min-width: 275px;
+                max-width: 275px;
+
+                overflow-y:auto;
+
+                border-style: solid;
+                border-width: 1px;
+                border-color: black;
+            }
+            #desc {
+                margin: 5px;
             }
             #buttons {
-
                 margin: 5px 5px 5px 5px;
                 padding: 0px 0px 0px 0px;
 
@@ -71,13 +104,29 @@
 
         <div id='header'>Add Book to Library</div>
 
-        <iron-pages id='mainPage' selected='0'>
+        <iron-pages id='pageSelector' selected='0'>
             <template is='dom-repeat' items='{{pages}}' as='page'>
-                <div class='mainForm' id='mainForm{{page.num}}'>
-                    <template is='dom-repeat' items='{{inputs}}' as='input'>
-                        <paper-input class='formInput' id='{{input.id}}' label='{{input.label}}' type='{{input.type}}' minlength='{{input.minlength}}' maxlength='{{input.maxlength}}' required='{{input.required}}' pattern='{{input.pattern}}' error-message='{{input.error}}'>
-                        </paper-input>
-                    </template>
+                <div id='page'>
+                    <div id='cover'>
+                        <iron-image id='covimg' src='{{page.covurl}}' style='width:200px; height:300px;' sizing='cover' preload></iron-image>
+                        <paper-input class='forminput' id='covurl' value='{{page.covurl}}' label='Cover URL' type='url' on-change='updateCovImg' error-message='http://www.example.com'></paper-input>
+                    </div>
+
+                    <div id='mainForm'>
+                        <paper-input class='forminput' id='title' value='{{page.title}}' label='Title' type='text'></paper-input>
+                        <paper-input class='forminput' id='author' value='{{page.author}}' label='Author(s)' type='text'></paper-input>
+                        <paper-input class='forminput' id='pub' value='{{page.publisher}}' label='Publisher(s)' type='text'></paper-input>
+                        <paper-input class='forminput' id='year' value='{{page.year}}' label='Year' type='text' minlength='4' maxlength='4' pattern='[0-9]{4}' error-message='YYYY'></paper-input>
+                        <paper-input class='forminput' id='isbn13' value='{{page.isbn13}}' label='ISBN13' type='text' minlength='13' maxlength='16' required pattern='[0-9]{13}' error-message='13 digits'></paper-input>
+                        <paper-input class='forminput' id='loc' value='{{page.loc}}' label='Library of Congress #' type='text'></paper-input>
+                        <paper-input class='forminput' id='dcc' value='{{page.dcc}}' label='Dewey Decimal #' type='text'></paper-input>
+                        <paper-input class='forminput' id='tags' value='{{page.tags}}' label='Tags' type='text'></paper-input>
+                        <!-- <paper-input class='forminput' id='libid' value='{{page.libid}}' label='Library ID' type='text' minlength='13' maxlength='13' required disabled error-message='13 character Library ID'></paper-input>
+ -->                    </div>
+
+                    <div id='description'>
+                        <paper-textarea class='forminput' id='desc' value='{{page.desc}}' label='Description' maxlength='1024'></paper-textarea>
+                    </div>
                 </div>
             </template>
         </iron-pages>
@@ -94,7 +143,7 @@
                 <paper-icon-button id='autoFillRight' icon='chevron-right' on-tap='autoFillRight' hidden></paper-icon-button>
             </div>
 
-            <paper-button id='genLibIDButt' raised role='button' on-tap='ajaxGenLibIDRequest'>Generate LibID</paper-button>
+            <!-- <paper-button id='genLibIDButt' raised role='button' on-tap='ajaxGenLibIDRequest'>Generate LibID</paper-button> -->
 
             <paper-button id='addBookButt' raised role='button' on-tap='validateForm'>Add Book to Library</paper-button>
             <paper-tooltip id='tooltip_addBookButt' for='addBookButt' position='bottom'>
@@ -104,7 +153,7 @@
 
         <iron-ajax id='ajaxAutoFill' url='../../request.php' content-type='application/json' handle-as='json' method='POST' on-response='ajaxAutoFillResponse'>
         </iron-ajax>
-        <iron-ajax id='ajaxGenLibID' url='../../request.php' handle-as='json' method='GET' on-response='ajaxGenLibIDResponse'></iron-ajax>
+        <!-- <iron-ajax id='ajaxGenLibID' url='../../request.php' handle-as='json' method='GET' on-response='ajaxGenLibIDResponse'></iron-ajax> -->
         <iron-ajax id='ajaxAdd' url='../../request.php' handle-as='json' method='GET' on-response='ajaxAddResponse'></iron-ajax>
     </template>
 
@@ -121,27 +170,17 @@
          */
 
         ready: function() {
-            this.inputs = [
-            {id:'title', label:'Title', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
-            {id:'author', label:'Author(s)', minlength:'', maxlength:'', type:'text', required:false, error:'fname1 lname1, fname2 lname2...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-            {id:'pub', label:'Publisher', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
-            {id:'year', label:'Year', minlength:'4', maxlength:'4', type:'text', required:false, error:'4 digits', pattern:'[0-9]{4}'},
-            {id:'isbn13', label:'ISBN13', minlength:'13', maxlength:'16', type:'text', required:true, error:'13 digits', pattern:'[0-9]{13}'},
-            {id:'loc', label:'Library of Congress #', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
-            {id:'dcc', label:'Dewey Decimal #', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
-            {id:'tags', label:'Tags (comma sep)', minlength:'', maxlength:'', type:'text', required:false, error:'tag1, tag2, tag3...', pattern:'([a-zA-Z0-9.]+,? )*[a-zA-Z0-9.]+'},
-            {id:'covurl', label:'Cover URL', minlength:'', maxlength:'', type:'url', required:false, error:'www.example.com', pattern:'.*'},
-            {id:'desc', label:'Description', minlength:'', maxlength:'', type:'text', required:false, error:'', pattern:'.*'},
-            {id:'libid', label:'Library ID', minlength:'13', maxlength:'13', type:'text', required:true, error:'Input 13 character library ID', pattern:'^[a-zA-Z0-9]*$'}
-            ];
+            // this.pages = [{libid:'', title:'', author:'', publisher:'', year:'', 
+            // isbn13:'', loc:'', dcc:'', tags:'', desc:'', covurl:''}];
 
-            this.pages = [{num:'0'}];
+            this.pages = [{title:'', author:'', publisher:'', year:'', 
+            isbn13:'', loc:'', dcc:'', tags:'', desc:'', covurl:''}];
         },
 
         validateForm: function() {
-            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
+            var selectedPage = this.$.pageSelector.selectedItem;
 
-            var formInputArr = selectedForm.getElementsByClassName('formInput');
+            var formInputArr = selectedPage.getElementsByClassName('forminput');
             var formInputCount = formInputArr.length;
 
             var validCount = 0;
@@ -164,39 +203,41 @@
             }
 
             if (validCount == formInputCount) {
-                req = '{"requestType":"addBook", "requestData":{"title":"' + formInputArr[0].value + 
-                    '","author":"' + formInputArr[1].value + 
-                    '","pub":"' + formInputArr[2].value + 
-                    '","year":"' + formInputArr[3].value + 
-                    '","isbn13":"' + formInputArr[4].value + 
-                    '","loc":"' + formInputArr[5].value + 
-                    '","dcc":"' + formInputArr[6].value + 
-                    '","tags":"' + formInputArr[7].value + 
-                    '","covurl":"' + formInputArr[8].value + 
-                    '","desc":"' + formInputArr[9].value + 
-                    '","libid":"' + formInputArr[10].value + '"}}';
+                req = {"requestType":"addBook",  
+                    "requestData[title]": selectedPage.querySelector('#title').value, 
+                    "requestData[author]": selectedPage.querySelector('#author').value, 
+                    "requestData[pub]": selectedPage.querySelector('#pub').value, 
+                    "requestData[year]": selectedPage.querySelector('#year').value, 
+                    "requestData[isbn13]": selectedPage.querySelector('#isbn13').value, 
+                    "requestData[loc]": selectedPage.querySelector('#loc').value, 
+                    "requestData[dcc]": selectedPage.querySelector('#dcc').value, 
+                    "requestData[tags]": selectedPage.querySelector('#tags').value, 
+                    "requestData[covurl]": selectedPage.querySelector('#covurl').value, 
+                    "requestData[desc]": selectedPage.querySelector('#desc').value};
+                    // '","requestData[libid]":"' + selectedPage.querySelector('#libid').value + '"}';
 
+                // console.log(req);
                 this.ajaxAddRequest(req);
             }
             else {
                 this.clearAutoFillButt();
-                this.clearGenLibIDButt()
+                // this.clearGenLibIDButt()
                 this.clearAddButt();
             }
         },
 
         validateISBN13: function() {
-            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
+            var selectedPage = this.$.pageSelector.selectedItem;
 
-            var isbn13Inp = selectedForm.querySelector('#isbn13');
+            var isbn13Inp = selectedPage.querySelector('#isbn13');
  
             // Clear the form, reset isbn13
             var isbn13 = isbn13Inp.value;
 
             if (isbn13 && isbn13.length == 13) {
                 this.clearForm();
-                this.ajaxAutoFillRequest('{"requestType":"retrieveBookData", "requestData":{"isbn13":"' + 
-                    isbn13 + '"}}');
+                this.ajaxAutoFillRequest(
+                    {"requestType":"retrieveBookData", "requestData[isbn13]":isbn13});
             }
             else {
                 isbn13Inp.invalid = true;
@@ -204,23 +245,20 @@
         },
 
         resetPages: function() {
-            for (var i = 0; i < this.pages.length; i++) {
-                this.pop('pages');
-            }
+            while(this.pop('pages'));
+        },
+
+        updateCovImg: function() {
+            // console.log('change in covurl.');
+            var selectedPage = this.$.pageSelector.selectedItem;
+            selectedPage.querySelector('#covimg').src = selectedPage.querySelector('#covurl').value;
         },
 
         autoFillForm: function(jsonObject) {
             // console.log(jsonObject);
-
             this.resetPages();
 
-            var mainPage = this.$.mainPage;
             var resultsCount = jsonObject.bookData.length;
-            var pageCount = this.pages.length;
-
-            // if (resultsCount > pageCount) {
-            //     resultsCount = pageCount;
-            // }
 
             var button1 = this.$.autoFillRight;
             var button2 = this.$.autoFillLeft;
@@ -235,54 +273,45 @@
             }
 
             for (var i = 0; i < resultsCount; i++) {
-                var bookData = jsonObject.bookData[i];
-                // console.log(bookData);
+                var bd = jsonObject.bookData[i];
 
-                this.push('pages', {num:i.toString()});
+                // var newpage = {libid:bd.libid, title:bd.title, author:bd.author, publisher:bd.publisher, 
+                //     year:bd.year, isbn13:bd.isbn13, loc:bd.loc, dcc:bd.dcc, 
+                //     tags:bd.tag, desc:bd.desc, covurl:bd.covurl};
 
-                var form = mainPage.querySelector('#mainForm' + i);
-                form.querySelector('#title').value = bookData.title;
-                form.querySelector('#author').value = bookData.author;
-                form.querySelector('#pub').value = bookData.publisher;
-                form.querySelector('#year').value = bookData.year;
-                form.querySelector('#isbn13').value = bookData.isbn13;
-                form.querySelector('#loc').value = bookData.loc;
-                form.querySelector('#dcc').value = bookData.dcc;
-                form.querySelector('#tags').value = bookData.tag;
-                form.querySelector('#covurl').value = bookData.covurl;
-                form.querySelector('#desc').value = bookData.desc;
-                form.querySelector('#libid').value = bookData.libid;
+                var newpage = {title:bd.title, author:bd.author, publisher:bd.publisher, 
+                    year:bd.year, isbn13:bd.isbn13, loc:bd.loc, dcc:bd.dcc, 
+                    tags:bd.tag, desc:bd.desc, covurl:bd.covurl};
 
-                form.querySelector('#isbn13').disabled = true;
-                form.querySelector('#libid').disabled = true;
+                this.push('pages', newpage);
             }
 
-            mainPage.select('0');
+            this.$.pageSelector.select('0');
         },
 
         autoFillRight: function() {
-            this.$.mainPage.selectNext();
+            this.$.pageSelector.selectNext();
         },
 
         autoFillLeft: function() {
-            this.$.mainPage.selectPrevious();
+            this.$.pageSelector.selectPrevious();
         },
 
         disableForm: function(val) {
-            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
+            var selectedPage = this.$.pageSelector.selectedItem;
 
-            var formInputArr = selectedForm.getElementsByClassName('formInput');
+            var formInputArr = selectedPage.getElementsByClassName('forminput');
             var formInputCount = formInputArr.length;
 
             var button1 = this.$.autoFillButt;
             var button2 = this.$.addBookButt;
             var button3 = this.$.autoFillRight;
             var button4 = this.$.autoFillLeft;
-            var button5 = this.$.genLibIDButt;
+            // var button5 = this.$.genLibIDButt;
 
             button1.disabled = val;
             button2.disabled = val;
-            button5.disabled = val;
+            // button5.disabled = val;
 
             for (var i = 0; i < formInputCount; i++) {
                 formInputArr[i].disabled = val;
@@ -299,48 +328,45 @@
         },
 
         clearForm: function() {
-            var mainPage = this.$.mainPage;
+            var selectedPage = this.$.pageSelector.selectedItem;
 
             var button1 = this.$.autoFillRight;
             var button2 = this.$.autoFillLeft;
             button1.setAttribute('hidden', '');
             button2.setAttribute('hidden', '');
 
-            var pagesLength = this.pages.length;
+            // var pagesLength = this.pages.length;
 
-            for (var i = 0; i < pagesLength; i++) {
-                var selectedForm = mainPage.querySelector('#mainForm' + i);
-                var formInputArr = selectedForm.getElementsByClassName('formInput');
-                var formInputCount = formInputArr.length;
+            // for (var i = 0; i < pagesLength; i++) {
+            var formInputArr = selectedPage.getElementsByClassName('forminput');
+            var formInputCount = formInputArr.length;
 
-                for (var j = 0; j < formInputCount; j++) {
-                    formInputArr[j].value = '';
-                    formInputArr[j].invalid = false;
-                }
+            for (var j = 0; j < formInputCount; j++) {
+                formInputArr[j].value = '';
+                formInputArr[j].invalid = false;
             }
 
+            selectedPage.querySelector('#covimg').src = '';
+            // }
+
             this.clearAutoFillButt();
-            this.clearGenLibIDButt();
+            // this.clearGenLibIDButt();
             this.clearAddButt();
         },
 
         clearAutoFillButt: function() {
-            var ttip = this.$.tooltip_autoFillButt;
-            ttip.hide();
-            ttip.querySelector('#tooltiptext_autoFillButt').innerHTML = '';
-
+            this.$.tooltip_autoFillButt.hide();
+            this.$.tooltiptext_autoFillButt.innerHTML = '';
             this.$.autoFillButt.style.backgroundColor = "white";
         },
 
-        clearGenLibIDButt: function() {
-            this.$.genLibIDButt.style.backgroundColor = "white";
-        },
+        // clearGenLibIDButt: function() {
+        //     this.$.genLibIDButt.style.backgroundColor = "white";
+        // },
 
         clearAddButt: function() {
-            var ttip = this.$.tooltip_addBookButt;
-            ttip.hide();
-            ttip.querySelector('#tooltiptext_addBookButt').innerHTML = '';
-
+            this.$.tooltip_addBookButt.hide();
+            this.$.tooltiptext_addBookButt.innerHTML = '';
             this.$.addBookButt.style.backgroundColor = "white";
         },
 
@@ -358,8 +384,6 @@
             // console.log(e.detail.response);
             this.disableForm(false);
             var resp = JSON.parse(e.detail.response);
-            var ttip = this.$.tooltip_autoFillButt;
-            var ttiptext = ttip.querySelector('#tooltiptext_autoFillButt');
             var button = this.$.autoFillButt;
 
             if (resp.responseCode == 1) {
@@ -374,50 +398,50 @@
             }
 
             this.clearAddButt();
-            this.clearGenLibIDButt();
+            // this.clearGenLibIDButt();
 
-            ttiptext.innerHTML = resp.message;
-            ttip.show();
+            this.$.tooltiptext_autoFillButt.innerHTML = resp.message;
+            this.$.tooltip_autoFillButt.show();
         },
 
-        ajaxGenLibIDRequest: function() {
-            this.clearAddButt();
-            this.clearAutoFillButt();
-            this.disableForm(true);
+        // ajaxGenLibIDRequest: function() {
+        //     this.clearAddButt();
+        //     this.clearAutoFillButt();
+        //     this.disableForm(true);
 
-            var aj = this.$.ajaxGenLibID;
-            aj.params = '{"requestType":"generateLibID", "requestData":{}}';
-            aj.generateRequest();
-        },
+        //     var aj = this.$.ajaxGenLibID;
+        //     aj.params = {"requestType":"generateLibID"};
+        //     aj.generateRequest();
+        // },
 
-        ajaxGenLibIDResponse: function(e) {
-            // console.log('Message: ' + e.detail.response);
-            this.disableForm(false);
-            var resp = JSON.parse(e.detail.response);
+        // ajaxGenLibIDResponse: function(e) {
+        //     // console.log('Message: ' + e.detail.response);
+        //     this.disableForm(false);
+        //     var resp = JSON.parse(e.detail.response);
 
-            var selectedForm = this.$.mainPage.querySelector('.mainForm.iron-selected');
-            var libidInp = selectedForm.querySelector('#libid');
-            var isbn13Inp = selectedForm.querySelector('#isbn13');
+        //     var selectedPage = this.$.pageSelector.selectedItem;
+        //     var libidInp = selectedPage.querySelector('#libid');
+        //     var isbn13Inp = selectedPage.querySelector('#isbn13');
 
-            var button = this.$.genLibIDButt;
+        //     var button = this.$.genLibIDButt;
 
-            if (resp.responseCode == 1) {
-                button.style.backgroundColor = "green";
+        //     if (resp.responseCode == 1) {
+        //         button.style.backgroundColor = "green";
 
-                libidInp.value = resp.libid;
-            }
-            else if (resp.responseCode == 0) {
-                button.style.backgroundColor = "red";
-            }
-            else {
-                button.style.backgroundColor = "yellow";
-            }
+        //         libidInp.value = resp.libid;
+        //     }
+        //     else if (resp.responseCode == 0) {
+        //         button.style.backgroundColor = "red";
+        //     }
+        //     else {
+        //         button.style.backgroundColor = "yellow";
+        //     }
 
-            libidInp.disabled = true;
-            isbn13Inp.disabled = true;
+        //     libidInp.disabled = true;
+        //     isbn13Inp.disabled = true;
 
-            this.clearAddButt();
-        },
+        //     this.clearAddButt();
+        // },
 
         ajaxAddRequest: function(request) {
             this.clearAddButt();
@@ -433,8 +457,6 @@
             // console.log('Message: ' + e.detail.response);
             this.disableForm(false);
             var resp = JSON.parse(e.detail.response);
-            var ttip = this.$.tooltip_addBookButt;
-            var ttiptext = ttip.querySelector('#tooltiptext_addBookButt');
             var button = this.$.addBookButt;
 
             if (resp.responseCode == 1) {
@@ -448,8 +470,8 @@
                 button.style.backgroundColor = "yellow";
             }
 
-            ttiptext.innerHTML = resp.message;
-            ttip.show();
+            this.$.tooltiptext_addBookButt.innerHTML = resp.message;
+            this.$.tooltip_addBookButt.show();
         },
     });
   </script>

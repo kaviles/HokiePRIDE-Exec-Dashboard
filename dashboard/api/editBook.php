@@ -4,17 +4,17 @@ include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("title"=>$requestData['title'], "author"=>$requestData['author'],
-    "pub"=>$requestData['pub'], "year"=>$requestData['year'], "isbn13"=>$requestData['isbn13'],
+    "pub"=>$requestData['pub'], "year"=>$requestData['year'],
     "loc"=>$requestData['loc'], "dcc"=>$requestData['dcc'], "tags"=>$requestData['tags'],
     "covurl"=>$requestData['covurl'], "comms"=>$requestData['desc'], "libid"=>$requestData['libid']);
 
-    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn13']) && count($bookData['libid']) == 13) {
+    if (strlen($bookData['libid']) == 13) {
         // $bookData = escapeData($bookData);
 
         return editBook($bookData);
     }
     else {
-        return '{"responseCode":"0","message":"A valid ISBN and Library ID is required."}';
+        return '{"responseCode":"0","message":"A valid Library ID is required."}';
     }
 }
 
@@ -23,7 +23,7 @@ function handleRequestData($requestData) {
 *
 * @param $bookData An associative array with all the data of the book to be edited.
 * This array contains the following:
-* title, author, pub, year, isbn, loc, dcc, tags, covurl, comms.
+* title, author, pub, year, loc, dcc, tags, covurl, comms.
 * Most of them should be self explanatory. 
 * loc = library of congress call number
 * dcc = dewey decimal call number

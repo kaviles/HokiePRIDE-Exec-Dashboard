@@ -1,7 +1,8 @@
 <?php
 header('Content-Type: application/json');
 
-$req_params = json_decode(implode("", $_GET), true);
+// $req_params = json_decode(implode("", $_GET), true);
+$req_params = $_GET;
 
 $requestType = $req_params['requestType'];
 
@@ -18,7 +19,7 @@ if (file_exists($file))
     $response = handleRequestData($requestData);
 }
 else {
-    $response = '{"responseCode":"0","message":"Invalid request command"}';
+    $response = '{"responseCode":"0","message":"Invalid request command '.$requestTypeSafe.'"}';
 }
 
 echo json_encode($response);

@@ -1,4 +1,7 @@
 <?php
+
+include_once(__DIR__.'/includes/utility.php');
+
 header('Content-Type: application/json');
 
 // $req_params = json_decode(implode("", $_GET), true);

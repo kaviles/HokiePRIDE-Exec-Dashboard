@@ -1,17 +1,18 @@
 <?php
 
-include_once(__DIR__.'/../includes/utility.php');
+// include_once(__DIR__.'/../includes/utility.php');
 
 function handleRequestData($requestData) {
     $bookData = array("isbn13" => $requestData['isbn13'], "isbn10" => $requestData['isbn10']);
 
-    if (isValidIsbn13($bookData['isbn13']) || isValidIsbn10($bookData['isbn10'])) {
+    if ((isset($bookData['isbn13']) && isValidIsbn13($bookData['isbn13'])) || 
+        (isset($bookData['isbn10']) && isValidIsbn10($bookData['isbn10']))) {
         // $bookData = escapeData($bookData);
 
         return retrieveBookData($bookData);
     }
     else {
-        return '{"responseCode":"0","message":"A valid ISBN13 or ISBN 10 is required."}';
+        return '{"responseCode":"0","message":"A valid ISBN13 or ISBN10 is required."}';
     }
 }
 
@@ -221,10 +222,7 @@ function retrieveBookData($bookData) {
             $r_covurl = str_replace('"', '', $r_covurl);
             $r_desc = str_replace('"', '', $r_desc);
 
-            $bookData .=
-                '{"title":"'.$r_title.'", "author":"'.$authorString.'", "publisher":"'.$r_publisher.'",
-                "isbn13":"'.$r_isbn13.'", "isbn10":"'.$r_isbn10.'", "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'",
-                "tag":"'.$tagString.'", "covurl":"'.$r_covurl.'", "desc":"'.$r_desc.'"}';//, "libid":"'.$r_libid.'"}';
+            $bookData .= '{"title":"'.$r_title.'", "author":"'.$authorString.'", "publisher":"'.$r_publisher.'", "isbn13":"'.$r_isbn13.'", "isbn10":"'.$r_isbn10.'", "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'", "tag":"'.$tagString.'", "covurl":"'.$r_covurl.'", "desc":"'.$r_desc.'"}';//, "libid":"'.$r_libid.'"}';
 
             if ($i < $itemCount - 1) {
                 $bookData .= ', ';

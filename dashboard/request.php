@@ -9,6 +9,8 @@ $req_params = $_GET;
 
 $requestType = $req_params['requestType'];
 
+logMessage(__DIR__."/logs/request.log", "Request: ".$_SERVER['REQUEST_URI']);
+
 $removeArray = array("*", "'", "\"", "\\", "/", ".", ",");
 $requestTypeSafe = str_replace($removeArray, "", $requestType);
 
@@ -24,6 +26,8 @@ if (file_exists($file))
 else {
     $response = '{"responseCode":"0","message":"Invalid request command '.$requestTypeSafe.'"}';
 }
+
+logMessage(__DIR__."/logs/request.log", "Response: ".$response);
 
 echo json_encode($response);
 ?>

@@ -33,6 +33,7 @@ function retrieveBookData($bookData) {
     $isbn = '';
     $isbn13 = $bookData['isbn13'];
     $isbn10 = $bookData['isbn10'];
+    $isbn0 = '';
 
     if ($isbn13) {
         $isbn = $isbn13;
@@ -143,7 +144,7 @@ function retrieveBookData($bookData) {
     $items = $googJson->items;
     $itemCount = $googJson->totalItems;
 
-    if ($itemCount == 0) { // Try request again but expand search beyond just isbn
+    if (!is_null($items) && $itemCount == 0) { // Try request again but expand search beyond just isbn
 
         $url = "https://www.googleapis.com/books/v1/volumes?q=".$isbn."&maxResults=10";
         curl_setopt_array($curl, array(CURLOPT_RETURNTRANSFER => 1, CURLOPT_URL => $url));
@@ -155,7 +156,7 @@ function retrieveBookData($bookData) {
         $itemCount = count($items);
     }
 
-    if ($itemCount > 0) {
+    if (!is_null($items) && $itemCount > 0) {
 
         $bookData = '"bookData":[';
         for ($i = 0; $i < $itemCount; $i++) {
@@ -169,16 +170,28 @@ function retrieveBookData($bookData) {
             $r_publisher = substr(($volInfo->publisher) ? $volInfo->publisher : '', 0, 256);
             $r_year = ($volInfo->publishedDate) ? substr($volInfo->publishedDate, 0, 4) : '';
             
-            if ($volInfo->industryIdentifiers[0]->type == 'ISBN_13') {
-                $r_isbn13 = $volInfo->industryIdentifiers[0]->identifier;
-                $r_isbn10 =  $volInfo->industryIdentifiers[1]->identifier;
+            $r_isbn13 = '';
+            $r_isbn10 = '';
+            $r_isbn0 = '';
+            foreach ($volInfo->industryIdentifiers as $id) {
+                if ($id->type == 'ISBN_13') {
+                    $r_isbn13 = $id->identifier;
+                }
+                else if ($id->type == 'ISBN_10') {
+                    $r_isbn10 = $id->identifier;
+                }
+                else {
+                    $r_isbn0 = $id->identifier;
+                }
             }
-            else {
-                $r_isbn13 = $volInfo->industryIdentifiers[1]->identifier;
-                $r_isbn10 =  $volInfo->industryIdentifiers[0]->identifier;
+
+            if (strlen($r_isbn13) == 0) {
+                $r_isbn13 = $isbn13;
             }
-            
-            // $r_isbn13 = $isbn13;
+            if (strlen($r_isbn10) == 0) {
+                $r_isbn10 = $isbn10;
+            }
+
             // $r_loc = '';
             // $r_dcc = '';
             $r_tag = ($volInfo->categories) ? $volInfo->categories : ''; // This will likely be an array;
@@ -215,6 +228,7 @@ function retrieveBookData($bookData) {
             $r_publisher = str_replace('"', '', $r_publisher);
             $r_isbn13 = str_replace('"', '', $r_isbn13);
             $r_isbn10 = str_replace('"', '', $r_isbn10);
+            $r_isbn0 = str_replace('"', '', $r_isbn0);
             $r_year = str_replace('"', '', $r_year);
             $r_loc = str_replace('"', '', $r_loc);
             $r_dcc = str_replace('"', '', $r_dcc);
@@ -222,7 +236,7 @@ function retrieveBookData($bookData) {
             $r_covurl = str_replace('"', '', $r_covurl);
             $r_desc = str_replace('"', '', $r_desc);
 
-            $bookData .= '{"title":"'.$r_title.'", "author":"'.$authorString.'", "publisher":"'.$r_publisher.'", "isbn13":"'.$r_isbn13.'", "isbn10":"'.$r_isbn10.'", "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'", "tag":"'.$tagString.'", "covurl":"'.$r_covurl.'", "desc":"'.$r_desc.'"}';//, "libid":"'.$r_libid.'"}';
+            $bookData .= '{"title":"'.$r_title.'", "author":"'.$authorString.'", "publisher":"'.$r_publisher.'", "isbn13":"'.$r_isbn13.'", "isbn10":"'.$r_isbn10.'", "isbn0":"'.$r_isbn0.'", "year":"'.$r_year.'", "loc":"'.$r_loc.'", "dcc":"'.$r_dcc.'", "tag":"'.$tagString.'", "covurl":"'.$r_covurl.'", "desc":"'.$r_desc.'"}';//, "libid":"'.$r_libid.'"}';
 
             if ($i < $itemCount - 1) {
                 $bookData .= ', ';

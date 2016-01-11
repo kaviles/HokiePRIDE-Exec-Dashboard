@@ -11,7 +11,7 @@ function handleRequestData($requestData) {
     if ($stringsLength < 4) {
         // $strings = escapeData($strings);
 
-        return searchRequest($strings);
+        return searchRequestAdmin($strings);
     }
     else {
         return '{"responseCode":"0","message":"Please submit a one to three word query."}';
@@ -31,7 +31,7 @@ function handleRequestData($requestData) {
 * bookData data relevant to the library's books
 * videoData data relevant to the library's dvds or vhss (TODO: Implement this)
 */
-function searchRequest($strings) {
+function searchRequestAdmin($strings) {
     
     include(__DIR__.'/../includes/dbtables.php');
 

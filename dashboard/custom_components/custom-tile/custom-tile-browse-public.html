@@ -1,0 +1,156 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/neon-animation/neon-animation.html">
+
+<link rel="import" href="../custom-dialog/custom-dialog-browseBook-public.html">
+
+<dom-module id="custom-tile-browse-public">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 25px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: red;*/
+            }
+            #item {
+                margin: 5px;
+                padding: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #tile {
+                text-align: center;
+
+                color: gray;
+                background: white;
+
+                padding: 2.5px;
+                margin: 5px;
+                width: 250px;
+                height: 450px;
+                border-radius: 2px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #itemInfo0 {
+                @apply(--layout-horizontal);
+            }    
+            #itemInfo1, #itemInfo2 {
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #dialog {
+                @apply(--layout-vertical);
+                @apply(--layout-end);
+                @apply(--layout-end-justified);
+            }  
+            iron-label {
+                margin: 5px;
+            }
+        </style>
+
+        <paper-material id='tile' animated elevation='1' on-tap='tapHandler' on-mouseover='mouseOver' on-mouseout='mouseOut'>
+
+            <div id='item'>
+                <iron-label>Library ID: {{libid}}</iron-label>
+                <iron-image style='width:200px; height:300px;' sizing='cover' preload src="{{covurl}}"></iron-image>
+                
+                <div id='itemInfo0'>
+                    <div id='itemInfo1'>
+                        <iron-icon icon='icons:book'></iron-icon>
+                    </div>
+                    <div id='itemInfo2'>
+                        <iron-label>{{titleS}}</iron-label>
+                        <iron-label>{{authorS}}</iron-label> 
+                    <div>
+                </div>
+            </div>
+        </paper-material>
+
+        <paper-dialog id='dialog' entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <custom-dialog-browseBook-public libid='{{libid}}' title='{{title}}' author='{{author}}' publisher='{{publisher}}' year='{{year}}' loc='{{loc}}' dcc='{{dcc}}' isbn13='{{isbn13}}' isbn10='{{isbn10}}' tags='{{tags}}' desc='{{desc}}' covurl='{{covurl}}' status='{{status}}'></custom-dialog-browseBook-public>
+
+            <div class='buttons'>
+                <paper-button id='closeButton' on-tap='tapHandler'>Close</paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+  <script>
+    Polymer({
+        is: 'custom-tile-browse-public', 
+        properties: {
+            libid: String,
+            title: String,
+            titleS: String,
+            author: String,
+            authorS: String,
+            publisher: String,
+            year: String,
+            loc: String,
+            dcc: String,
+            isbn13: String,
+            isbn10: String,
+            tags: String,
+            desc: String,
+            covurl: String,
+            status: String,
+        },
+
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+        },
+
+        mouseOver: function(e) {
+            this.$.tile.elevation = 5;
+        },
+
+        mouseOut: function(e) {
+            this.$.tile.elevation = 1;
+        },
+
+        // Not Elegant. TODO: Figure out why normal tapHandler can't work...
+        tapHandler: function(e) {
+            // console.log(e);
+            // console.log('ParentElement: ' + e.target.parentElement);
+            var target = e.target;
+            var parentElement = e.target.parentElement;
+
+            var dialog = this.$.dialog;
+            if (target == this.$.closeButton) {
+                dialog.close();
+            }
+            else {
+                dialog.open();
+            }
+        },
+    });
+  </script>
+
+</dom-module>

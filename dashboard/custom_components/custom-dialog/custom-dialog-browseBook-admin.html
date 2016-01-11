@@ -1,0 +1,197 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-label/iron-label.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="custom-dialog-browseBook-admin">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 5px;
+                max-width: 900px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: orange;*/
+            }
+            #statusData0 {
+                margin: 5px;
+                width: 100%;
+
+                @apply(--layout-horizontal);
+
+               /* border-style: solid;
+                border-width: 1px;
+                border-color: gold;*/
+            }
+            #statusData0 > #status {
+                width: 100%;
+                @apply(--layout-vertical);
+            }
+            #statusData0 > #status > div {
+                @apply(--layout-horizontal);
+            }
+            #statusData0 > #status > div > iron-label {
+                @apply(--layout-flex);
+            }
+            #bookData {
+                margin: 5px;
+                width: 100%;
+
+                @apply(--layout-horizontal);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: purple;*/
+            }
+            #bookCover {
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            #metaData0 {
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
+                @apply(--layout-flex);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: green;*/
+            }
+            #metaData1, #metaData2, #metaData3 {
+                margin: 5px;
+
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
+                @apply(--layout-flex);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: green;*/
+            }
+            #description {
+                margin: 5px;
+
+                min-height: 100px;
+                max-height: 100px;
+                width: 90%;
+
+                overflow-y:auto;
+
+                @apply(--layout-vertical);
+                @apply(--layout-start);
+                @apply(--layout-start-justified);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: green;*/
+            }
+            iron-label, paper-textarea {
+                margin: 2px;
+            }
+        </style>
+
+        <div id='statusData0'>
+            <div id='itemType'>
+                <iron-icon icon='icons:book'></iron-icon>
+            </div>
+
+            <div id='status'>
+                <div id='statusData1'>
+                    <iron-label>Status</iron-label>
+                    <iron-label>Admin</iron-label>
+                    <iron-label>Time</iron-label>
+                    <iron-label>Patron</iron-label>
+                </div>
+                <div id='statusData2'>
+                    <iron-label>{{status}}</iron-label>
+                    <iron-label>{{statusby}}</iron-label>
+                    <iron-label>{{statustime}}</iron-label>
+                    <!-- <iron-label>{{pfname}} {{plname}} {{pemail}}</iron-label> -->
+                    <iron-label>{{pemail}}</iron-label>
+                </div>  
+            </div>
+        </div>
+
+        <div id='bookData'>
+            <div id='bookCover'>
+                <iron-image style='width:200px; height:300px;' sizing='cover' preload src="{{covurl}}"></iron-image>
+                <iron-label>Library ID: {{libid}}</iron-label>
+            </div>
+
+            <div id='metaData0'>
+                <div id='metaData1'>
+                    <iron-label>{{title}}</iron-label>
+                    <iron-label>{{author}}</iron-label>
+                    <iron-label>{{publisher}} - {{year}}</iron-label>
+                </div>
+                <div id='metaData2'>
+                    <iron-label>loc: {{loc}}</iron-label>
+                    <iron-label>dcc: {{dcc}}</iron-label>
+                    <iron-label>isbn13: {{isbn13}}</iron-label>
+                    <iron-label>isbn10: {{isbn10}}</iron-label>
+                </div>
+                <div id='metaData3'>
+                    <iron-label>tags: {{tags}}</iron-label>
+                </div>
+            </div>
+        </div>
+
+        <div id='description'>
+            <paper-textarea label='Description' value='{{desc}}' maxlength='1024' readonly=></paper-textarea>
+        </div>
+    </template>
+
+  <script>
+    Polymer({ 
+        is: 'custom-dialog-browseBook-admin', 
+        properties: {
+            libid: String,
+            title: String,
+            author: String,
+            publisher: String,
+            year: String,
+            loc: String,
+            dcc: String,
+            isbn13: String,
+            isbn10: String,
+            tags: String,
+            desc: String,
+            covurl: String,
+            status: String,
+            statusby: String,
+            statustime: String,
+            pfname: String,
+            plname: String,
+            pemail: String,
+        },
+
+        /**
+        * Specifies the label of the individual tile.
+        *
+        * @attribute label
+        * @type string
+        * @default ''
+        */
+
+        ready: function() {
+        },
+    });
+  </script>
+
+</dom-module>

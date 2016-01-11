@@ -21,9 +21,9 @@
                 @apply(--layout-center-justified);
                 @apply(--layout-wrap);
 
-                border: 1px;
+                /*border: 1px;
                 border-color: green;
-                border-style: solid;
+                border-style: solid;*/
             }
             .tile-container {
                 margin: 5px;
@@ -107,6 +107,11 @@
         loadBookData: function(books) {
             var dataLength = books.length;
             for (var i = 0; i < dataLength; i++) {
+                
+                if (books[i].covurl.indexOf("https") == -1) {
+                    books[i].covurl = books[i].covurl.replace("http", "https");
+                }
+
                 this.push('books', {libid:books[i].libid, title:books[i].title, title_s:books[i].title.substr(0, 64),
                     author:books[i].author, author_s:books[i].author.substr(0, 64), publisher:books[i].publisher, 
                     year:books[i].year, isbn13:books[i].isbn13, isbn10:books[i].isbn10, 
@@ -118,7 +123,7 @@
         },
 
         ajaxSearchRequest: function(str) {
-            console.log('Request String: ' + str);
+            // console.log('Request String: ' + str);
 
             var aj = this.$.ajaxSearchRequest;
             aj.params = str;
@@ -126,7 +131,7 @@
         },
 
         ajaxSearchResponse: function(e) {
-            console.log('Response: ' + e.detail.response);
+            // console.log('Response: ' + e.detail.response);
             var resp = JSON.parse(e.detail.response);
             
             var em = this.$.errorMessage;

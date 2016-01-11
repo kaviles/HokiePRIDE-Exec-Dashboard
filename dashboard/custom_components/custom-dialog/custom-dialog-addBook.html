@@ -22,9 +22,9 @@
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
 
-                border-style: solid;
+                /*border-style: solid;
                 border-width: 1px;
-                border-color: blue;
+                border-color: blue;*/
             }
             #header {
                 margin: 0px 0px 0px 0px;
@@ -49,9 +49,9 @@
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
 
-                border-style: solid;
+                /*border-style: solid;
                 border-width: 1px;
-                border-color: black;
+                border-color: black;*/
             }
             #mainForm {
                 max-width: 400px;
@@ -61,9 +61,9 @@
                 @apply(--layout-center);
                 @apply(--layout-center-justified);
 
-                border-style: solid;
+                /*border-style: solid;
                 border-width: 1px;
-                border-color: black;
+                border-color: black;*/
             }
             #description {
                 min-height: 325px;
@@ -73,9 +73,9 @@
 
                 overflow-y:auto;
 
-                border-style: solid;
+                /*border-style: solid;
                 border-width: 1px;
-                border-color: black;
+                border-color: black;*/
             }
             #desc {
                 margin: 5px;
@@ -288,6 +288,10 @@
                 // var newpage = {libid:bd.libid, title:bd.title, author:bd.author, publisher:bd.publisher, 
                 //     year:bd.year, isbn13:bd.isbn13, loc:bd.loc, dcc:bd.dcc, 
                 //     tags:bd.tag, desc:bd.desc, covurl:bd.covurl};
+
+                if (bd[i].covurl.indexOf("https") == -1) {
+                    bd[i].covurl = bd[i].covurl.replace("http", "https");
+                }
 
                 var newpage = {title:bd.title, author:bd.author, publisher:bd.publisher, 
                     year:bd.year, isbn13:bd.isbn13, isbn10:bd.isbn10, loc:bd.loc, dcc:bd.dcc, 

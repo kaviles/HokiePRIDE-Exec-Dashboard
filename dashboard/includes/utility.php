@@ -1,5 +1,6 @@
 <?php
 
+include_once(__DIR__."/../../CAS-1.3.4/CAS-1.3.4/CAS.php");
   
 date_default_timezone_set('America/New_York');
 
@@ -89,6 +90,62 @@ function logMessage($filename, $message) {
     }
 }
 
+function cas_setup() {
+
+    include(__DIR__.'/casconfig.php');
+
+    // Uncomment to enable debugging
+    // phpCAS::setDebug(__DIR__.'/logs/CAS.log');
+
+    // Initialize phpCAS
+    phpCAS::client(SAML_VERSION_1_1, $cas_host, $cas_port, $cas_context);
+
+    // Download CAS client truststore from Middleware wiki
+    // http://www.middleware.vt.edu/pubs/certs/cas_client_truststore.pem
+    // and place in convenient location on filesystem
+    phpCAS::setCasServerCACert(__DIR__.'/../../certificates/cascert.pem');
+
+    // Handle SAML logout requests that emanate from the CAS host exclusively.
+    // Failure to restrict SAML logout requests to authorized hosts could
+    // allow denial of service attacks where at the least the server is
+    // tied up parsing bogus XML messages.
+    phpCAS::handleLogoutRequests(true, $cas_real_hosts);
+
+
+    // // Force CAS authentication on any page that includes this file
+    // phpCAS::forceAuthentication(true);
+}
+
+function cas_login() {
+    logMessage(__DIR__."/logs/authorize.log", "Attempting to log into CAS.");
+    // Force CAS authentication on any page that includes this file
+    phpCAS::forceAuthentication(true);
+}
+
+function cas_logout() {
+    logMessage(__DIR__."/logs/authorize.log", "Attempting to log out of CAS.");
+    phpCAS::logout();
+}
+
+function cas_isAuthenticated() {
+    return phpCAS::isAuthenticated();
+}
+
+function cas_getUser() {
+    $user = phpCAS::getUser();
+
+    if ($user) {
+        $message = "Got CAS User: ".$user;
+    }
+    else {
+        $message = "Did not get CAS User.";
+    }
+
+    logMessage(__DIR__."/logs/authorize.log", $message);
+
+    return $user;
+}
+
 /**
 * Authorizes a user by checking $user with the usernames in the to the database.
 *
@@ -96,29 +153,51 @@ function logMessage($filename, $message) {
 *
 * @return NULL in all cases.
 */
-function authorizeUser($user = '')
+function authorizeAdmin($user = '')
 {
+    logMessage(__DIR__."/logs/authorize.log", "Authorizing user: ".$user.".");
+
+    include(__DIR__."/dbtables.php");
+
     $mysqli = connectToDB();
 
-    $q = "SELECT * FROM exec_board WHERE pid = '".$user."'";
-    $result = $mysqli->query($q);
+    if ($mysqli) {
+        $qs = $mysqli->prepare("SELECT pid FROM $db_table_library_admins WHERE pid = ?");
+        $qs->bind_param("s", $user);
+        $qs->bind_result($r_user);
+        $qs->execute();
+        $qs->store_result();
 
-    if ($result->num_rows == 0) 
-    {
-        // Row not found meaning user not found
-        $message = getTimeStamp().' failed to authorize user '.$user.' as an Admin.'."\n";
-        error_log($message, 3, 'logs/authorize.log');
-        disconnectFromDB($mysqli);
-        return NULL;
-    } 
-    else 
-    {
-        // Row found meaning user was found
-        $message = getTimeStamp().' authorized user '.$user.' as an Admin.'."\n";
-        error_log($message, 3, 'logs/authorize.log');
-        disconnectFromDB($mysqli);
-        return $result;
+        $qs_num_rows = $qs->num_rows;
+
+        if ($qs_num_rows == 0) {
+            // Row not found meaning user not found
+            $message = 'Did not authorize user '.$user.' as an Admin.';
+            logMessage(__DIR__."/logs/authorize.log", $message);
+            disconnectFromDB($mysqli);
+            return false;
+        } 
+        else if ($qs_num_rows == 1) {
+            // Row found meaning user was found
+            $qs->fetch();
+            $message = 'Authorized user '.$r_user.' as an Admin.'."\n";
+            logMessage(__DIR__."/logs/authorize.log", $message);
+            disconnectFromDB($mysqli);
+            return true;
+        }
+        else {
+            // Multiple rows found, error.
+            $message = 'Error while authorizing user '.$user.' as an Admin.'."\n";
+            logMessage(__DIR__."/logs/authorize.log", $message);
+            disconnectFromDB($mysqli);
+            return false;
+        }
+
+        $qs->free_result();
+        $qs->close();
     }
+
+    return NULL;  
 }
 
 function isValidIsbn10($isbn) {

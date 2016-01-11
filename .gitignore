@@ -9,12 +9,15 @@
 ### config files ###
 **/dbconfig.php
 **/dbtables.php
+**/uiconfig.php
+**/casconfig.php
 
 ### pem files ###
-**/vt-global-ca-chain.pem
+**/cascert.pem
 
 ### log files ###
 **/logs
-HokiePRIDE-Exec-Dashboard.sublime-workspace
 
+HokiePRIDE-Exec-Dashboard.sublime-workspace
 HokiePRIDE-Exec-Dashboard.sublime-project
+

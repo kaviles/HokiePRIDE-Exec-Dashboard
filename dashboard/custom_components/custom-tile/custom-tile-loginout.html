@@ -1,0 +1,92 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="custom-tile-loginout" attributes="label">
+
+    <template>
+        <style>    
+            :host {
+                background-color: white;
+                padding: 5px;
+                margin: 25px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+
+                /*border-style: solid;
+                border-width: 1px;
+                border-color: red;*/
+            }
+            #tile {
+                /*display: inline-block;*/
+                text-align: center;
+
+                color: gray;
+                background: white;
+
+                /*box-sizing: border-box;*/
+                padding: 2.5px;
+                margin: 5px;
+                width: 150px;
+                height: 150px;
+                border-radius: 2px;
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-center-justified);
+            }
+            /*#dialog {
+                @apply(--layout-vertical);
+                @apply(--layout-end);
+                @apply(--layout-end-justified);
+            } */ 
+        </style>
+        <paper-material id='tile' animated elevation='1' on-mouseover='mouseOver' on-mouseout='mouseOut'>{{label}}</paper-material>
+        <!-- <paper-material id='tile' animated elevation='1' on-mouseover='mouseOver' on-mouseout='mouseOut' on-tap='tapHandler'>{{label}}</paper-material> -->
+
+        <!-- <paper-dialog id='dialog' entry-animation="scale-up-animation" exit-animation="fade-out-animation" modal>
+            <content></content>
+            <div class='buttons'>
+                <paper-button id='closeButton' on-tap='tapHandler'>Close</paper-button>
+            </div>
+        </paper-dialog> -->
+    </template>
+
+  <script>
+    Polymer( {
+        is: 'custom-tile-loginout', 
+        properties: {},
+
+        /**
+         * Specifies the label of the individual tile.
+         *
+         * @attribute label
+         * @type string
+         * @default ''
+         */
+
+        ready: function() {
+
+        },
+
+        mouseOver: function(e) {
+            e.target.elevation = 5;
+        },
+
+        mouseOut: function(e) {
+            e.target.elevation = 1;
+        },
+
+        // tapHandler: function(e) {
+        //     var dialog = this.$.dialog;
+        //     dialog.toggle()
+        // },
+
+    });
+  </script>
+
+</dom-module>

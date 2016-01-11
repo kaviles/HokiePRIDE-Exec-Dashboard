@@ -1,5 +1,6 @@
 # polybrary
 A hopefully user friendly library system to keep track of your books and other items.
+
 Written with [Polymer 1.0](https://www.polymer-project.org/1.0/).
 
 ##### Dependencies

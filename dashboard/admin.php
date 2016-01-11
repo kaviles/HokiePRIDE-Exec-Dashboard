@@ -1,8 +1,48 @@
+<?php
+
+// if (!isset($_SERVER['HTTPS'])) {
+//     // Redirect to https secured version to avoid infinite loop
+//     header('Location: admin');
+//     die();
+// }
+
+include(__DIR__.'/includes/uiconfig.php');
+
+// include(__DIR__.'/includes/utility.php');
+
+// logMessage(__DIR__."/includes/logs/authorize.log", "Admin Request: ".$_SERVER['REQUEST_URI']);
+
+// cas_setup();
+
+// $isAuthenticated = cas_isAuthenticated();
+
+// if (!$isAuthenticated && isset($_REQUEST['login'])) {
+//     cas_login();
+// }
+// else if ($isAuthenticated && isset($_REQUEST['logout'])) {
+//     cas_logout();
+// }
+
+// if (!$isAuthenticated) {
+//     header('Location: public');
+//     die(); 
+// }
+
+// $user = cas_getUser();
+// if (!authorizeAdmin($user)) {
+//     header('Location: public');
+//     die();
+// }
+
+$user = 'testUser';
+
+?>
+
 <!DOCTYPE html>
 <html>
 
     <head>
-        <title>Test_Library</title>
+        <title><?php echo $ui_library_title; ?></title>
         <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
         <!-- Load jQuery -->
@@ -17,15 +57,20 @@
         <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
         <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
         <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
-        <link rel="import" href="../bower_components/paper-item/paper-item.html">
+        <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
         <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+        <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
         <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+        <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+        <link rel="import" href="../bower_components/iron-icons/social-icons.html">
         <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+        <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 
         <!-- Load custom components -->
         <link rel="import" href="custom_components/custom-tile/custom-tile-layout.html">
         <link rel="import" href="custom_components/custom-tile/custom-tile.html">
-        <link rel="import" href="custom_components/custom-tile/custom-tile-browse-layout.html">
+        <link rel="import" href="custom_components/custom-tile/custom-tile-loginout.html">
+        <link rel="import" href="custom_components/custom-tile/custom-tile-browse-layout-admin.html">
 
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkInBook.html">
         <link rel="import" href="custom_components/custom-dialog/custom-dialog-checkOutBook.html">
@@ -44,18 +89,24 @@
         <style>
             html, body {
                 height: 100%;
-                margin: 0;
-                background-color: #CECECE; /* Grey */
+                margin: 0px;
+                background-color: white;
+                /*background-color: #CECECE;*/ /* Grey */
                 font-family: sans-serif;
             }
             #mainMenuToolbar {
-                background-color: #800000; /* Maroon */
+                background-color: maroon; /* Maroon */
                 color: white;
             }
+            #panel1 {
+                border-right-style: solid;
+                border-right-width: 1px;
+                border-right-color: #CECECE;;
+            }
             #mainContentToolbar {
-                background-color: #800000; /* Maroon */
+                background-color: maroon; /* Maroon */
                 color: white;
-            }   
+            }
             /*.content {
                 height: 100%;
                 padding: 20px;
@@ -63,37 +114,61 @@
         </style>
     </head>
 
-    <body fullbleed vertical layout unresolved>
+    <body>
 
         <paper-drawer-panel id="navDrawerPanel">
 
-            <paper-header-panel class='list-panel' drawer>
+            <paper-header-panel id='panel1' class='list-panel' drawer>
                 <paper-toolbar id='mainMenuToolbar'>
                     <div>Menu</div>
                 </paper-toolbar>
 
-                <paper-menu id='mainMenu' selected='0'>
-                    <paper-item icon='dashboard'>Dashboard</paper-item>
-                    <paper-item icon='browse'>Browse</paper-item>
-                    <paper-item icon='library'>Library</paper-item>
-                    <paper-item icon='patron'>Patron</paper-item>
-                    <paper-item icon='admin'>Admin</paper-item>
+                <paper-menu id='mainMenu' selected='1'>
+                    <paper-icon-item>
+                        <iron-icon icon='icons:dashboard' item-icon></iron-icon>
+                        Account
+                    </paper-icon-item>
+                    <paper-icon-item>
+                        <iron-icon icon='icons:search' item-icon></iron-icon>
+                        Browse
+                    </paper-icon-item>
+                    <paper-icon-item>
+                        <iron-icon icon='maps:local-library' item-icon></iron-icon>
+                        Library
+                    </paper-icon-item>
+                    <paper-icon-item>
+                        <iron-icon icon='social:people' item-icon></iron-icon>
+                        Patrons
+                    </paper-icon-item>
+                    <paper-icon-item>
+                        <iron-icon icon='icons:settings' item-icon></iron-icon>
+                        Settings
+                    </paper-icon-item>
                 </paper-menu>
             </paper-header-panel>
 
-            <paper-header-panel class='content-panel' main>
+            <paper-header-panel id='panel2' class='content-panel' main>
                 <paper-toolbar id='mainContentToolbar'>
                     <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
-                    <div>HokiePRIDE Admin Dashboard</div>
+                    <div id='bannerTitle'>
+                        <?php echo $ui_library_menu; if($user){echo " | Current Admin: ".$user;} ?>
+                    </div>
                 </paper-toolbar>
 
-                <iron-pages id='mainPages' selected='0'>
+                <iron-pages id='mainPages' selected='1'>
                     <custom-tile-layout>
-                        <custom-tile tile label='Login'></custom-tile>
+                        <?php  
+                        if (!$user) {
+                            echo "<custom-tile-loginout id='login' tile label='Login'></custom-tile-loginout>";
+                        }
+                        else {
+                            echo "<custom-tile-loginout id='logout' tile label='Logout'></custom-tile-loginout>";
+                        }
+                        ?>
                     </custom-tile-layout>
                     
-                    <custom-tile-browse-layout>
-                    </custom-tile-browse-layout>
+                    <custom-tile-browse-layout-admin>
+                    </custom-tile-browse-layout-admin>
 
                     <custom-tile-layout>
                         <custom-tile tile label='Check In Book'>
@@ -148,7 +223,7 @@
 
         <script>
             $(document).ready(function() {
-                console.log("Document ready!"); 
+                // console.log("Document ready!"); 
 
                 $('#mainMenu').bind('iron-select', function() {
                     // console.log('Element: mainMenu, Event fired: core-activate');
@@ -157,6 +232,16 @@
                     // Switch main pages
                     var mainPages = document.querySelector('#mainPages');
                     mainPages.selected = this.selected;
+                });
+
+                $('#login').bind('tap', function() {
+                    // console.log('Login tile tapped.');
+                    window.location = './public?login=';
+                });
+
+                $('#logout').bind('tap', function() {
+                    // console.log('Logout tile tapped.');
+                    window.location = './public?logout=';
                 });
             });
         </script>
